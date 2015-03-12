@@ -171,12 +171,9 @@ public class MainActivity extends ActionBarActivity implements
 
     private void postToFirebase() {
         Firebase userRef = mFirebaseRef.child("users/"+mAuthData.getUid());
-        userRef.child("away").setValue("time");
-        userRef.child("eta").setValue(1912);
-        userRef.child("ambient_temperature").setValue(21);
-        userRef.child("target_temperature").setValue(20);
+        Housing housing = new Housing((String)mAuthData.getProviderData().get("name"), false, "noETA", 21l, 30l);
 
-
+        userRef.setValue(housing);
     }
 
     /* A helper method to resolve the current ConnectionResult error. */

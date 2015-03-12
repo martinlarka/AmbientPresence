@@ -158,6 +158,8 @@ public class MainActivity extends ActionBarActivity implements
             mAuthProgressDialog.hide();
             Log.i(TAG, provider + " auth successful");
             setAuthenticatedUser(authData);
+
+            postToFirebase();
         }
 
         @Override
@@ -165,6 +167,10 @@ public class MainActivity extends ActionBarActivity implements
             mAuthProgressDialog.hide();
             showErrorDialog(firebaseError.toString());
         }
+    }
+
+    private void postToFirebase() {
+
     }
 
     /* A helper method to resolve the current ConnectionResult error. */

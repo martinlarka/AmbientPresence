@@ -14,8 +14,10 @@ import android.view.View;
 import android.widget.TextView;
 
 import com.firebase.client.AuthData;
+import com.firebase.client.DataSnapshot;
 import com.firebase.client.Firebase;
 import com.firebase.client.FirebaseError;
+import com.firebase.client.ValueEventListener;
 import com.google.android.gms.auth.GoogleAuthException;
 import com.google.android.gms.auth.GoogleAuthUtil;
 import com.google.android.gms.auth.UserRecoverableAuthException;
@@ -158,8 +160,9 @@ public class MainActivity extends ActionBarActivity implements
             mAuthProgressDialog.hide();
             Log.i(TAG, provider + " auth successful");
             setAuthenticatedUser(authData);
+            // Check if user is in firebase else create
 
-            postToFirebase();
+            registerUser();
         }
 
         @Override
@@ -169,11 +172,42 @@ public class MainActivity extends ActionBarActivity implements
         }
     }
 
-    private void postToFirebase() {
-        Firebase userRef = mFirebaseRef.child("users/"+mAuthData.getUid());
-        Housing housing = new Housing((String)mAuthData.getProviderData().get("name"), false, "noETA", 21l, 30l);
+    private void registerUser() {
+        if (mAuthData != null) {
+            Firebase childRef = mFirebaseRef.child("users/"+mAuthData.getUid());
+            childRef.addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(DataSnapshot dataSnapshot) {
+                    // User not registered
+                    if (!dataSnapshot.exists()) {
+                        // Setup user
+                        Firebase userRef = mFirebaseRef.child("users/" + mAuthData.getUid());
+                        String username =  (String)mAuthData.getProviderData().get("displayName");
+                        userRef.setValue(new User(userNameify(username)));
 
-        userRef.setValue(housing);
+                        // Setup housing
+                        Firebase housingRef = mFirebaseRef.child("houses/" + mAuthData.getUid());
+                        housingRef.setValue(new Housing((String) mAuthData.getProviderData().get("displayName")));
+
+                        // TODO Add callbacks to follower_requests
+                    }
+                }
+
+                // TODO Let users give own usernames, or fix email to username
+                private String userNameify(String username) {
+                    return username.toLowerCase().replace(" ", "").replace("å", "a").replace("ä", "a").replace("ö", "o");
+                }
+
+                @Override
+                public void onCancelled(FirebaseError firebaseError) {
+
+                }
+            });
+        }
+    }
+
+    public void postToFirebase(View view) {
+        registerUser();
     }
 
     /* A helper method to resolve the current ConnectionResult error. */
@@ -328,6 +362,7 @@ public class MainActivity extends ActionBarActivity implements
                     mGoogleApiClient.disconnect();
                 }
             }
+            mLoggedInStatusTextView.setVisibility(View.GONE);
             /* Update authenticated user and show login buttons */
             setAuthenticatedUser(null);
         }

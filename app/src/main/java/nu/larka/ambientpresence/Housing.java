@@ -6,6 +6,7 @@ package nu.larka.ambientpresence;
 public class Housing {
     private String name;
     private String UID;
+    private String[] FUID;
     private Boolean away;
     private String eta;
     private Long ambientT;
@@ -13,8 +14,11 @@ public class Housing {
 
     public Housing() {}
 
-    public Housing(String name, Boolean away, String eta, Long ambientT, Long targetT) {
+    public Housing(String name) {
         this.name = name;
+    }
+
+    public Housing(Boolean away, String eta, Long ambientT, Long targetT) {
         this.away = away;
         this.eta = eta;
         this.ambientT = ambientT;
@@ -33,6 +37,8 @@ public class Housing {
         return eta;
     }
 
+    public String[] getFUID() {return FUID;}
+
     public Long getAmbientT() {
         return ambientT;
     }
@@ -40,4 +46,5 @@ public class Housing {
     public Long getTargetT() {
         return targetT;
     }
+
 }

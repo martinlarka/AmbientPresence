@@ -27,7 +27,7 @@
         android:layout_gravity="center_horizontal"
         android:textAlignment="center"
         android:layout_marginTop="20dp"
-        android:text="post on firebase"
+        android:text="DO STUFF"
         android:onClick="postToFirebase"/>
 
 </LinearLayout>

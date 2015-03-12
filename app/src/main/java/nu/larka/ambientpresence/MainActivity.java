@@ -14,6 +14,7 @@ import android.view.View;
 import android.widget.TextView;
 
 import com.firebase.client.AuthData;
+import com.firebase.client.ChildEventListener;
 import com.firebase.client.DataSnapshot;
 import com.firebase.client.Firebase;
 import com.firebase.client.FirebaseError;
@@ -35,7 +36,9 @@ public class MainActivity extends ActionBarActivity implements
         GoogleApiClient.OnConnectionFailedListener{
 
     private static final String TAG = MainActivity.class.getSimpleName();
-
+    private static final String USERS = "users/";
+    private static final String FOLLOWREQ = "/follower_requests";
+    private static final String HOUSES = "houses/";
     /* TextView that is used to display information about the logged in user */
     private TextView mLoggedInStatusTextView;
 
@@ -161,8 +164,10 @@ public class MainActivity extends ActionBarActivity implements
             Log.i(TAG, provider + " auth successful");
             setAuthenticatedUser(authData);
             // Check if user is in firebase else create
-
             registerUser();
+
+            registerFollowCallback();
+
         }
 
         @Override
@@ -172,24 +177,55 @@ public class MainActivity extends ActionBarActivity implements
         }
     }
 
+    private void registerFollowCallback() {
+        Firebase followRef = mFirebaseRef.child(USERS + mAuthData.getUid() + FOLLOWREQ);
+        followRef.addChildEventListener(new ChildEventListener() {
+            @Override
+            public void onChildAdded(DataSnapshot dataSnapshot, String s) {
+                // Follower request made
+                // TODO handle following request
+                Log.i(TAG, "Follow request");
+            }
+
+            @Override
+            public void onChildChanged(DataSnapshot dataSnapshot, String s) {
+
+            }
+
+            @Override
+            public void onChildRemoved(DataSnapshot dataSnapshot) {
+
+            }
+
+            @Override
+            public void onChildMoved(DataSnapshot dataSnapshot, String s) {
+
+            }
+
+            @Override
+            public void onCancelled(FirebaseError firebaseError) {
+
+            }
+        });
+
+    }
+
     private void registerUser() {
         if (mAuthData != null) {
-            Firebase childRef = mFirebaseRef.child("users/"+mAuthData.getUid());
+            Firebase childRef = mFirebaseRef.child(USERS+mAuthData.getUid());
             childRef.addListenerForSingleValueEvent(new ValueEventListener() {
                 @Override
                 public void onDataChange(DataSnapshot dataSnapshot) {
                     // User not registered
                     if (!dataSnapshot.exists()) {
                         // Setup user
-                        Firebase userRef = mFirebaseRef.child("users/" + mAuthData.getUid());
                         String username =  (String)mAuthData.getProviderData().get("displayName");
-                        userRef.setValue(new User(userNameify(username)));
+                        Firebase userRef = mFirebaseRef.child(USERS + userNameify(username));
+                        userRef.setValue(new User(mAuthData.getUid()));
 
                         // Setup housing
                         Firebase housingRef = mFirebaseRef.child("houses/" + mAuthData.getUid());
                         housingRef.setValue(new Housing((String) mAuthData.getProviderData().get("displayName")));
-
-                        // TODO Add callbacks to follower_requests
                     }
                 }
 
@@ -206,9 +242,6 @@ public class MainActivity extends ActionBarActivity implements
         }
     }
 
-    public void postToFirebase(View view) {
-        registerUser();
-    }
 
     /* A helper method to resolve the current ConnectionResult error. */
     private void resolveSignInError() {
@@ -368,4 +401,12 @@ public class MainActivity extends ActionBarActivity implements
         }
     }
 
+    public void postToFirebase(View view) {
+        follow(mAuthData.getUid());
+    }
+
+    private void follow(String uid) {
+        Firebase followRef = mFirebaseRef.child(USERS+uid+FOLLOWREQ);
+        followRef.push().setValue(mAuthData.getUid());
+    }
 }

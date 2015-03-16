@@ -7,12 +7,17 @@ import android.widget.BaseAdapter;
 import android.widget.GridView;
 import android.widget.ImageView;
 
+import java.util.ArrayList;
+
+import nu.larka.ambientpresence.model.User;
+
 /**
  * Created by martin on 15-03-16.
  */
 public class ImageAdapter extends BaseAdapter {
 
     private Context mContext;
+    private ArrayList<User> followers = new ArrayList<>();
 
     public ImageAdapter(Context context) {
         this.mContext = context;
@@ -20,12 +25,17 @@ public class ImageAdapter extends BaseAdapter {
 
     @Override
     public int getCount() {
-        return 15;
+        return followers.size()+1;
     }
 
     @Override
     public Object getItem(int position) {
-        return null;
+        if (position == followers.size()) {
+            // Add office
+            return null;
+        } else {
+            return followers.get(position);
+        }
     }
 
     @Override
@@ -44,8 +54,12 @@ public class ImageAdapter extends BaseAdapter {
         } else {
             imageView = (ImageView) convertView;
         }
+        if (position == followers.size()) {
+            imageView.setImageResource(R.drawable.addhome);
+        } else {
+            imageView.setImageResource(R.drawable.home250);
+        }
 
-        imageView.setImageResource(R.drawable.home250);
         return imageView;
     }
 }

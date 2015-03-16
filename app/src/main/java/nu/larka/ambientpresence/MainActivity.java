@@ -5,13 +5,14 @@ import android.app.ProgressDialog;
 import android.content.Intent;
 import android.content.IntentSender;
 import android.os.AsyncTask;
+import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
+import android.support.v4.app.FragmentTransaction;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.TextView;
 
 import com.firebase.client.AuthData;
 import com.firebase.client.ChildEventListener;
@@ -178,13 +179,6 @@ public class MainActivity extends FragmentActivity implements
             setAuthenticatedUser(authData);
             // Check if user is in firebase else create
             registerUser();
-
-            String uid = mAuthData.getUid();
-            registerCallback(HOUSES+uid+FOLLOWERS, followers);
-            registerCallback(USERS+uid+FOLLOWREQ, followerRequests);
-            registerCallback(USERS+uid+BANNEDBYUSERS, bannedByUsers);
-
-            getFragmentManager().beginTransaction().add(R.id.fragment_container, mRemoteOffices).commit();
         }
 
         @Override
@@ -391,6 +385,21 @@ public class MainActivity extends FragmentActivity implements
             } else {
                 Log.e(TAG, "Invalid provider: " + authData.getProvider());
             }
+            String uid = authData.getUid();
+            registerCallback(HOUSES+uid+FOLLOWERS, followers);
+            registerCallback(USERS+uid+FOLLOWREQ, followerRequests);
+            registerCallback(USERS+uid+BANNEDBYUSERS, bannedByUsers);
+
+            FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+
+            // Replace whatever is in the fragment_container view with this fragment,
+            // and add the transaction to the back stack so the user can navigate back
+            transaction.replace(R.id.fragment_container, mRemoteOffices);
+            transaction.addToBackStack(null);
+
+            // Commit the transaction
+            transaction.commit();
+
         } else {
             /* No authenticated user show all the login buttons */
             mGoogleLoginButton.setVisibility(View.VISIBLE);
@@ -416,6 +425,9 @@ public class MainActivity extends FragmentActivity implements
                     mGoogleApiClient.disconnect();
                 }
             }
+            Fragment fragment = getSupportFragmentManager().findFragmentById(R.id.fragment_container);
+            if(fragment != null)
+                getSupportFragmentManager().beginTransaction().remove(fragment).commit();
             /* Update authenticated user and show login buttons */
             setAuthenticatedUser(null);
         }

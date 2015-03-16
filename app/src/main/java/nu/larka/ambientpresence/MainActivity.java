@@ -40,9 +40,15 @@ public class MainActivity extends ActionBarActivity implements
     private static final String TAG = MainActivity.class.getSimpleName();
     private static final String USERS = "users/";
     private static final String FOLLOWREQ = "/follower_requests/";
+    private static final String FOLLOWERS = "/followers/";
+    private static final String BANNEDBYUSERS = "/banned_by_users/";
     private static final String HOUSES = "houses/";
+    private static final String USERNAME ="username";
+
     /* TextView that is used to display information about the logged in user */
     private TextView mLoggedInStatusTextView;
+
+    private TextView mRequestsTextView;
 
     public static final int RC_GOOGLE_LOGIN = 1;
 
@@ -72,6 +78,10 @@ public class MainActivity extends ActionBarActivity implements
 
     /* The login button for Google */
     private SignInButton mGoogleLoginButton;
+
+    private ArrayList<User> followers = new ArrayList<>();
+    private ArrayList<User> followerRequests = new ArrayList<>();
+    private ArrayList<User> bannedByUsers = new ArrayList<>();
 
 
     @Override
@@ -109,6 +119,7 @@ public class MainActivity extends ActionBarActivity implements
                 .build();
 
         mLoggedInStatusTextView = (TextView) findViewById(R.id.login_status);
+        mRequestsTextView = (TextView) findViewById(R.id.follow_requests);
 
         /* Create the Firebase ref that is used for all authentication with Firebase */
         mFirebaseRef = new Firebase(getResources().getString(R.string.firebase_url));
@@ -168,6 +179,10 @@ public class MainActivity extends ActionBarActivity implements
             // Check if user is in firebase else create
             registerUser();
 
+            String uid = mAuthData.getUid();
+            registerCallback(HOUSES+uid+FOLLOWERS, followers);
+            registerCallback(USERS+uid+FOLLOWREQ, followerRequests);
+            registerCallback(USERS+uid+BANNEDBYUSERS, bannedByUsers);
         }
 
         @Override
@@ -176,35 +191,6 @@ public class MainActivity extends ActionBarActivity implements
             showErrorDialog(firebaseError.toString());
         }
     }
-
-        followRef.addChildEventListener(new ChildEventListener() {
-            @Override
-            public void onChildAdded(DataSnapshot dataSnapshot, String s) {
-            }
-
-            @Override
-            public void onChildChanged(DataSnapshot dataSnapshot, String s) {
-
-            }
-
-            @Override
-            public void onChildRemoved(DataSnapshot dataSnapshot) {
-
-            }
-
-            @Override
-            public void onChildMoved(DataSnapshot dataSnapshot, String s) {
-
-            }
-
-            @Override
-            public void onCancelled(FirebaseError firebaseError) {
-
-            }
-        });
-
-    }
-
     private void registerUser() {
         if (mAuthData != null) {
             Firebase childRef = mFirebaseRef.child(USERS+mAuthData.getUid());
@@ -215,11 +201,15 @@ public class MainActivity extends ActionBarActivity implements
                     if (!dataSnapshot.exists()) {
                         // Setup user
                         String username =  (String)mAuthData.getProviderData().get("displayName");
-                        Firebase userRef = mFirebaseRef.child(USERS + userNameify(username));
-                        userRef.setValue(new User(mAuthData.getUid()));
+                        Firebase userRef = mFirebaseRef.child(USERS + mAuthData.getUid()); // FIXME UID needs to be changed to something searchable
+                        userRef.child(USERNAME).setValue(userNameify(username));
+                        userRef.child(FOLLOWREQ).push().setValue("");
+                        userRef.child(BANNEDBYUSERS).push().setValue("");
 
                         // Setup housing
+                        Firebase housingRef = mFirebaseRef.child(HOUSES + mAuthData.getUid());
                         housingRef.setValue(new Housing((String) mAuthData.getProviderData().get("displayName")));
+                        housingRef.child(FOLLOWERS).push().setValue("");
                     }
                 }
 
@@ -236,6 +226,43 @@ public class MainActivity extends ActionBarActivity implements
         }
     }
 
+    private void registerCallback(String firePath, final ArrayList<User> list) {
+        if (mAuthData != null) { //TODO MIGHT BE REDUNDANT??
+            mFirebaseRef.child(firePath).addChildEventListener(new ChildEventListener() {
+                @Override
+                public void onChildAdded(DataSnapshot dataSnapshot, String s) {
+                    String value = (String)dataSnapshot.getValue();
+                    if (!value.equals("")) {
+                        list.add(new User(value));
+                    }
+                }
+
+                @Override
+                public void onChildChanged(DataSnapshot dataSnapshot, String s) {
+
+                }
+
+                @Override
+                public void onChildRemoved(DataSnapshot dataSnapshot) {
+                    for (User u : list) {
+                        if (u.getUID().equals(dataSnapshot.getValue())) {
+                            list.remove(u);
+                        }
+                    }
+                }
+
+                @Override
+                public void onChildMoved(DataSnapshot dataSnapshot, String s) {
+
+                }
+
+                @Override
+                public void onCancelled(FirebaseError firebaseError) {
+
+                }
+            });
+        }
+    }
 
     /* A helper method to resolve the current ConnectionResult error. */
     private void resolveSignInError() {
@@ -396,8 +423,9 @@ public class MainActivity extends ActionBarActivity implements
     }
 
     public void postToFirebase(View view) {
+        Log.i(TAG, "FOLLOWERS:"+followers.toString());
+        Log.i(TAG, "BYREQ:"+followerRequests.toString());
+        Log.i(TAG, "BANNED:"+bannedByUsers.toString());
     }
 
-        Firebase followRef = mFirebaseRef.child(USERS+uid+FOLLOWREQ);
-    }
 }

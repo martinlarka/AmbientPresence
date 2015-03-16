@@ -5,7 +5,7 @@ import android.app.ProgressDialog;
 import android.content.Intent;
 import android.content.IntentSender;
 import android.os.AsyncTask;
-import android.support.v7.app.ActionBarActivity;
+import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
@@ -35,7 +35,7 @@ import nu.larka.ambientpresence.model.Housing;
 import nu.larka.ambientpresence.model.User;
 
 
-public class MainActivity extends ActionBarActivity implements
+public class MainActivity extends FragmentActivity implements
         GoogleApiClient.ConnectionCallbacks,
         GoogleApiClient.OnConnectionFailedListener{
 
@@ -46,13 +46,6 @@ public class MainActivity extends ActionBarActivity implements
     private static final String BANNEDBYUSERS = "/banned_by_users/";
     private static final String HOUSES = "houses/";
     private static final String USERNAME ="username";
-
-    /* TextView that is used to display information about the logged in user */
-    private TextView mLoggedInStatusTextView;
-
-    private TextView mFollowersTextView;
-    private TextView mRequestsTextView;
-    private TextView mBannedTextView;
 
     public static final int RC_GOOGLE_LOGIN = 1;
 
@@ -86,6 +79,9 @@ public class MainActivity extends ActionBarActivity implements
     private ArrayList<User> followers = new ArrayList<>();
     private ArrayList<User> followerRequests = new ArrayList<>();
     private ArrayList<User> bannedByUsers = new ArrayList<>();
+
+    /* Fragments */
+    RemoteOffices mRemoteOffices;
 
 
     @Override
@@ -122,11 +118,6 @@ public class MainActivity extends ActionBarActivity implements
                 .addScope(Plus.SCOPE_PLUS_LOGIN)
                 .build();
 
-        mLoggedInStatusTextView = (TextView) findViewById(R.id.login_status);
-        mRequestsTextView = (TextView) findViewById(R.id.follow_requests);
-        mFollowersTextView = (TextView) findViewById(R.id.followers);
-        mBannedTextView = (TextView) findViewById(R.id.banned_by_users);
-
         /* Create the Firebase ref that is used for all authentication with Firebase */
         mFirebaseRef = new Firebase(getResources().getString(R.string.firebase_url));
 
@@ -146,6 +137,9 @@ public class MainActivity extends ActionBarActivity implements
                 setAuthenticatedUser(authData);
             }
         });
+
+        /* Fragments */
+        mRemoteOffices = new RemoteOffices();
     }
 
 
@@ -189,6 +183,8 @@ public class MainActivity extends ActionBarActivity implements
             registerCallback(HOUSES+uid+FOLLOWERS, followers);
             registerCallback(USERS+uid+FOLLOWREQ, followerRequests);
             registerCallback(USERS+uid+BANNEDBYUSERS, bannedByUsers);
+
+            getFragmentManager().beginTransaction().add(R.id.fragment_container, mRemoteOffices).commit();
         }
 
         @Override
@@ -241,7 +237,7 @@ public class MainActivity extends ActionBarActivity implements
                     if (!value.equals("")) {
                         list.add(new User(value));
                     }
-                    updateLists();
+                    //updateLists();
                 }
 
                 @Override
@@ -256,7 +252,7 @@ public class MainActivity extends ActionBarActivity implements
                             list.remove(u);
                         }
                     }
-                    updateLists();
+                    //updateLists();
                 }
 
                 @Override
@@ -270,24 +266,6 @@ public class MainActivity extends ActionBarActivity implements
                 }
             });
         }
-    }
-
-    private void updateLists() {
-        String listRep = "";
-        for (User u : followers) {
-            listRep = listRep == "" ? u.getUID() : listRep + ", " + u.getUID();
-        }
-        mFollowersTextView.setText(listRep);
-        listRep = "";
-        for (User u : followerRequests) {
-            listRep = listRep == "" ? u.getUID() : listRep + ", " + u.getUID();
-        }
-        mRequestsTextView.setText(listRep);
-        listRep = "";
-        for (User u : bannedByUsers) {
-            listRep = listRep == "" ? u.getUID() : listRep + ", " + u.getUID();
-        }
-        mBannedTextView.setText(listRep);
     }
 
     /* A helper method to resolve the current ConnectionResult error. */
@@ -401,7 +379,6 @@ public class MainActivity extends ActionBarActivity implements
         if (authData != null) {
             /* Hide all the login buttons */
             mGoogleLoginButton.setVisibility(View.GONE);
-            mLoggedInStatusTextView.setVisibility(View.VISIBLE);
             /* show a provider specific status text */
             String name = null;
             if (authData.getProvider().equals("facebook")
@@ -413,9 +390,6 @@ public class MainActivity extends ActionBarActivity implements
                 name = authData.getUid();
             } else {
                 Log.e(TAG, "Invalid provider: " + authData.getProvider());
-            }
-            if (name != null) {
-                mLoggedInStatusTextView.setText("Logged in as " + name + " (" + authData.getProvider() + ")");
             }
         } else {
             /* No authenticated user show all the login buttons */
@@ -442,13 +416,8 @@ public class MainActivity extends ActionBarActivity implements
                     mGoogleApiClient.disconnect();
                 }
             }
-            mLoggedInStatusTextView.setVisibility(View.GONE);
             /* Update authenticated user and show login buttons */
             setAuthenticatedUser(null);
         }
     }
-
-    public void postToFirebase(View view) {
-    }
-
 }

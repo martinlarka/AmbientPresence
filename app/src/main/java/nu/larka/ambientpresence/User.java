@@ -5,8 +5,7 @@ package nu.larka.ambientpresence;
  */
 public class User {
     private String UID;
-    private String[] followerRequests;
-    private String[] bannedUsers;
+    private String name;
 
     public User() {}
 
@@ -14,15 +13,14 @@ public class User {
         this.UID = UID;
     }
 
+    public User(String UID, String name) {
+        this.UID = UID;
+        this.name = name;
+    }
+
     public String getUID() {
         return UID;
     }
 
-    public String[] getFollowerRequests() {
-        return followerRequests;
-    }
-
-    public String[] getBannedUsers() {
-        return bannedUsers;
-    }
+    public String getName() { return name; }
 }

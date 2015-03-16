@@ -30,4 +30,12 @@
         android:text="DO STUFF"
         android:onClick="postToFirebase"/>
 
+    <TextView
+        android:id="@+id/follow_requests"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:textAlignment="center"
+        android:layout_marginTop="20dp" />
+
 </LinearLayout>

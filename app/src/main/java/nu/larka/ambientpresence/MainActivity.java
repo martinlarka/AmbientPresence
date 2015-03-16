@@ -11,6 +11,7 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Button;
 import android.widget.TextView;
 
 import com.firebase.client.AuthData;
@@ -29,6 +30,7 @@ import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.plus.Plus;
 
 import java.io.IOException;
+import java.util.ArrayList;
 
 
 public class MainActivity extends ActionBarActivity implements
@@ -37,7 +39,7 @@ public class MainActivity extends ActionBarActivity implements
 
     private static final String TAG = MainActivity.class.getSimpleName();
     private static final String USERS = "users/";
-    private static final String FOLLOWREQ = "/follower_requests";
+    private static final String FOLLOWREQ = "/follower_requests/";
     private static final String HOUSES = "houses/";
     /* TextView that is used to display information about the logged in user */
     private TextView mLoggedInStatusTextView;
@@ -166,8 +168,6 @@ public class MainActivity extends ActionBarActivity implements
             // Check if user is in firebase else create
             registerUser();
 
-            registerFollowCallback();
-
         }
 
         @Override
@@ -177,14 +177,9 @@ public class MainActivity extends ActionBarActivity implements
         }
     }
 
-    private void registerFollowCallback() {
-        Firebase followRef = mFirebaseRef.child(USERS + mAuthData.getUid() + FOLLOWREQ);
         followRef.addChildEventListener(new ChildEventListener() {
             @Override
             public void onChildAdded(DataSnapshot dataSnapshot, String s) {
-                // Follower request made
-                // TODO handle following request
-                Log.i(TAG, "Follow request");
             }
 
             @Override
@@ -224,7 +219,6 @@ public class MainActivity extends ActionBarActivity implements
                         userRef.setValue(new User(mAuthData.getUid()));
 
                         // Setup housing
-                        Firebase housingRef = mFirebaseRef.child("houses/" + mAuthData.getUid());
                         housingRef.setValue(new Housing((String) mAuthData.getProviderData().get("displayName")));
                     }
                 }
@@ -402,11 +396,8 @@ public class MainActivity extends ActionBarActivity implements
     }
 
     public void postToFirebase(View view) {
-        follow(mAuthData.getUid());
     }
 
-    private void follow(String uid) {
         Firebase followRef = mFirebaseRef.child(USERS+uid+FOLLOWREQ);
-        followRef.push().setValue(mAuthData.getUid());
     }
 }

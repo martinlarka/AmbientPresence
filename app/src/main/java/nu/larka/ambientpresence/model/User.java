@@ -1,4 +1,4 @@
-package nu.larka.ambientpresence;
+package nu.larka.ambientpresence.model;
 
 /**
  * Created by martin on 15-03-12.

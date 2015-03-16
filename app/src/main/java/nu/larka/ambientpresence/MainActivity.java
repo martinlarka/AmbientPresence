@@ -11,7 +11,6 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.Button;
 import android.widget.TextView;
 
 import com.firebase.client.AuthData;
@@ -32,6 +31,9 @@ import com.google.android.gms.plus.Plus;
 import java.io.IOException;
 import java.util.ArrayList;
 
+import nu.larka.ambientpresence.model.Housing;
+import nu.larka.ambientpresence.model.User;
+
 
 public class MainActivity extends ActionBarActivity implements
         GoogleApiClient.ConnectionCallbacks,
@@ -48,7 +50,9 @@ public class MainActivity extends ActionBarActivity implements
     /* TextView that is used to display information about the logged in user */
     private TextView mLoggedInStatusTextView;
 
+    private TextView mFollowersTextView;
     private TextView mRequestsTextView;
+    private TextView mBannedTextView;
 
     public static final int RC_GOOGLE_LOGIN = 1;
 
@@ -120,6 +124,8 @@ public class MainActivity extends ActionBarActivity implements
 
         mLoggedInStatusTextView = (TextView) findViewById(R.id.login_status);
         mRequestsTextView = (TextView) findViewById(R.id.follow_requests);
+        mFollowersTextView = (TextView) findViewById(R.id.followers);
+        mBannedTextView = (TextView) findViewById(R.id.banned_by_users);
 
         /* Create the Firebase ref that is used for all authentication with Firebase */
         mFirebaseRef = new Firebase(getResources().getString(R.string.firebase_url));
@@ -200,7 +206,7 @@ public class MainActivity extends ActionBarActivity implements
                     // User not registered
                     if (!dataSnapshot.exists()) {
                         // Setup user
-                        String username =  (String)mAuthData.getProviderData().get("displayName");
+                        String username = (String) mAuthData.getProviderData().get("displayName");
                         Firebase userRef = mFirebaseRef.child(USERS + mAuthData.getUid()); // FIXME UID needs to be changed to something searchable
                         userRef.child(USERNAME).setValue(userNameify(username));
                         userRef.child(FOLLOWREQ).push().setValue("");
@@ -235,6 +241,7 @@ public class MainActivity extends ActionBarActivity implements
                     if (!value.equals("")) {
                         list.add(new User(value));
                     }
+                    updateLists();
                 }
 
                 @Override
@@ -249,6 +256,7 @@ public class MainActivity extends ActionBarActivity implements
                             list.remove(u);
                         }
                     }
+                    updateLists();
                 }
 
                 @Override
@@ -262,6 +270,24 @@ public class MainActivity extends ActionBarActivity implements
                 }
             });
         }
+    }
+
+    private void updateLists() {
+        String listRep = "";
+        for (User u : followers) {
+            listRep = listRep == "" ? u.getUID() : listRep + ", " + u.getUID();
+        }
+        mFollowersTextView.setText(listRep);
+        listRep = "";
+        for (User u : followerRequests) {
+            listRep = listRep == "" ? u.getUID() : listRep + ", " + u.getUID();
+        }
+        mRequestsTextView.setText(listRep);
+        listRep = "";
+        for (User u : bannedByUsers) {
+            listRep = listRep == "" ? u.getUID() : listRep + ", " + u.getUID();
+        }
+        mBannedTextView.setText(listRep);
     }
 
     /* A helper method to resolve the current ConnectionResult error. */
@@ -423,9 +449,6 @@ public class MainActivity extends ActionBarActivity implements
     }
 
     public void postToFirebase(View view) {
-        Log.i(TAG, "FOLLOWERS:"+followers.toString());
-        Log.i(TAG, "BYREQ:"+followerRequests.toString());
-        Log.i(TAG, "BANNED:"+bannedByUsers.toString());
     }
 
 }

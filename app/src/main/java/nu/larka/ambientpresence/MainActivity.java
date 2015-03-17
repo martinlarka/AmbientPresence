@@ -53,7 +53,6 @@ public class MainActivity extends FragmentActivity implements
     private static final String USERNAME ="username";
 
     public static final int RC_GOOGLE_LOGIN = 1;
-    public static final int RC_ADD_OFFICE = 10;
 
     /* A reference to the Firebase */
     private Firebase mFirebaseRef;
@@ -384,18 +383,7 @@ public class MainActivity extends FragmentActivity implements
         if (authData != null) {
             /* Hide all the login buttons */
             mGoogleLoginButton.setVisibility(View.GONE);
-            /* show a provider specific status text */
-            String name = null;
-            if (authData.getProvider().equals("facebook")
-                    || authData.getProvider().equals("google")
-                    || authData.getProvider().equals("twitter")) {
-                name = (String) authData.getProviderData().get("displayName");
-            } else if (authData.getProvider().equals("anonymous")
-                    || authData.getProvider().equals("password")) {
-                name = authData.getUid();
-            } else {
-                Log.e(TAG, "Invalid provider: " + authData.getProvider());
-            }
+
             String uid = authData.getUid();
             registerCallback(HOUSES+uid+FOLLOWERS, followers);
             registerCallback(USERS+uid+FOLLOWREQ, followerRequests);

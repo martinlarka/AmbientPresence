@@ -11,7 +11,8 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/offices"/>
+            android:text="@string/offices"
+            style="@style/InfoText"/>
 
         <GridView
             android:id="@+id/gridview"
@@ -24,6 +25,12 @@
             android:stretchMode="columnWidth"
             android:gravity="center"
             />
+
+        <ImageView
+            android:layout_width="fill_parent"
+            android:layout_height="2dp"
+            android:contentDescription="@string/horizontal_line"
+            style="@style/HorizontalLine"/>
 
     </LinearLayout>
 

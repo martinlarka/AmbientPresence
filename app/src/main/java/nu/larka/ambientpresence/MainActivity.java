@@ -5,6 +5,8 @@ import android.app.ProgressDialog;
 import android.content.Intent;
 import android.content.IntentSender;
 import android.os.AsyncTask;
+import android.os.Handler;
+import android.os.Message;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
@@ -13,6 +15,7 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.AdapterView;
 
 import com.firebase.client.AuthData;
 import com.firebase.client.ChildEventListener;
@@ -31,6 +34,7 @@ import com.google.android.gms.plus.Plus;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.logging.LogRecord;
 
 import nu.larka.ambientpresence.model.Housing;
 import nu.larka.ambientpresence.model.User;
@@ -49,6 +53,7 @@ public class MainActivity extends FragmentActivity implements
     private static final String USERNAME ="username";
 
     public static final int RC_GOOGLE_LOGIN = 1;
+    public static final int RC_ADD_OFFICE = 10;
 
     /* A reference to the Firebase */
     private Firebase mFirebaseRef;
@@ -141,6 +146,8 @@ public class MainActivity extends FragmentActivity implements
 
         /* Fragments */
         mRemoteOffices = new RemoteOffices();
+        mRemoteOffices.setOnItemClickListener(onItemClickListener);
+        mRemoteOffices.setFollowerList(followers);
     }
 
 
@@ -231,7 +238,9 @@ public class MainActivity extends FragmentActivity implements
                     if (!value.equals("")) {
                         list.add(new User(value));
                     }
-                    //updateLists();
+                    if (list.equals(followers) && !value.equals("")) {
+                        mRemoteOffices.notifyAdapterDataChanged();
+                    }
                 }
 
                 @Override
@@ -246,7 +255,9 @@ public class MainActivity extends FragmentActivity implements
                             list.remove(u);
                         }
                     }
-                    //updateLists();
+                    if (list.equals(followers)) {
+                        mRemoteOffices.notifyAdapterDataChanged();
+                    }
                 }
 
                 @Override
@@ -432,4 +443,13 @@ public class MainActivity extends FragmentActivity implements
             setAuthenticatedUser(null);
         }
     }
+
+    private AdapterView.OnItemClickListener onItemClickListener = new AdapterView.OnItemClickListener() {
+        @Override
+        public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+            // IF office pressed, open setup activity, if add office pressed open add office activity
+            if (position == followers.size());
+        }
+    };
+
 }

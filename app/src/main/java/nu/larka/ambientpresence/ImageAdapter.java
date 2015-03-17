@@ -1,6 +1,8 @@
 package nu.larka.ambientpresence;
 
 import android.content.Context;
+import android.os.Handler;
+import android.os.Message;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
@@ -30,12 +32,7 @@ public class ImageAdapter extends BaseAdapter {
 
     @Override
     public Object getItem(int position) {
-        if (position == followers.size()) {
-            // Add office
-            return null;
-        } else {
-            return followers.get(position);
-        }
+        return null;
     }
 
     @Override
@@ -61,5 +58,9 @@ public class ImageAdapter extends BaseAdapter {
         }
 
         return imageView;
+    }
+
+    public void setFollowers(ArrayList<User> followers) {
+        this.followers = followers;
     }
 }

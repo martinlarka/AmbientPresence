@@ -8,10 +8,16 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.GridView;
 
+import java.util.ArrayList;
+
+import nu.larka.ambientpresence.model.User;
+
 
 public class RemoteOffices extends Fragment {
 
     private ImageAdapter mAdapter;
+    private AdapterView.OnItemClickListener itemClickListener;
+    private ArrayList<User> followerList;
 
     public RemoteOffices() {
     }
@@ -24,12 +30,12 @@ public class RemoteOffices extends Fragment {
         // Inflate the layout for this fragment
         GridView gridview = (GridView) view.findViewById(R.id.gridview);
         mAdapter = new ImageAdapter(view.getContext());
+        mAdapter.setFollowers(followerList);
         gridview.setAdapter(mAdapter);
 
-        gridview.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            public void onItemClick(AdapterView<?> parent, View v, int position, long id) {
-            }
-        });
+        // TODO How to populate grid with office imgs
+
+        gridview.setOnItemClickListener(itemClickListener);
         return view;
     }
 
@@ -37,5 +43,17 @@ public class RemoteOffices extends Fragment {
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
 
+    }
+
+    public void setOnItemClickListener(AdapterView.OnItemClickListener listener) {
+        this.itemClickListener = listener;
+    }
+
+    public void setFollowerList(ArrayList<User> followerList) {
+        this.followerList = followerList;
+    }
+
+    public void notifyAdapterDataChanged() {
+        mAdapter.notifyDataSetChanged();
     }
 }

@@ -5,8 +5,6 @@ import android.app.ProgressDialog;
 import android.content.Intent;
 import android.content.IntentSender;
 import android.os.AsyncTask;
-import android.os.Handler;
-import android.os.Message;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
@@ -34,7 +32,6 @@ import com.google.android.gms.plus.Plus;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.logging.LogRecord;
 
 import nu.larka.ambientpresence.model.Housing;
 import nu.larka.ambientpresence.model.User;
@@ -86,7 +83,7 @@ public class MainActivity extends FragmentActivity implements
     private ArrayList<User> bannedByUsers = new ArrayList<>();
 
     /* Fragments */
-    RemoteOffices mRemoteOffices;
+    RemoteOfficesFragment mRemoteOfficesFragment;
 
 
     @Override
@@ -144,9 +141,9 @@ public class MainActivity extends FragmentActivity implements
         });
 
         /* Fragments */
-        mRemoteOffices = new RemoteOffices();
-        mRemoteOffices.setOnItemClickListener(onItemClickListener);
-        mRemoteOffices.setFollowerList(followers);
+        mRemoteOfficesFragment = new RemoteOfficesFragment();
+        mRemoteOfficesFragment.setOnItemClickListener(onItemClickListener);
+        mRemoteOfficesFragment.setFollowerList(followers);
     }
 
 
@@ -238,7 +235,7 @@ public class MainActivity extends FragmentActivity implements
                         list.add(new User(value));
                     }
                     if (list.equals(followers) && !value.equals("")) {
-                        mRemoteOffices.notifyAdapterDataChanged();
+                        mRemoteOfficesFragment.notifyAdapterDataChanged();
                     }
                 }
 
@@ -255,7 +252,7 @@ public class MainActivity extends FragmentActivity implements
                         }
                     }
                     if (list.equals(followers)) {
-                        mRemoteOffices.notifyAdapterDataChanged();
+                        mRemoteOfficesFragment.notifyAdapterDataChanged();
                     }
                 }
 
@@ -393,7 +390,7 @@ public class MainActivity extends FragmentActivity implements
 
             // Replace whatever is in the fragment_container view with this fragment,
             // and add the transaction to the back stack so the user can navigate back
-            transaction.replace(R.id.fragment_container, mRemoteOffices);
+            transaction.replace(R.id.office_fragment, mRemoteOfficesFragment);
             transaction.addToBackStack(null);
 
             // Commit the transaction
@@ -424,7 +421,7 @@ public class MainActivity extends FragmentActivity implements
                     mGoogleApiClient.disconnect();
                 }
             }
-            Fragment fragment = getSupportFragmentManager().findFragmentById(R.id.fragment_container);
+            Fragment fragment = getSupportFragmentManager().findFragmentById(R.id.office_fragment);
             if(fragment != null)
                 getSupportFragmentManager().beginTransaction().remove(fragment).commit();
             /* Update authenticated user and show login buttons */
@@ -435,8 +432,22 @@ public class MainActivity extends FragmentActivity implements
     private AdapterView.OnItemClickListener onItemClickListener = new AdapterView.OnItemClickListener() {
         @Override
         public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-            // IF office pressed, open setup activity, if add office pressed open add office activity
-            if (position == followers.size());
+            // TODO MAX TREE NUMBERS OF FOLLOWING
+            // Follow new clicked
+            if (position == followers.size()) {
+                // Start follow new fragment
+                FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+
+                // Replace whatever is in the fragment_container view with this fragment,
+                // and add the transaction to the back stack so the user can navigate back
+                transaction.replace(R.id.info_fragment, new FollowNewFragment());
+                transaction.addToBackStack(null);
+
+                // Commit the transaction
+                transaction.commit();
+            } else { // Load setup of pressed office
+                // Start Office fragment
+            }
         }
     };
 

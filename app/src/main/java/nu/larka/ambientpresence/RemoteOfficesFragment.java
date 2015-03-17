@@ -13,13 +13,13 @@ import java.util.ArrayList;
 import nu.larka.ambientpresence.model.User;
 
 
-public class RemoteOffices extends Fragment {
+public class RemoteOfficesFragment extends Fragment {
 
     private ImageAdapter mAdapter;
     private AdapterView.OnItemClickListener itemClickListener;
     private ArrayList<User> followerList;
 
-    public RemoteOffices() {
+    public RemoteOfficesFragment() {
     }
 
     @Override

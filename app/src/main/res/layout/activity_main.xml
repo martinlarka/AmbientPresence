@@ -13,10 +13,13 @@
         android:layout_height="wrap_content" />
 
     <FrameLayout
-        android:id="@+id/fragment_container"
+        android:id="@+id/office_fragment"
         android:layout_width="fill_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"/>
 
-        </FrameLayout>
+    <FrameLayout
+        android:id="@+id/info_fragment"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"/>
 
 </LinearLayout>

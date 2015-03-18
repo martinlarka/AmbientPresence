@@ -1,4 +1,4 @@
-package nu.larka.ambientpresence;
+package nu.larka.ambientpresence.fragment;
 
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -10,6 +10,8 @@ import android.widget.GridView;
 
 import java.util.ArrayList;
 
+import nu.larka.ambientpresence.R;
+import nu.larka.ambientpresence.adapter.ImageAdapter;
 import nu.larka.ambientpresence.model.User;
 
 

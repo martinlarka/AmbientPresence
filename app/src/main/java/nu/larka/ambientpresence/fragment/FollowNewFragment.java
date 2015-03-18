@@ -1,29 +1,26 @@
-package nu.larka.ambientpresence;
+package nu.larka.ambientpresence.fragment;
 
 
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.util.Log;
-import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.ListView;
-import android.widget.TextView;
 
 import com.firebase.client.ChildEventListener;
 import com.firebase.client.DataSnapshot;
 import com.firebase.client.Firebase;
 import com.firebase.client.FirebaseError;
-import com.firebase.client.Query;
-import com.firebase.client.ValueEventListener;
 
 import java.util.ArrayList;
-import java.util.List;
 
+import nu.larka.ambientpresence.MainActivity;
+import nu.larka.ambientpresence.R;
+import nu.larka.ambientpresence.adapter.OfficeSearchAdapter;
 import nu.larka.ambientpresence.model.User;
 
 
@@ -36,7 +33,6 @@ public class FollowNewFragment extends Fragment {
     private EditText searchText;
     private ArrayList<User> searchResults = new ArrayList<>();
     private ArrayList<User> fireBaseUsers = new ArrayList<>();
-    private ArrayList<String> bannedBy = new ArrayList<>();
     private OfficeSearchAdapter officeSearchAdapter;
     private String uid;
 
@@ -51,7 +47,6 @@ public class FollowNewFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_follow_new, container, false);
 
         getFireBaseUsers();
-        getBannedByUsers();
 
         searchText = (EditText) view.findViewById(R.id.office_search);
         searchText.addTextChangedListener(new TextWatcher() {
@@ -79,51 +74,34 @@ public class FollowNewFragment extends Fragment {
             }
         });
 
-
-        officeSearchAdapter = new OfficeSearchAdapter(view.getContext(), searchResults);
+        officeSearchAdapter = new OfficeSearchAdapter(view.getContext(), searchResults, mFireRef, uid);
         ListView searchResultList = (ListView) view.findViewById(R.id.search_result_list);
         searchResultList.setAdapter(officeSearchAdapter);
 
         return view;
     }
 
-    private void getBannedByUsers() {
-        mFireRef.child(MainActivity.USERS+uid+MainActivity.BANNEDBYUSERS).addChildEventListener(new ChildEventListener() {
-            @Override
-            public void onChildAdded(DataSnapshot dataSnapshot, String s) {
-                if (!dataSnapshot.getValue().equals("")) {
-                    bannedBy.add((String) dataSnapshot.getValue());
-                }
-            }
-
-            @Override
-            public void onChildChanged(DataSnapshot dataSnapshot, String s) {
-
-            }
-
-            @Override
-            public void onChildRemoved(DataSnapshot dataSnapshot) {
-                bannedBy.remove(dataSnapshot.getValue());
-            }
-
-            @Override
-            public void onChildMoved(DataSnapshot dataSnapshot, String s) {
-
-            }
-
-            @Override
-            public void onCancelled(FirebaseError firebaseError) {
-
-            }
-        });
-    }
-
     private void getFireBaseUsers() {
         mFireRef.child(MainActivity.USERS).addChildEventListener(new ChildEventListener() {
             @Override
             public void onChildAdded(DataSnapshot dataSnapshot, String s) {
-                if (!bannedBy.contains(dataSnapshot.getKey()) && !dataSnapshot.getKey().equals(uid))
-                    fireBaseUsers.add(userFromDataSnapshot(dataSnapshot));
+                // If user exist in other user's list
+                if (dataSnapshot.child(MainActivity.OTHERUSERS).hasChild(uid)) {
+                    // Get state
+                    String state = (String) dataSnapshot.child(MainActivity.OTHERUSERS + uid).getValue();
+                    switch (state) {
+                        case MainActivity.FOLLOWING:
+                            fireBaseUsers.add(userFromDataSnapshot(dataSnapshot, MainActivity.FOLLOWING));
+                            break;
+                        case MainActivity.PENDING:
+                            fireBaseUsers.add(userFromDataSnapshot(dataSnapshot, MainActivity.PENDING));
+                            break;
+                        case MainActivity.NOSTATE:
+                            fireBaseUsers.add(userFromDataSnapshot(dataSnapshot, MainActivity.NOSTATE));
+                    }
+                } else {
+                    fireBaseUsers.add(userFromDataSnapshot(dataSnapshot, MainActivity.NOSTATE));
+                }
             }
 
             @Override
@@ -153,8 +131,10 @@ public class FollowNewFragment extends Fragment {
         this.uid = uid;
     }
 
-    private User userFromDataSnapshot(DataSnapshot dataSnapshot) {
-        return new User(dataSnapshot.getKey(), (String)dataSnapshot.child(MainActivity.USERNAME).getValue());
+    private User userFromDataSnapshot(DataSnapshot dataSnapshot, String state) {
+        User user = new User(dataSnapshot.getKey(), (String)dataSnapshot.child(MainActivity.USERNAME).getValue());
+        user.setState(state);
+        return user;
     }
 
 }

@@ -33,6 +33,8 @@ import com.google.android.gms.plus.Plus;
 import java.io.IOException;
 import java.util.ArrayList;
 
+import nu.larka.ambientpresence.fragment.FollowNewFragment;
+import nu.larka.ambientpresence.fragment.RemoteOfficesFragment;
 import nu.larka.ambientpresence.model.Housing;
 import nu.larka.ambientpresence.model.User;
 
@@ -43,12 +45,17 @@ public class MainActivity extends FragmentActivity implements
 
     private static final String TAG = MainActivity.class.getSimpleName();
     public static final String USERS = "users/";
-    public static final String FOLLOWREQ = "/follower_requests/";
+    public static final String OTHERUSERS = "/other_users/";
     public static final String FOLLOWERS = "/followers/";
-    public static final String BANNEDBYUSERS = "/banned_by_users/";
     public static final String HOUSES = "houses/";
     public static final String USERNAME ="username";
     public static final String NAME ="name";
+
+    public static final String FOLLOWING = "following";
+    public static final String PENDING = "pending";
+    public static final String BANNED = "banned";
+    public static final String SELF = "self";
+    public static final String NOSTATE = "nostate";
 
     public static final int RC_GOOGLE_LOGIN = 1;
 
@@ -80,8 +87,6 @@ public class MainActivity extends FragmentActivity implements
     private SignInButton mGoogleLoginButton;
 
     private ArrayList<User> followers = new ArrayList<>();
-    private ArrayList<User> followerRequests = new ArrayList<>();
-    private ArrayList<User> bannedByUsers = new ArrayList<>();
 
     /* Fragments */
     RemoteOfficesFragment mRemoteOfficesFragment;
@@ -203,8 +208,7 @@ public class MainActivity extends FragmentActivity implements
                         String username = (String) mAuthData.getProviderData().get("displayName");
                         Firebase userRef = mFirebaseRef.child(USERS + mAuthData.getUid()); // FIXME UID needs to be changed to something searchable
                         userRef.child(USERNAME).setValue(userNameify(username));
-                        userRef.child(FOLLOWREQ).push().setValue("");
-                        userRef.child(BANNEDBYUSERS).push().setValue("");
+                        userRef.child(OTHERUSERS).child(mAuthData.getUid()).setValue(SELF);
 
                         // Setup housing
                         Firebase housingRef = mFirebaseRef.child(HOUSES + mAuthData.getUid());
@@ -231,11 +235,9 @@ public class MainActivity extends FragmentActivity implements
             mFirebaseRef.child(firePath).addChildEventListener(new ChildEventListener() {
                 @Override
                 public void onChildAdded(DataSnapshot dataSnapshot, String s) {
-                    String value = (String)dataSnapshot.getValue();
+                    String value = (String) dataSnapshot.getValue();
                     if (!value.equals("")) {
                         list.add(new User(value));
-                    }
-                    if (list.equals(followers) && !value.equals("")) {
                         mRemoteOfficesFragment.notifyAdapterDataChanged();
                     }
                 }
@@ -250,10 +252,8 @@ public class MainActivity extends FragmentActivity implements
                     for (User u : list) {
                         if (u.getUID().equals(dataSnapshot.getValue())) {
                             list.remove(u);
+                            mRemoteOfficesFragment.notifyAdapterDataChanged();
                         }
-                    }
-                    if (list.equals(followers)) {
-                        mRemoteOfficesFragment.notifyAdapterDataChanged();
                     }
                 }
 
@@ -384,8 +384,6 @@ public class MainActivity extends FragmentActivity implements
 
             String uid = authData.getUid();
             registerCallback(HOUSES+uid+FOLLOWERS, followers);
-            registerCallback(USERS+uid+FOLLOWREQ, followerRequests);
-            registerCallback(USERS+uid+BANNEDBYUSERS, bannedByUsers);
 
             FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
 

@@ -6,6 +6,7 @@ package nu.larka.ambientpresence.model;
 public class User {
     private String UID;
     private String name;
+    private String state;
 
     public User() {}
 
@@ -23,4 +24,12 @@ public class User {
     }
 
     public String getName() { return name; }
+
+    public String getState() {
+        return state;
+    }
+
+    public void setState(String state) {
+        this.state = state;
+    }
 }

@@ -28,18 +28,23 @@
             android:src="@drawable/search_icon"
             android:contentDescription="Search icon"
             android:scaleType="fitEnd"
-            android:labelFor="@id/follow_new_office"
             android:cropToPadding="false"
             android:padding="8dp" />
             
         <EditText
-            android:labelFor="@id/follow_new_office"
             android:inputType="text"
             android:id="@+id/office_search"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content" />
             
         </LinearLayout>
+
+        <ListView
+            android:id="@+id/search_result_list"
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent">
+
+        </ListView>
 
     </LinearLayout>
 </FrameLayout>

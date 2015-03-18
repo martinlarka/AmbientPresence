@@ -42,12 +42,13 @@ public class MainActivity extends FragmentActivity implements
         GoogleApiClient.OnConnectionFailedListener{
 
     private static final String TAG = MainActivity.class.getSimpleName();
-    private static final String USERS = "users/";
-    private static final String FOLLOWREQ = "/follower_requests/";
-    private static final String FOLLOWERS = "/followers/";
-    private static final String BANNEDBYUSERS = "/banned_by_users/";
-    private static final String HOUSES = "houses/";
-    private static final String USERNAME ="username";
+    public static final String USERS = "users/";
+    public static final String FOLLOWREQ = "/follower_requests/";
+    public static final String FOLLOWERS = "/followers/";
+    public static final String BANNEDBYUSERS = "/banned_by_users/";
+    public static final String HOUSES = "houses/";
+    public static final String USERNAME ="username";
+    public static final String NAME ="name";
 
     public static final int RC_GOOGLE_LOGIN = 1;
 
@@ -440,7 +441,9 @@ public class MainActivity extends FragmentActivity implements
 
                 // Replace whatever is in the fragment_container view with this fragment,
                 // and add the transaction to the back stack so the user can navigate back
-                transaction.replace(R.id.info_fragment, new FollowNewFragment());
+                FollowNewFragment followFragment = new FollowNewFragment();
+                followFragment.setFireRef(mFirebaseRef, mAuthData.getUid());
+                transaction.replace(R.id.info_fragment, followFragment);
                 transaction.addToBackStack(null);
 
                 // Commit the transaction
@@ -450,5 +453,6 @@ public class MainActivity extends FragmentActivity implements
             }
         }
     };
+
 
 }

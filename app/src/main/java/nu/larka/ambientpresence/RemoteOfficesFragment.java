@@ -17,7 +17,7 @@ public class RemoteOfficesFragment extends Fragment {
 
     private ImageAdapter mAdapter;
     private AdapterView.OnItemClickListener itemClickListener;
-    private ArrayList<User> followerList;
+    private ArrayList<User> followerList = new ArrayList<>();
 
     public RemoteOfficesFragment() {
     }

@@ -87,6 +87,7 @@ public class MainActivity extends FragmentActivity implements
     private SignInButton mGoogleLoginButton;
 
     private ArrayList<User> followers = new ArrayList<>();
+    private ArrayList<String> pendingFollowers = new ArrayList<>();
 
     /* Fragments */
     RemoteOfficesFragment mRemoteOfficesFragment;
@@ -227,13 +228,13 @@ public class MainActivity extends FragmentActivity implements
         }
     }
 
-    private void registerFollowerCallback(String firePath, final ArrayList<User> list) {
+    private void registerFollowerCallback() {
         if (mAuthData != null) { //TODO MIGHT BE REDUNDANT??
-            mFirebaseRef.child(firePath).addChildEventListener(new ChildEventListener() {
+            mFirebaseRef.child(USERS + mAuthData.getUid() + FOLLOWERS).addChildEventListener(new ChildEventListener() {
                 @Override
                 public void onChildAdded(DataSnapshot dataSnapshot, String s) {
                     if (dataSnapshot.getValue().equals(FOLLOWER)) {
-                        list.add(new User((String)dataSnapshot.getValue()));
+                        followers.add(new User((String) dataSnapshot.getValue()));
                         mRemoteOfficesFragment.notifyAdapterDataChanged();
                     }
                 }
@@ -244,9 +245,9 @@ public class MainActivity extends FragmentActivity implements
 
                 @Override
                 public void onChildRemoved(DataSnapshot dataSnapshot) {
-                    for (User u : list) {
+                    for (User u : followers) {
                         if (u.getUID().equals(dataSnapshot.getValue())) {
-                            list.remove(u);
+                            followers.remove(u);
                             mRemoteOfficesFragment.notifyAdapterDataChanged();
                         }
                     }
@@ -377,8 +378,8 @@ public class MainActivity extends FragmentActivity implements
             /* Hide all the login buttons */
             mGoogleLoginButton.setVisibility(View.GONE);
 
-            String uid = authData.getUid();
-            registerFollowerCallback(USERS + uid + FOLLOWERS, followers);
+            registerFollowerCallback();
+            registerNewFollowerCallback();
 
             FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
 
@@ -397,6 +398,43 @@ public class MainActivity extends FragmentActivity implements
         this.mAuthData = authData;
         /* invalidate options menu to hide/show the logout button */
         supportInvalidateOptionsMenu();
+    }
+
+    private void registerNewFollowerCallback() {
+        mFirebaseRef.child(USERS + mAuthData.getUid() + OTHERUSERS).addChildEventListener(new ChildEventListener() {
+            @Override
+            public void onChildAdded(DataSnapshot dataSnapshot, String s) {
+                addUserToPending(dataSnapshot);
+            }
+
+            @Override
+            public void onChildChanged(DataSnapshot dataSnapshot, String s) {
+                addUserToPending(dataSnapshot);
+            }
+
+            @Override
+            public void onChildRemoved(DataSnapshot dataSnapshot) {
+
+            }
+
+            @Override
+            public void onChildMoved(DataSnapshot dataSnapshot, String s) {
+
+            }
+
+            @Override
+            public void onCancelled(FirebaseError firebaseError) {
+
+            }
+        });
+    }
+
+    private void addUserToPending(DataSnapshot dataSnapshot) {
+        if (dataSnapshot.getValue().equals(PENDING)) {
+            pendingFollowers.add(dataSnapshot.getKey());
+        } else {
+            pendingFollowers.remove(dataSnapshot.getKey());
+        }
     }
 
     /**

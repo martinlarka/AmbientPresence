@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -36,7 +37,6 @@ public class FollowNewFragment extends Fragment {
     private EditText searchText;
     private ArrayList<User> searchResults = new ArrayList<>();
     private ArrayList<User> fireBaseUsers = new ArrayList<>();
-    private HashMap<String, String> userStates = new HashMap<>();
     private OfficeSearchAdapter officeSearchAdapter;
     private String uid;
 
@@ -50,7 +50,6 @@ public class FollowNewFragment extends Fragment {
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_follow_new, container, false);
 
-        getUserStates();
         getFireBaseUsers();
 
         searchText = (EditText) view.findViewById(R.id.office_search);
@@ -86,59 +85,18 @@ public class FollowNewFragment extends Fragment {
         return view;
     }
 
-    private void getUserStates() {
-        mFireRef.child(MainActivity.USERS + uid + MainActivity.OTHERUSERS).addListenerForSingleValueEvent(new ValueEventListener() {
+    private void getFireBaseUsers() {
+        mFireRef.child(MainActivity.USERS).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-                Iterable<DataSnapshot> snapshots = dataSnapshot.getChildren();
-                for (DataSnapshot d : snapshots) {
-                    userStates.put(d.getKey(), (String) d.getValue());
-                }
-            }
-
-            @Override
-            public void onCancelled(FirebaseError firebaseError) {
-
-            }
-        });
-    }
-
-    private void getFireBaseUsers() {
-        mFireRef.child(MainActivity.USERS).addChildEventListener(new ChildEventListener() {
-            @Override
-            public void onChildAdded(DataSnapshot dataSnapshot, String s) {
-                String state = userStates.get(dataSnapshot.getKey());
-                if (state != null) {
-                    // Get state
-                    switch (state) {
-                        case MainActivity.FOLLOWING:
-                            fireBaseUsers.add(userFromDataSnapshot(dataSnapshot, MainActivity.FOLLOWING));
-                            break;
-                        case MainActivity.PENDING:
-                            fireBaseUsers.add(userFromDataSnapshot(dataSnapshot, MainActivity.PENDING));
-                            break;
-                        case MainActivity.NOSTATE:
-                            fireBaseUsers.add(userFromDataSnapshot(dataSnapshot, MainActivity.NOSTATE));
+                Iterable<DataSnapshot> snapShots = dataSnapshot.getChildren();
+                for (DataSnapshot snap: snapShots) {
+                    String state = snap.child(MainActivity.OTHERUSERS).child(uid).getValue() != null ?
+                            (String)snap.child(MainActivity.OTHERUSERS).child(uid).getValue() : MainActivity.NOSTATE;
+                    if (!state.equals(MainActivity.SELF)) {
+                        fireBaseUsers.add(userFromDataSnapshot(snap, state));
                     }
-
-                } else {
-                    fireBaseUsers.add(userFromDataSnapshot(dataSnapshot, MainActivity.NOSTATE));
                 }
-            }
-
-            @Override
-            public void onChildChanged(DataSnapshot dataSnapshot, String s) {
-
-            }
-
-            @Override
-            public void onChildRemoved(DataSnapshot dataSnapshot) {
-
-            }
-
-            @Override
-            public void onChildMoved(DataSnapshot dataSnapshot, String s) {
-
             }
 
             @Override
@@ -147,6 +105,7 @@ public class FollowNewFragment extends Fragment {
             }
         });
     }
+
 
     public void setFireRef(Firebase fireRef, String uid) {
         this.mFireRef = fireRef;

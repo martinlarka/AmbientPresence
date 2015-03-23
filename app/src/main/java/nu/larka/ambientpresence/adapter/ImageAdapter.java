@@ -11,6 +11,7 @@ import android.widget.ImageView;
 
 import java.util.ArrayList;
 
+import nu.larka.ambientpresence.MainActivity;
 import nu.larka.ambientpresence.R;
 import nu.larka.ambientpresence.model.User;
 
@@ -28,6 +29,7 @@ public class ImageAdapter extends BaseAdapter {
 
     @Override
     public int getCount() {
+        // return users with state following + 1
         return followers.size()+1;
     }
 
@@ -56,6 +58,8 @@ public class ImageAdapter extends BaseAdapter {
             imageView.setImageResource(R.drawable.addhome);
         } else {
             imageView.setImageResource(R.drawable.home250);
+            if (followers.get(position).getState().equals(MainActivity.PENDING))
+                imageView.setImageAlpha(100);
         }
 
         return imageView;

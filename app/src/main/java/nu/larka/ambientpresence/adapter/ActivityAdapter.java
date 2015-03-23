@@ -22,14 +22,10 @@ import nu.larka.ambientpresence.model.User;
 /**
  * Created by martin on 15-03-18.
  */
-public class OfficeSearchAdapter extends ArrayAdapter<User> {
-    private Firebase mFireref;
-    private String uid;
+public class ActivityAdapter extends ArrayAdapter<User> {
 
-    public OfficeSearchAdapter(Context context, ArrayList<User> users, Firebase fireRef, String uid) {
-        super(context, 0, users);
-        this.mFireref = fireRef;
-        this.uid = uid;
+    public ActivityAdapter(Context context, ArrayList<User> otherUsers) {
+        super(context, 0, otherUsers);
     }
 
     @Override
@@ -38,7 +34,7 @@ public class OfficeSearchAdapter extends ArrayAdapter<User> {
         User user = getItem(position);
         // Check if an existing view is being reused, otherwise inflate the view
         if (convertView == null) {
-            convertView = LayoutInflater.from(getContext()).inflate(R.layout.search_result_item, parent, false);
+            convertView = LayoutInflater.from(getContext()).inflate(R.layout.activity_list_item, parent, false);
         }
 
         ImageView officeImage = (ImageView) convertView.findViewById(R.id.office_image);
@@ -50,10 +46,6 @@ public class OfficeSearchAdapter extends ArrayAdapter<User> {
         // Populate the data into the template view using the data object
         officeName.setText(user.getName());
         officeUID.setText(user.getUID());
-
-        Button followButton = (Button) convertView.findViewById(R.id.follow_button);
-        followButton.setBackground(getUserStateImage(user.getState()));
-        followButton.setOnClickListener(new SearchItemListener(mFireref, user, uid));
 
         // Return the completed view to render on screen
         return convertView;

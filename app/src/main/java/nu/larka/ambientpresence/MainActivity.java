@@ -34,6 +34,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 
 import nu.larka.ambientpresence.fragment.FollowNewFragment;
+import nu.larka.ambientpresence.fragment.HomeFragment;
 import nu.larka.ambientpresence.fragment.RemoteOfficesFragment;
 import nu.larka.ambientpresence.model.User;
 
@@ -45,6 +46,8 @@ public class MainActivity extends FragmentActivity implements
     private static final String TAG = MainActivity.class.getSimpleName();
     public static final String USERS = "users/";
     public static final String OTHERUSERS = "/other_users/";
+    public static final String FOLLOWING_USERS = "/following_users/";
+    public static final String ACCEPTEDUSERS = "/accepted_users/";
     public static final String USERNAME ="username";
     public static final String NAME ="name";
 
@@ -53,6 +56,7 @@ public class MainActivity extends FragmentActivity implements
     public static final String BANNED = "banned";
     public static final String SELF = "self";
     public static final String NOSTATE = "nostate";
+    public static final String ACCEPTED = "accepted";
 
     public static final int RC_GOOGLE_LOGIN = 1;
 
@@ -83,11 +87,12 @@ public class MainActivity extends FragmentActivity implements
     /* The login button for Google */
     private SignInButton mGoogleLoginButton;
 
-    private ArrayList<User> followers = new ArrayList<>();
-    private ArrayList<String> pendingFollowers = new ArrayList<>();
+    private ArrayList<User> otherUsers = new ArrayList<>();
+    private ArrayList<User> followingUsers = new ArrayList<>();
 
     /* Fragments */
     RemoteOfficesFragment mRemoteOfficesFragment;
+    HomeFragment mHomeFragment;
 
 
     @Override
@@ -147,9 +152,11 @@ public class MainActivity extends FragmentActivity implements
         /* Fragments */
         mRemoteOfficesFragment = new RemoteOfficesFragment();
         mRemoteOfficesFragment.setOnItemClickListener(onItemClickListener);
-        mRemoteOfficesFragment.setFollowerList(followers);
-    }
+        mRemoteOfficesFragment.setFollowerList(followingUsers);
+        mRemoteOfficesFragment.setOtherUsersList(otherUsers);
 
+        mHomeFragment = new HomeFragment();
+    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -208,6 +215,7 @@ public class MainActivity extends FragmentActivity implements
                         userRef.child(USERNAME).setValue(userNameify(username));
                         userRef.child(NAME).setValue(mAuthData.getProviderData().get("displayName"));
                         userRef.child(OTHERUSERS).child(mAuthData.getUid()).setValue(SELF);
+                        userRef.child(FOLLOWING_USERS).child(mAuthData.getUid()).setValue(SELF);
                     }
                 }
 
@@ -224,23 +232,39 @@ public class MainActivity extends FragmentActivity implements
         }
     }
 
-    // TODO REFREACTOR, add pending to office list?
-    private void registerOtherUsersCallback() {
-        if (mAuthData != null) { //TODO MIGHT BE REDUNDANT??
-            mFirebaseRef.child(USERS + mAuthData.getUid() + OTHERUSERS).addChildEventListener(new ChildEventListener() {
+    private void registerFollowingUsersCallback() {
+        if (mAuthData != null) {
+            mFirebaseRef.child(USERS + mAuthData.getUid() + FOLLOWING_USERS).addChildEventListener(new ChildEventListener() {
                 @Override
                 public void onChildAdded(DataSnapshot dataSnapshot, String s) {
-                    handleUserActivity(dataSnapshot);
+                    // On added - Check state and make action
+                    User user = new User(dataSnapshot.getKey());
+                    user.setState((String) dataSnapshot.getValue());
+                    if (!user.getState().equals(SELF))
+                        followingUsers.add(user);
+                    mRemoteOfficesFragment.notifyAdapterDataChanged();
                 }
 
                 @Override
                 public void onChildChanged(DataSnapshot dataSnapshot, String s) {
-                    handleUserActivity(dataSnapshot);
+                    // On changed - Check new state and make action
+                    for (User u : followingUsers) {
+                        if (dataSnapshot.getKey().equals(u.getUID()) && !dataSnapshot.getValue().equals(SELF)) {
+                            u.setState((String) dataSnapshot.getValue());
+                        }
+                    }
+                    mRemoteOfficesFragment.notifyAdapterDataChanged();
                 }
 
                 @Override
                 public void onChildRemoved(DataSnapshot dataSnapshot) {
-                        handleUserActivity(dataSnapshot);
+                    // On remove - Check state and make actions
+                    for (int i = 0; i < followingUsers.size(); i++) {
+                        if (dataSnapshot.getKey().equals(followingUsers.get(i).getUID())) {
+                            followingUsers.remove(i);
+                        }
+                    }
+                    mRemoteOfficesFragment.notifyAdapterDataChanged();
                 }
 
                 @Override
@@ -256,33 +280,56 @@ public class MainActivity extends FragmentActivity implements
         }
     }
 
-    private void handleUserActivity(DataSnapshot dataSnapshot) {
-        String state = (String) dataSnapshot.getValue();
+    // TODO REFREACTOR, Only new events trigger update activity button
+    private void registerOtherUsersCallback() {
+        if (mAuthData != null) { //TODO MIGHT BE REDUNDANT??
+            mFirebaseRef.child(USERS + mAuthData.getUid() + OTHERUSERS).addChildEventListener(new ChildEventListener() {
+                @Override
+                public void onChildAdded(DataSnapshot dataSnapshot, String s) {
+                    // On added - Check state and make action
+                    User user = new User(dataSnapshot.getKey());
+                    user.setState((String)dataSnapshot.getValue());
+                    otherUsers.add(user);
+                    mRemoteOfficesFragment.updateActivityButton(getActivityNumber());
+                }
 
-        switch (state) {
-            case FOLLOWING:
-                followers.add(new User(dataSnapshot.getKey()));
-                mRemoteOfficesFragment.notifyAdapterDataChanged();
-                break;
-            case PENDING:
-                removeUser(dataSnapshot);
-                break;
-            case NOSTATE:
-                removeUser(dataSnapshot);
-                break;
-            case BANNED:
-            case SELF:
-                removeUser(dataSnapshot);
+                @Override
+                public void onChildChanged(DataSnapshot dataSnapshot, String s) {
+                    // On changed - Check new state and make action
+                    for (User u: otherUsers) {
+                        if (dataSnapshot.getKey().equals(u.getUID())) {
+                            u.setState((String)dataSnapshot.getValue());
+                        }
+                    }
+                    mRemoteOfficesFragment.updateActivityButton(getActivityNumber());
+                }
+
+                @Override
+                public void onChildRemoved(DataSnapshot dataSnapshot) {
+                    // On remove - Check state and make actions
+                    for (int i=0; i<otherUsers.size(); i++) {
+                        if (dataSnapshot.getKey().equals(otherUsers.get(i).getUID())) {
+                            otherUsers.remove(i);
+                        }
+                    }
+                    mRemoteOfficesFragment.updateActivityButton(getActivityNumber());
+                }
+
+                @Override
+                public void onChildMoved(DataSnapshot dataSnapshot, String s) {
+
+                }
+
+                @Override
+                public void onCancelled(FirebaseError firebaseError) {
+
+                }
+            });
         }
     }
 
-    private void removeUser(DataSnapshot dataSnapshot) {
-        for (User u : followers) {
-            if (u.getUID().equals(dataSnapshot.getKey())) {
-                followers.remove(u);
-                mRemoteOfficesFragment.notifyAdapterDataChanged();
-            }
-        }
+    private String getActivityNumber() {
+        return "" + otherUsers.size();
     }
 
     /* A helper method to resolve the current ConnectionResult error. */
@@ -398,12 +445,28 @@ public class MainActivity extends FragmentActivity implements
             mGoogleLoginButton.setVisibility(View.GONE);
 
             registerOtherUsersCallback();
+            registerFollowingUsersCallback();
 
             FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
 
+            mRemoteOfficesFragment.setFirebase(mFirebaseRef, authData.getUid());
             // Replace whatever is in the fragment_container view with this fragment,
             // and add the transaction to the back stack so the user can navigate back
             transaction.replace(R.id.office_fragment, mRemoteOfficesFragment);
+            transaction.addToBackStack(null);
+
+            // Commit the transaction
+            transaction.commit();
+
+            transaction = getSupportFragmentManager().beginTransaction();
+
+            // Replace whatever is in the fragment_container view with this fragment,
+            // and add the transaction to the back stack so the user can navigate back
+            String homeName = mAuthData != null ?
+                    getResources().getString(R.string.office_home) + " - " + (String)mAuthData.getProviderData().get("displayName") :
+                    getResources().getString(R.string.office_home);
+            mHomeFragment.setHomeName(homeName);
+            transaction.replace(R.id.info_fragment, mHomeFragment);
             transaction.addToBackStack(null);
 
             // Commit the transaction
@@ -437,6 +500,10 @@ public class MainActivity extends FragmentActivity implements
             Fragment fragment = getSupportFragmentManager().findFragmentById(R.id.office_fragment);
             if(fragment != null)
                 getSupportFragmentManager().beginTransaction().remove(fragment).commit();
+
+            fragment = getSupportFragmentManager().findFragmentById(R.id.info_fragment);
+            if(fragment != null)
+                getSupportFragmentManager().beginTransaction().remove(fragment).commit();
             /* Update authenticated user and show login buttons */
             setAuthenticatedUser(null);
         }
@@ -447,7 +514,7 @@ public class MainActivity extends FragmentActivity implements
         public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
             // TODO MAX TREE NUMBERS OF FOLLOWING
             // Follow new clicked
-            if (position == followers.size()) {
+            if (position == followingUsers.size()) {
                 // Start follow new fragment
                 FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
 

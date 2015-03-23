@@ -28,13 +28,17 @@ public class SearchItemListener implements View.OnClickListener {
     public void onClick(View v) {
         String state = user.getState();
 
-        if (state.equals(MainActivity.FOLLOWING) || state.equals(MainActivity.PENDING)) {
-            mFirebaseRef.child(MainActivity.USERS + uid + MainActivity.OTHERUSERS)
-                    .child(user.getUID()).setValue(MainActivity.NOSTATE);
+        if (state.equals(MainActivity.FOLLOWING) || state.equals(MainActivity.PENDING) || state.equals(MainActivity.BANNED)) {
+            mFirebaseRef.child(MainActivity.USERS + user.getUID() + MainActivity.OTHERUSERS)
+                    .child(uid).setValue(MainActivity.NOSTATE);
+            mFirebaseRef.child(MainActivity.USERS + uid + MainActivity.FOLLOWING_USERS)
+                    .child(user.getUID()).removeValue();
             user.setState(MainActivity.NOSTATE);
             v.setBackground(v.getResources().getDrawable(R.drawable.follow));
         } else {
-            mFirebaseRef.child(MainActivity.USERS + uid + MainActivity.OTHERUSERS)
+            mFirebaseRef.child(MainActivity.USERS + user.getUID() + MainActivity.OTHERUSERS)
+                    .child(uid).setValue(MainActivity.PENDING);
+            mFirebaseRef.child(MainActivity.USERS + uid + MainActivity.FOLLOWING_USERS)
                     .child(user.getUID()).setValue(MainActivity.PENDING);
             user.setState(MainActivity.PENDING);
             v.setBackground(v.getResources().getDrawable(R.drawable.pending));

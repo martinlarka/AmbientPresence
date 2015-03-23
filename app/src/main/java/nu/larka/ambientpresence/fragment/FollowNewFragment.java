@@ -18,6 +18,8 @@ import com.firebase.client.FirebaseError;
 import com.firebase.client.ValueEventListener;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
 
 import nu.larka.ambientpresence.MainActivity;
 import nu.larka.ambientpresence.R;
@@ -34,6 +36,7 @@ public class FollowNewFragment extends Fragment {
     private EditText searchText;
     private ArrayList<User> searchResults = new ArrayList<>();
     private ArrayList<User> fireBaseUsers = new ArrayList<>();
+    private HashMap<String, String> userStates = new HashMap<>();
     private OfficeSearchAdapter officeSearchAdapter;
     private String uid;
 
@@ -47,6 +50,7 @@ public class FollowNewFragment extends Fragment {
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_follow_new, container, false);
 
+        getUserStates();
         getFireBaseUsers();
 
         searchText = (EditText) view.findViewById(R.id.office_search);
@@ -82,14 +86,30 @@ public class FollowNewFragment extends Fragment {
         return view;
     }
 
+    private void getUserStates() {
+        mFireRef.child(MainActivity.USERS + uid + MainActivity.OTHERUSERS).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                Iterable<DataSnapshot> snapshots = dataSnapshot.getChildren();
+                for (DataSnapshot d : snapshots) {
+                    userStates.put(d.getKey(), (String) d.getValue());
+                }
+            }
+
+            @Override
+            public void onCancelled(FirebaseError firebaseError) {
+
+            }
+        });
+    }
+
     private void getFireBaseUsers() {
         mFireRef.child(MainActivity.USERS).addChildEventListener(new ChildEventListener() {
             @Override
             public void onChildAdded(DataSnapshot dataSnapshot, String s) {
-                // If user exist in other user's list
-                if (dataSnapshot.child(MainActivity.OTHERUSERS).hasChild(uid)) {
+                String state = userStates.get(dataSnapshot.getKey());
+                if (state != null) {
                     // Get state
-                    String state = (String) dataSnapshot.child(MainActivity.OTHERUSERS + uid).getValue();
                     switch (state) {
                         case MainActivity.FOLLOWING:
                             fireBaseUsers.add(userFromDataSnapshot(dataSnapshot, MainActivity.FOLLOWING));
@@ -100,6 +120,7 @@ public class FollowNewFragment extends Fragment {
                         case MainActivity.NOSTATE:
                             fireBaseUsers.add(userFromDataSnapshot(dataSnapshot, MainActivity.NOSTATE));
                     }
+
                 } else {
                     fireBaseUsers.add(userFromDataSnapshot(dataSnapshot, MainActivity.NOSTATE));
                 }

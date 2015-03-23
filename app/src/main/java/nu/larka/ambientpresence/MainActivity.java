@@ -225,7 +225,7 @@ public class MainActivity extends FragmentActivity implements
         }
     }
 
-    // TODO REFREACTOR
+    // TODO REFREACTOR, add pending to office list?
     private void registerFollowerCallback() {
         if (mAuthData != null) { //TODO MIGHT BE REDUNDANT??
             mFirebaseRef.child(USERS + mAuthData.getUid() + OTHERUSERS).addChildEventListener(new ChildEventListener() {

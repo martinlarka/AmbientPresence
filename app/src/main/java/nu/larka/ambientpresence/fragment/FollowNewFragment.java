@@ -15,6 +15,7 @@ import com.firebase.client.ChildEventListener;
 import com.firebase.client.DataSnapshot;
 import com.firebase.client.Firebase;
 import com.firebase.client.FirebaseError;
+import com.firebase.client.ValueEventListener;
 
 import java.util.ArrayList;
 
@@ -32,6 +33,7 @@ public class FollowNewFragment extends Fragment {
     private Firebase mFireRef;
     private EditText searchText;
     private ArrayList<User> searchResults = new ArrayList<>();
+    private ArrayList<User> followedUsers = new ArrayList<>();
     private ArrayList<User> fireBaseUsers = new ArrayList<>();
     private OfficeSearchAdapter officeSearchAdapter;
     private String uid;
@@ -47,6 +49,7 @@ public class FollowNewFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_follow_new, container, false);
 
         getFireBaseUsers();
+        getFollowedUsers();
 
         searchText = (EditText) view.findViewById(R.id.office_search);
         searchText.addTextChangedListener(new TextWatcher() {
@@ -79,6 +82,24 @@ public class FollowNewFragment extends Fragment {
         searchResultList.setAdapter(officeSearchAdapter);
 
         return view;
+    }
+
+    private void getFollowedUsers() {
+        mFireRef.child(MainActivity.USERS)
+                .child(uid)
+                .child(MainActivity.FOLLOWERS).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                if (!dataSnapshot.getKey().equals(uid)) {
+                    followedUsers.add(userFromDataSnapshot(dataSnapshot, MainActivity.FOLLOWER));
+                }
+            }
+
+            @Override
+            public void onCancelled(FirebaseError firebaseError) {
+
+            }
+        });
     }
 
     private void getFireBaseUsers() {

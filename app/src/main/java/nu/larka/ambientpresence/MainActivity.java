@@ -47,11 +47,11 @@ public class MainActivity extends FragmentActivity implements
     public static final String USERS = "users/";
     public static final String OTHERUSERS = "/other_users/";
     public static final String FOLLOWERS = "/followers/";
-    public static final String HOUSES = "houses/";
     public static final String USERNAME ="username";
     public static final String NAME ="name";
 
     public static final String FOLLOWING = "following";
+    public static final String FOLLOWER= "follower";
     public static final String PENDING = "pending";
     public static final String BANNED = "banned";
     public static final String SELF = "self";
@@ -206,14 +206,11 @@ public class MainActivity extends FragmentActivity implements
                     if (!dataSnapshot.exists()) {
                         // Setup user
                         String username = (String) mAuthData.getProviderData().get("displayName");
-                        Firebase userRef = mFirebaseRef.child(USERS + mAuthData.getUid()); // FIXME UID needs to be changed to something searchable
+                        Firebase userRef = mFirebaseRef.child(USERS + mAuthData.getUid()); // FIXME UID needs to be changed to something user searchable
                         userRef.child(USERNAME).setValue(userNameify(username));
+                        userRef.child(NAME).setValue(mAuthData.getProviderData().get("displayName"));
                         userRef.child(OTHERUSERS).child(mAuthData.getUid()).setValue(SELF);
-
-                        // Setup housing
-                        Firebase housingRef = mFirebaseRef.child(HOUSES + mAuthData.getUid());
-                        housingRef.setValue(new Housing((String) mAuthData.getProviderData().get("displayName")));
-                        housingRef.child(FOLLOWERS).push().setValue("");
+                        userRef.child(FOLLOWERS).child(mAuthData.getUid()).setValue(SELF);
                     }
                 }
 
@@ -230,21 +227,19 @@ public class MainActivity extends FragmentActivity implements
         }
     }
 
-    private void registerCallback(String firePath, final ArrayList<User> list) {
+    private void registerFollowerCallback(String firePath, final ArrayList<User> list) {
         if (mAuthData != null) { //TODO MIGHT BE REDUNDANT??
             mFirebaseRef.child(firePath).addChildEventListener(new ChildEventListener() {
                 @Override
                 public void onChildAdded(DataSnapshot dataSnapshot, String s) {
-                    String value = (String) dataSnapshot.getValue();
-                    if (!value.equals("")) {
-                        list.add(new User(value));
+                    if (dataSnapshot.getValue().equals(FOLLOWER)) {
+                        list.add(new User((String)dataSnapshot.getValue()));
                         mRemoteOfficesFragment.notifyAdapterDataChanged();
                     }
                 }
 
                 @Override
                 public void onChildChanged(DataSnapshot dataSnapshot, String s) {
-
                 }
 
                 @Override
@@ -383,7 +378,7 @@ public class MainActivity extends FragmentActivity implements
             mGoogleLoginButton.setVisibility(View.GONE);
 
             String uid = authData.getUid();
-            registerCallback(HOUSES+uid+FOLLOWERS, followers);
+            registerFollowerCallback(USERS + uid + FOLLOWERS, followers);
 
             FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
 

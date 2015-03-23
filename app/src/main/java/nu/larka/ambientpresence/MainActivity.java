@@ -46,12 +46,10 @@ public class MainActivity extends FragmentActivity implements
     private static final String TAG = MainActivity.class.getSimpleName();
     public static final String USERS = "users/";
     public static final String OTHERUSERS = "/other_users/";
-    public static final String FOLLOWERS = "/followers/";
     public static final String USERNAME ="username";
     public static final String NAME ="name";
 
     public static final String FOLLOWING = "following";
-    public static final String FOLLOWER= "follower";
     public static final String PENDING = "pending";
     public static final String BANNED = "banned";
     public static final String SELF = "self";
@@ -211,7 +209,6 @@ public class MainActivity extends FragmentActivity implements
                         userRef.child(USERNAME).setValue(userNameify(username));
                         userRef.child(NAME).setValue(mAuthData.getProviderData().get("displayName"));
                         userRef.child(OTHERUSERS).child(mAuthData.getUid()).setValue(SELF);
-                        userRef.child(FOLLOWERS).child(mAuthData.getUid()).setValue(SELF);
                     }
                 }
 
@@ -228,25 +225,37 @@ public class MainActivity extends FragmentActivity implements
         }
     }
 
+    // TODO REFREACTOR
     private void registerFollowerCallback() {
         if (mAuthData != null) { //TODO MIGHT BE REDUNDANT??
-            mFirebaseRef.child(USERS + mAuthData.getUid() + FOLLOWERS).addChildEventListener(new ChildEventListener() {
+            mFirebaseRef.child(USERS + mAuthData.getUid() + OTHERUSERS).addChildEventListener(new ChildEventListener() {
                 @Override
                 public void onChildAdded(DataSnapshot dataSnapshot, String s) {
-                    if (dataSnapshot.getValue().equals(FOLLOWER)) {
-                        followers.add(new User((String) dataSnapshot.getValue()));
+                    if (dataSnapshot.getValue().equals(FOLLOWING)) {
+                        followers.add(new User(dataSnapshot.getKey()));
                         mRemoteOfficesFragment.notifyAdapterDataChanged();
                     }
                 }
 
                 @Override
                 public void onChildChanged(DataSnapshot dataSnapshot, String s) {
+                    if (dataSnapshot.getValue().equals(FOLLOWING)) {
+                        followers.add(new User(dataSnapshot.getKey()));
+                        mRemoteOfficesFragment.notifyAdapterDataChanged();
+                    } else {
+                        for (User u : followers) {
+                            if (u.getUID().equals(dataSnapshot.getKey())) {
+                                followers.remove(u);
+                                mRemoteOfficesFragment.notifyAdapterDataChanged();
+                            }
+                        }
+                    }
                 }
 
                 @Override
                 public void onChildRemoved(DataSnapshot dataSnapshot) {
                     for (User u : followers) {
-                        if (u.getUID().equals(dataSnapshot.getValue())) {
+                        if (u.getUID().equals(dataSnapshot.getKey())) {
                             followers.remove(u);
                             mRemoteOfficesFragment.notifyAdapterDataChanged();
                         }
@@ -379,7 +388,6 @@ public class MainActivity extends FragmentActivity implements
             mGoogleLoginButton.setVisibility(View.GONE);
 
             registerFollowerCallback();
-            registerNewFollowerCallback();
 
             FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
 
@@ -398,43 +406,6 @@ public class MainActivity extends FragmentActivity implements
         this.mAuthData = authData;
         /* invalidate options menu to hide/show the logout button */
         supportInvalidateOptionsMenu();
-    }
-
-    private void registerNewFollowerCallback() {
-        mFirebaseRef.child(USERS + mAuthData.getUid() + OTHERUSERS).addChildEventListener(new ChildEventListener() {
-            @Override
-            public void onChildAdded(DataSnapshot dataSnapshot, String s) {
-                addUserToPending(dataSnapshot);
-            }
-
-            @Override
-            public void onChildChanged(DataSnapshot dataSnapshot, String s) {
-                addUserToPending(dataSnapshot);
-            }
-
-            @Override
-            public void onChildRemoved(DataSnapshot dataSnapshot) {
-
-            }
-
-            @Override
-            public void onChildMoved(DataSnapshot dataSnapshot, String s) {
-
-            }
-
-            @Override
-            public void onCancelled(FirebaseError firebaseError) {
-
-            }
-        });
-    }
-
-    private void addUserToPending(DataSnapshot dataSnapshot) {
-        if (dataSnapshot.getValue().equals(PENDING)) {
-            pendingFollowers.add(dataSnapshot.getKey());
-        } else {
-            pendingFollowers.remove(dataSnapshot.getKey());
-        }
     }
 
     /**

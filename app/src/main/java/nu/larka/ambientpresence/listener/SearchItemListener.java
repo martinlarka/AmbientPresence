@@ -27,6 +27,7 @@ public class SearchItemListener implements View.OnClickListener {
     @Override
     public void onClick(View v) {
         String state = user.getState();
+
         if (state.equals(MainActivity.FOLLOWING) || state.equals(MainActivity.PENDING)) {
             mFirebaseRef.child(MainActivity.USERS + user.getUID() + MainActivity.OTHERUSERS)
                     .child(uid).setValue(MainActivity.NOSTATE);

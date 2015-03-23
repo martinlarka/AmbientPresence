@@ -35,7 +35,6 @@ import java.util.ArrayList;
 
 import nu.larka.ambientpresence.fragment.FollowNewFragment;
 import nu.larka.ambientpresence.fragment.RemoteOfficesFragment;
-import nu.larka.ambientpresence.model.Housing;
 import nu.larka.ambientpresence.model.User;
 
 
@@ -226,40 +225,22 @@ public class MainActivity extends FragmentActivity implements
     }
 
     // TODO REFREACTOR, add pending to office list?
-    private void registerFollowerCallback() {
+    private void registerOtherUsersCallback() {
         if (mAuthData != null) { //TODO MIGHT BE REDUNDANT??
             mFirebaseRef.child(USERS + mAuthData.getUid() + OTHERUSERS).addChildEventListener(new ChildEventListener() {
                 @Override
                 public void onChildAdded(DataSnapshot dataSnapshot, String s) {
-                    if (dataSnapshot.getValue().equals(FOLLOWING)) {
-                        followers.add(new User(dataSnapshot.getKey()));
-                        mRemoteOfficesFragment.notifyAdapterDataChanged();
-                    }
+                    handleUserActivity(dataSnapshot);
                 }
 
                 @Override
                 public void onChildChanged(DataSnapshot dataSnapshot, String s) {
-                    if (dataSnapshot.getValue().equals(FOLLOWING)) {
-                        followers.add(new User(dataSnapshot.getKey()));
-                        mRemoteOfficesFragment.notifyAdapterDataChanged();
-                    } else {
-                        for (User u : followers) {
-                            if (u.getUID().equals(dataSnapshot.getKey())) {
-                                followers.remove(u);
-                                mRemoteOfficesFragment.notifyAdapterDataChanged();
-                            }
-                        }
-                    }
+                    handleUserActivity(dataSnapshot);
                 }
 
                 @Override
                 public void onChildRemoved(DataSnapshot dataSnapshot) {
-                    for (User u : followers) {
-                        if (u.getUID().equals(dataSnapshot.getKey())) {
-                            followers.remove(u);
-                            mRemoteOfficesFragment.notifyAdapterDataChanged();
-                        }
-                    }
+                        handleUserActivity(dataSnapshot);
                 }
 
                 @Override
@@ -272,6 +253,35 @@ public class MainActivity extends FragmentActivity implements
 
                 }
             });
+        }
+    }
+
+    private void handleUserActivity(DataSnapshot dataSnapshot) {
+        String state = (String) dataSnapshot.getValue();
+
+        switch (state) {
+            case FOLLOWING:
+                followers.add(new User(dataSnapshot.getKey()));
+                mRemoteOfficesFragment.notifyAdapterDataChanged();
+                break;
+            case PENDING:
+                removeUser(dataSnapshot);
+                break;
+            case NOSTATE:
+                removeUser(dataSnapshot);
+                break;
+            case BANNED:
+            case SELF:
+                removeUser(dataSnapshot);
+        }
+    }
+
+    private void removeUser(DataSnapshot dataSnapshot) {
+        for (User u : followers) {
+            if (u.getUID().equals(dataSnapshot.getKey())) {
+                followers.remove(u);
+                mRemoteOfficesFragment.notifyAdapterDataChanged();
+            }
         }
     }
 
@@ -387,7 +397,7 @@ public class MainActivity extends FragmentActivity implements
             /* Hide all the login buttons */
             mGoogleLoginButton.setVisibility(View.GONE);
 
-            registerFollowerCallback();
+            registerOtherUsersCallback();
 
             FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
 

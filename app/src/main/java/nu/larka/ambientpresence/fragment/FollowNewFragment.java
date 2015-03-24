@@ -61,14 +61,20 @@ public class FollowNewFragment extends Fragment {
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
-                if (s.length() > 3) {
+                if (s.length() > 2) {
                     for (User u : fireBaseUsers) {
-                        if (u.getUID().startsWith(s.toString()) && !searchResults.contains(u)) {
+                        if ((u.getUsername().toLowerCase().startsWith(s.toString().toLowerCase()) ||
+                                u.getName().toLowerCase().startsWith(s.toString().toLowerCase()))
+                                && !searchResults.contains(u)) {
                             officeSearchAdapter.add(u);
-                        } else if (!u.getUID().startsWith(s.toString()) && searchResults.contains(u)) {
+                        } else if ((!u.getUsername().toLowerCase().startsWith(s.toString().toLowerCase()) ||
+                                !u.getName().toLowerCase().startsWith(s.toString().toLowerCase()))
+                                && searchResults.contains(u)) {
                             officeSearchAdapter.remove(u);
                         }
                     }
+                } else {
+                    officeSearchAdapter.clear();
                 }
             }
 
@@ -113,8 +119,9 @@ public class FollowNewFragment extends Fragment {
     }
 
     private User userFromDataSnapshot(DataSnapshot dataSnapshot, String state) {
-        User user = new User(dataSnapshot.getKey(), (String)dataSnapshot.child(MainActivity.USERNAME).getValue());
+        User user = new User(dataSnapshot.getKey(), (String)dataSnapshot.child(MainActivity.NAME).getValue());
         user.setState(state);
+        user.setUsername((String)dataSnapshot.child(MainActivity.USERNAME).getValue());
         return user;
     }
 

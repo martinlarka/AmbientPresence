@@ -20,4 +20,12 @@
         <item name="android:textAllCaps">true</item>
     </style>
 
+    <style name="OfficeUserName">
+        <item name="android:textColor">#ff979797</item>
+    </style>
+
+    <style name="OfficeName">
+        <item name="android:textStyle">bold</item>
+    </style>
+
 </resources>

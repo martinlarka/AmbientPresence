@@ -45,11 +45,12 @@ public class OfficeSearchAdapter extends ArrayAdapter<User> {
         //TODO Add image to office
 
         // Lookup view for data population
-        TextView officeName = (TextView) convertView.findViewById(R.id.offce_name);
-        TextView officeUID = (TextView) convertView.findViewById(R.id.office_uid);
+        TextView userName = (TextView) convertView.findViewById(R.id.user_name);
         // Populate the data into the template view using the data object
-        officeName.setText(user.getName());
-        officeUID.setText(user.getUID());
+        userName.setText(user.getName());
+
+        TextView userUsername = (TextView) convertView.findViewById(R.id.user_username);
+        userUsername.setText(user.getUsername());
 
         Button followButton = (Button) convertView.findViewById(R.id.follow_button);
         followButton.setBackground(getUserStateImage(user.getState()));

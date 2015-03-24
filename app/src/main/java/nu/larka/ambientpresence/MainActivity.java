@@ -36,6 +36,7 @@ import java.util.ArrayList;
 import nu.larka.ambientpresence.fragment.FollowNewFragment;
 import nu.larka.ambientpresence.fragment.HomeFragment;
 import nu.larka.ambientpresence.fragment.RemoteOfficesFragment;
+import nu.larka.ambientpresence.fragment.UserInfoFragment;
 import nu.larka.ambientpresence.model.User;
 
 
@@ -241,8 +242,10 @@ public class MainActivity extends FragmentActivity implements
                     // On added - Check state and make action
                     User user = new User(dataSnapshot.getKey());
                     user.setState((String) dataSnapshot.getValue());
-                    if (!user.getState().equals(SELF))
+                    if (!user.getState().equals(SELF)) {
+                        setUserInfo(dataSnapshot, user);
                         followingUsers.add(user);
+                    }
                     mRemoteOfficesFragment.notifyAdapterDataChanged();
                 }
 
@@ -252,6 +255,7 @@ public class MainActivity extends FragmentActivity implements
                     for (User u : followingUsers) {
                         if (dataSnapshot.getKey().equals(u.getUID()) && !dataSnapshot.getValue().equals(SELF)) {
                             u.setState((String) dataSnapshot.getValue());
+                            setUserInfo(dataSnapshot, u);
                         }
                     }
                     mRemoteOfficesFragment.notifyAdapterDataChanged();
@@ -547,7 +551,20 @@ public class MainActivity extends FragmentActivity implements
                 // Commit the transaction
                 transaction.commit();
             } else { // Load setup of pressed office
-                // Start Office fragment
+                // Start user info fragment
+                UserInfoFragment userInfoFragment = new UserInfoFragment();
+                userInfoFragment.setUser(followingUsers.get(position));
+                userInfoFragment.setFirebaseRef(mFirebaseRef, mAuthData.getUid());
+
+                FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+
+                // Replace whatever is in the fragment_container view with this fragment,
+                // and add the transaction to the back stack so the user can navigate back
+                transaction.replace(R.id.info_fragment, userInfoFragment);
+                transaction.addToBackStack(null);
+
+                // Commit the transaction
+                transaction.commit();
             }
         }
     };

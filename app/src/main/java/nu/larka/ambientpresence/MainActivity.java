@@ -50,6 +50,7 @@ public class MainActivity extends FragmentActivity implements
     public static final String OTHERUSERS = "/other_users/";
     public static final String FOLLOWING_USERS = "/following_users/";
     public static final String ACCEPTEDUSERS = "/accepted_users/";
+    public static final String USER_IMAGE = "/user_image/";
     public static final String USERNAME ="username";
     public static final String NAME ="name";
 
@@ -491,6 +492,7 @@ public class MainActivity extends FragmentActivity implements
                     getResources().getString(R.string.office_home) + " - " + (String)mAuthData.getProviderData().get("displayName") :
                     getResources().getString(R.string.office_home);
             mHomeFragment.setHomeName(homeName);
+            mHomeFragment.setFirebaseRef(mFirebaseRef.child(USERS).child(authData.getUid()));
             transaction.replace(R.id.info_fragment, mHomeFragment);
             transaction.addToBackStack(null);
 

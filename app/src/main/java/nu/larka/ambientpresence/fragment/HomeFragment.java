@@ -13,6 +13,7 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
 import android.support.v4.app.Fragment;
+import android.util.Base64;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -20,6 +21,9 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.firebase.client.Firebase;
+
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -41,6 +45,7 @@ public class HomeFragment extends Fragment {
     private ImageView userImageView;
 
     public static final int CAPTURE_IMAGE_ACTIVITY_REQUEST_CODE = 100;
+    private Firebase mFirebaseRef;
 
     public HomeFragment() {
         // Required empty public constructor
@@ -74,8 +79,6 @@ public class HomeFragment extends Fragment {
                             storageDir      /* directory */
                     );
                     imageUri = Uri.fromFile(image);
-                    Log.d("IMAGE absoulte", image.getAbsolutePath());
-                    Log.d("IMAGE URI", imageUri.toString());
                     intent.putExtra(MediaStore.EXTRA_OUTPUT, imageUri);
                     startActivityForResult(intent, CAPTURE_IMAGE_ACTIVITY_REQUEST_CODE);
                 } catch (IOException e) {
@@ -100,17 +103,30 @@ public class HomeFragment extends Fragment {
                         ensurePhotoNotRotated(context, imageUri);
                         bitmap = MediaStore.Images.Media.getBitmap(getActivity().getContentResolver(), imageUri);
                         userImageView.setImageBitmap(bitmap);
+                        saveImageOnFirebase(imageUri);
                     } catch (IOException e) {
                     }
                 }
         }
     }
 
+
     public void setHomeName(String displayName) {
         this.displayName = displayName;
     }
 
-    public static void ensurePhotoNotRotated(Context context, Uri imgUri) {
+    private void saveImageOnFirebase(Uri imageUri) throws IOException {
+        Bitmap bmp = MediaStore.Images.Media.getBitmap(getActivity().getContentResolver(), imageUri);
+        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+        bmp.compress(Bitmap.CompressFormat.PNG, 100, byteArrayOutputStream);
+        bmp.recycle();
+        byte[] byteArray = byteArrayOutputStream.toByteArray();
+        String imageFile = Base64.encodeToString(byteArray, Base64.DEFAULT);
+
+        mFirebaseRef.child(MainActivity.USER_IMAGE).setValue(imageFile);
+    }
+
+    private static void ensurePhotoNotRotated(Context context, Uri imgUri) {
         ExifInterface exif;
         try {
             exif = new ExifInterface(imgUri.getPath());
@@ -160,5 +176,10 @@ public class HomeFragment extends Fragment {
                 e.printStackTrace();
             }
         }
+
+    }
+
+    public void setFirebaseRef(Firebase firebaseRef) {
+        this.mFirebaseRef = firebaseRef;
     }
 }

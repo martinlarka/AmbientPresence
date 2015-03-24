@@ -12,6 +12,7 @@ import android.widget.TextView;
 import com.firebase.client.Firebase;
 
 import java.awt.font.TextAttribute;
+import java.util.jar.Manifest;
 
 import nu.larka.ambientpresence.MainActivity;
 import nu.larka.ambientpresence.R;
@@ -38,23 +39,28 @@ public class UserInfoFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_user_info, container, false);
 
         TextView userName = (TextView) view.findViewById(R.id.user_info_name);
-        Button acceptButton = (Button) view.findViewById(R.id.user_info_accept_follow_button);
+        Button acceptButton = (Button) view.findViewById(R.id.user_info_accept_button);
         Button banUserButton = (Button) view.findViewById(R.id.user_info_ban_button);
 
         userName.setText(user.getName());
         acceptButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mFirebaseRef.child(MainActivity.USERS).child(uid).child(MainActivity.OTHERUSERS).child(user.getUID()).setValue(MainActivity.FOLLOWING);
-                mFirebaseRef.child(MainActivity.USERS).child(uid).child(MainActivity.ACCEPTEDUSERS).child(user.getUID()).setValue(MainActivity.ACCEPTED);
+                // TODO CHANGE TO UNFOLLOW after pressed
+                // Accept follow request
                 mFirebaseRef.child(MainActivity.USERS).child(user.getUID()).child(MainActivity.FOLLOWING_USERS).child(uid).setValue(MainActivity.FOLLOWING);
+                mFirebaseRef.child(MainActivity.USERS).child(uid).child(MainActivity.ACCEPTEDUSERS).child(user.getUID()).setValue(MainActivity.ACCEPTED);
+                mFirebaseRef.child(MainActivity.USERS).child(uid).child(MainActivity.OTHERUSERS).child(user.getUID()).setValue(MainActivity.FOLLOWING);
+                user.setState(MainActivity.FOLLOWING);
             }
         });
 
         banUserButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
+                mFirebaseRef.child(MainActivity.USERS).child(uid).child(MainActivity.OTHERUSERS).child(user.getUID()).setValue(MainActivity.BANNED);
+                mFirebaseRef.child(MainActivity.USERS).child(user.getUID()).child(MainActivity.FOLLOWING).child(uid).setValue(MainActivity.BANNED);
+                user.setState(MainActivity.BANNED);
             }
         });
 

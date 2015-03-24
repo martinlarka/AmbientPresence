@@ -216,6 +216,7 @@ public class MainActivity extends FragmentActivity implements
                         userRef.child(NAME).setValue(mAuthData.getProviderData().get("displayName"));
                         userRef.child(OTHERUSERS).child(mAuthData.getUid()).setValue(SELF);
                         userRef.child(FOLLOWING_USERS).child(mAuthData.getUid()).setValue(SELF);
+                        userRef.child(ACCEPTEDUSERS).child(mAuthData.getUid()).setValue(SELF);
                     }
                 }
 
@@ -289,8 +290,10 @@ public class MainActivity extends FragmentActivity implements
                     // On added - Check state and make action
                     User user = new User(dataSnapshot.getKey());
                     user.setState((String)dataSnapshot.getValue());
-                    otherUsers.add(user);
-                    mRemoteOfficesFragment.updateActivityButton(getActivityNumber());
+                    if (user.getState().equals(PENDING)) {
+                        otherUsers.add(user);
+                        mRemoteOfficesFragment.updateActivityButton(getActivityNumber());
+                    }
                 }
 
                 @Override

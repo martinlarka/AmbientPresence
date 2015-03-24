@@ -289,7 +289,8 @@ public class MainActivity extends FragmentActivity implements
                 public void onChildAdded(DataSnapshot dataSnapshot, String s) {
                     // On added - Check state and make action
                     User user = new User(dataSnapshot.getKey());
-                    user.setState((String)dataSnapshot.getValue());
+                    user.setState((String) dataSnapshot.getValue());
+                    setUserInfo(dataSnapshot, user);
                     if (user.getState().equals(PENDING)) {
                         otherUsers.add(user);
                         mRemoteOfficesFragment.updateActivityButton(getActivityNumber());
@@ -329,6 +330,21 @@ public class MainActivity extends FragmentActivity implements
                 }
             });
         }
+    }
+
+    private void setUserInfo(DataSnapshot dataSnapshot, final User user) {
+        mFirebaseRef.child(USERS).child(dataSnapshot.getKey()).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                user.setName((String)dataSnapshot.child(NAME).getValue());
+                user.setUsername((String)dataSnapshot.child(USERNAME).getValue());
+            }
+
+            @Override
+            public void onCancelled(FirebaseError firebaseError) {
+
+            }
+        });
     }
 
     private String getActivityNumber() {

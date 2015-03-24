@@ -31,6 +31,7 @@ public class RemoteOfficesFragment extends Fragment implements View.OnClickListe
     private Button activityButton;
     private Firebase mFirebaseRef;
     private String uid;
+    private GridView gridview;
 
     public RemoteOfficesFragment() {
     }
@@ -41,7 +42,7 @@ public class RemoteOfficesFragment extends Fragment implements View.OnClickListe
 
         View view = inflater.inflate(R.layout.fragment_remote_offices, container, false);
         // Inflate the layout for this fragment
-        GridView gridview = (GridView) view.findViewById(R.id.gridview);
+        gridview = (GridView) view.findViewById(R.id.gridview);
         mAdapter = new ImageAdapter(view.getContext());
         mAdapter.setFollowers(followerList);
         gridview.setAdapter(mAdapter);
@@ -75,6 +76,8 @@ public class RemoteOfficesFragment extends Fragment implements View.OnClickListe
 
     public void notifyAdapterDataChanged() {
         mAdapter.notifyDataSetChanged();
+        gridview.invalidateViews();
+        gridview.setAdapter(mAdapter);
     }
 
 

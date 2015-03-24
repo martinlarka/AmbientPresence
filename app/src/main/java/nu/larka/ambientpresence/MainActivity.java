@@ -349,6 +349,12 @@ public class MainActivity extends FragmentActivity implements
                 user.setName((String) dataSnapshot.child(NAME).getValue());
                 user.setUsername((String) dataSnapshot.child(USERNAME).getValue());
 
+                // TODO USE thumbnails for small images
+                String str = (String) dataSnapshot.child(USER_IMAGE).getValue();
+                if (str != null) {
+                    byte[] imageAsBytes = Base64.decode(str.getBytes());
+                    user.setImage(BitmapFactory.decodeByteArray(imageAsBytes, 0, imageAsBytes.length));
+                }
             }
 
             @Override
@@ -492,12 +498,14 @@ public class MainActivity extends FragmentActivity implements
 
             // Replace whatever is in the fragment_container view with this fragment,
             // and add the transaction to the back stack so the user can navigate back
+            mHomeFragment.setHomeUser(homeUser);
             mHomeFragment.setFirebaseRef(mFirebaseRef.child(USERS).child(authData.getUid()));
             transaction.replace(R.id.info_fragment, mHomeFragment);
             transaction.addToBackStack(null);
 
             // Commit the transaction
             transaction.commit();
+
 
         } else {
             /* No authenticated user show all the login buttons */
@@ -507,6 +515,7 @@ public class MainActivity extends FragmentActivity implements
         /* invalidate options menu to hide/show the logout button */
         supportInvalidateOptionsMenu();
     }
+
 
     /**
      * Unauthenticate from Firebase and from providers where necessary.

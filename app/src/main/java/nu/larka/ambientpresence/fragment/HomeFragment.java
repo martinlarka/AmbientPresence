@@ -143,8 +143,9 @@ public class HomeFragment extends Fragment implements ValueEventListener {
             Bitmap bmp;
             try {
                 bmp = MediaStore.Images.Media.getBitmap(getActivity().getContentResolver(), uris[0]);
+                Bitmap.createScaledBitmap(bmp, bmp.getWidth()/4, bmp.getHeight()/4, false);
                 ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-                bmp.compress(Bitmap.CompressFormat.PNG, 5, byteArrayOutputStream);
+                bmp.compress(Bitmap.CompressFormat.PNG, 80, byteArrayOutputStream);
                 bmp.recycle();
                 byte[] byteArray = byteArrayOutputStream.toByteArray();
                 String imageFile = Base64.encodeToString(byteArray, Base64.DEFAULT);
@@ -198,7 +199,8 @@ public class HomeFragment extends Fragment implements ValueEventListener {
                 e.printStackTrace();
                 return;
             }
-            bmp.compress(Bitmap.CompressFormat.PNG, 5, os);
+            Bitmap.createScaledBitmap(bmp, bmp.getWidth()/4, bmp.getHeight()/4, false);
+            bmp.compress(Bitmap.CompressFormat.PNG, 80, os);
 
             try {
                 exif.setAttribute(ExifInterface.TAG_ORIENTATION, String.valueOf(ExifInterface.ORIENTATION_NORMAL));

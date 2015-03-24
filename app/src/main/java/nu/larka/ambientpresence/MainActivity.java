@@ -1,5 +1,6 @@
 package nu.larka.ambientpresence;
 
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.Intent;
@@ -70,9 +71,9 @@ public class MainActivity extends FragmentActivity implements
     /* A dialog that is presented until the Firebase authentication finished. */
     private ProgressDialog mAuthProgressDialog;
 
-
     /* Client used to interact with Google APIs. */
     private GoogleApiClient mGoogleApiClient;
+
 
     /* A flag indicating that a PendingIntent is in progress and prevents us from starting further intents. */
     private boolean mGoogleIntentInProgress;
@@ -89,13 +90,12 @@ public class MainActivity extends FragmentActivity implements
     private SignInButton mGoogleLoginButton;
 
     private ArrayList<User> otherUsers = new ArrayList<>();
-    private ArrayList<User> followingUsers = new ArrayList<>();
 
+    private ArrayList<User> followingUsers = new ArrayList<>();
     /* Fragments */
     RemoteOfficesFragment mRemoteOfficesFragment;
+
     HomeFragment mHomeFragment;
-
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -159,6 +159,7 @@ public class MainActivity extends FragmentActivity implements
         mHomeFragment = new HomeFragment();
     }
 
+
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
@@ -201,6 +202,7 @@ public class MainActivity extends FragmentActivity implements
             mAuthProgressDialog.hide();
             showErrorDialog(firebaseError.toString());
         }
+
     }
     private void registerUser() {
         if (mAuthData != null) {
@@ -425,7 +427,6 @@ public class MainActivity extends FragmentActivity implements
         getGoogleOAuthTokenAndLogin();
     }
 
-
     @Override
     public void onConnectionFailed(ConnectionResult result) {
         if (!mGoogleIntentInProgress) {
@@ -441,6 +442,7 @@ public class MainActivity extends FragmentActivity implements
             }
         }
     }
+
 
     @Override
     public void onConnectionSuspended(int i) {

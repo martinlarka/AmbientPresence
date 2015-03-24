@@ -2,11 +2,18 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="nu.larka.ambientpresence" >
 
+    <uses-sdk
+        android:minSdkVersion="17"
+        android:targetSdkVersion="19" />
+
     <uses-permission android:name="android.permission.INTERNET" />
     <!-- USE_CREDENTIALS is necessary for Google+ login -->
     <uses-permission android:name="android.permission.USE_CREDENTIALS" />
     <!-- GET_ACCOUNTS is necessary to display email address of logged in user. This permission is optional -->
     <uses-permission android:name="android.permission.GET_ACCOUNTS" />
+    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.READ_PHONE_STATE" />
 
     <application
         android:allowBackup="true"

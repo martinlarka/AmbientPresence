@@ -9,6 +9,7 @@ import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
 import android.media.ExifInterface;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
@@ -103,7 +104,8 @@ public class HomeFragment extends Fragment {
                         ensurePhotoNotRotated(context, imageUri);
                         bitmap = MediaStore.Images.Media.getBitmap(getActivity().getContentResolver(), imageUri);
                         userImageView.setImageBitmap(bitmap);
-                        saveImageOnFirebase(imageUri);
+                        
+                        new UploadImageToFirebase().execute(imageUri);
                     } catch (IOException e) {
                     }
                 }
@@ -115,15 +117,25 @@ public class HomeFragment extends Fragment {
         this.displayName = displayName;
     }
 
-    private void saveImageOnFirebase(Uri imageUri) throws IOException {
-        Bitmap bmp = MediaStore.Images.Media.getBitmap(getActivity().getContentResolver(), imageUri);
-        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-        bmp.compress(Bitmap.CompressFormat.PNG, 100, byteArrayOutputStream);
-        bmp.recycle();
-        byte[] byteArray = byteArrayOutputStream.toByteArray();
-        String imageFile = Base64.encodeToString(byteArray, Base64.DEFAULT);
+    private class UploadImageToFirebase extends AsyncTask<Uri, Void, Void> {
 
-        mFirebaseRef.child(MainActivity.USER_IMAGE).setValue(imageFile);
+        @Override
+        protected Void doInBackground(Uri... uris) {
+            Bitmap bmp;
+            try {
+                bmp = MediaStore.Images.Media.getBitmap(getActivity().getContentResolver(), uris[0]);
+                ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+                bmp.compress(Bitmap.CompressFormat.PNG, 100, byteArrayOutputStream);
+                bmp.recycle();
+                byte[] byteArray = byteArrayOutputStream.toByteArray();
+                String imageFile = Base64.encodeToString(byteArray, Base64.DEFAULT);
+
+                mFirebaseRef.child(MainActivity.USER_IMAGE).setValue(imageFile);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            return null;
+        }
     }
 
     private static void ensurePhotoNotRotated(Context context, Uri imgUri) {

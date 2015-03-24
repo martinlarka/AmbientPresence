@@ -1,9 +1,15 @@
 <resources>
-    <string name="app_name">AmbientPresence</string>
-
-    <string name="hello_world">Hello world!</string>
-    <string name="action_settings">Settings</string>
-
     <string name="firebase_url">https://ambient-presence.firebaseio.com</string>
+
+    <string name="app_name">Ambient Presence</string>
     <string name="action_logout">Logout</string>
+
+    <string name="offices">Offices</string>
+
+<!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="horizontal_line">Horizontal line</string>
+    <string name="follow_new_office">Follow new office</string>
+    <string name="office_home">Home</string>
+    <string name="office_activity">Home - Activity</string>
 </resources>

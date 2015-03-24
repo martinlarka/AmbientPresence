@@ -5,17 +5,22 @@ import android.app.ProgressDialog;
 import android.content.Intent;
 import android.content.IntentSender;
 import android.os.AsyncTask;
-import android.support.v7.app.ActionBarActivity;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
+import android.support.v4.app.FragmentTransaction;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.TextView;
+import android.widget.AdapterView;
 
 import com.firebase.client.AuthData;
+import com.firebase.client.ChildEventListener;
+import com.firebase.client.DataSnapshot;
 import com.firebase.client.Firebase;
 import com.firebase.client.FirebaseError;
+import com.firebase.client.ValueEventListener;
 import com.google.android.gms.auth.GoogleAuthException;
 import com.google.android.gms.auth.GoogleAuthUtil;
 import com.google.android.gms.auth.UserRecoverableAuthException;
@@ -26,16 +31,33 @@ import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.plus.Plus;
 
 import java.io.IOException;
+import java.util.ArrayList;
+
+import nu.larka.ambientpresence.fragment.FollowNewFragment;
+import nu.larka.ambientpresence.fragment.HomeFragment;
+import nu.larka.ambientpresence.fragment.RemoteOfficesFragment;
+import nu.larka.ambientpresence.fragment.UserInfoFragment;
+import nu.larka.ambientpresence.model.User;
 
 
-public class MainActivity extends ActionBarActivity implements
+public class MainActivity extends FragmentActivity implements
         GoogleApiClient.ConnectionCallbacks,
         GoogleApiClient.OnConnectionFailedListener{
 
     private static final String TAG = MainActivity.class.getSimpleName();
+    public static final String USERS = "users/";
+    public static final String OTHERUSERS = "/other_users/";
+    public static final String FOLLOWING_USERS = "/following_users/";
+    public static final String ACCEPTEDUSERS = "/accepted_users/";
+    public static final String USERNAME ="username";
+    public static final String NAME ="name";
 
-    /* TextView that is used to display information about the logged in user */
-    private TextView mLoggedInStatusTextView;
+    public static final String FOLLOWING = "following";
+    public static final String PENDING = "pending";
+    public static final String BANNED = "banned";
+    public static final String SELF = "self";
+    public static final String NOSTATE = "nostate";
+    public static final String ACCEPTED = "accepted";
 
     public static final int RC_GOOGLE_LOGIN = 1;
 
@@ -65,6 +87,13 @@ public class MainActivity extends ActionBarActivity implements
 
     /* The login button for Google */
     private SignInButton mGoogleLoginButton;
+
+    private ArrayList<User> otherUsers = new ArrayList<>();
+    private ArrayList<User> followingUsers = new ArrayList<>();
+
+    /* Fragments */
+    RemoteOfficesFragment mRemoteOfficesFragment;
+    HomeFragment mHomeFragment;
 
 
     @Override
@@ -101,8 +130,6 @@ public class MainActivity extends ActionBarActivity implements
                 .addScope(Plus.SCOPE_PLUS_LOGIN)
                 .build();
 
-        mLoggedInStatusTextView = (TextView) findViewById(R.id.login_status);
-
         /* Create the Firebase ref that is used for all authentication with Firebase */
         mFirebaseRef = new Firebase(getResources().getString(R.string.firebase_url));
 
@@ -122,8 +149,15 @@ public class MainActivity extends ActionBarActivity implements
                 setAuthenticatedUser(authData);
             }
         });
-    }
 
+        /* Fragments */
+        mRemoteOfficesFragment = new RemoteOfficesFragment();
+        mRemoteOfficesFragment.setOnItemClickListener(onItemClickListener);
+        mRemoteOfficesFragment.setFollowerList(followingUsers);
+        mRemoteOfficesFragment.setOtherUsersList(otherUsers);
+
+        mHomeFragment = new HomeFragment();
+    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -158,6 +192,8 @@ public class MainActivity extends ActionBarActivity implements
             mAuthProgressDialog.hide();
             Log.i(TAG, provider + " auth successful");
             setAuthenticatedUser(authData);
+            // Check if user is in firebase else create
+            registerUser();
         }
 
         @Override
@@ -165,6 +201,158 @@ public class MainActivity extends ActionBarActivity implements
             mAuthProgressDialog.hide();
             showErrorDialog(firebaseError.toString());
         }
+    }
+    private void registerUser() {
+        if (mAuthData != null) {
+            Firebase childRef = mFirebaseRef.child(USERS+mAuthData.getUid());
+            childRef.addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(DataSnapshot dataSnapshot) {
+                    // User not registered
+                    if (!dataSnapshot.exists()) {
+                        // Setup user
+                        String username = (String) mAuthData.getProviderData().get("displayName");
+                        Firebase userRef = mFirebaseRef.child(USERS + mAuthData.getUid()); // FIXME UID needs to be changed to something user searchable
+                        userRef.child(USERNAME).setValue(userNameify(username));
+                        userRef.child(NAME).setValue(mAuthData.getProviderData().get("displayName"));
+                        userRef.child(OTHERUSERS).child(mAuthData.getUid()).setValue(SELF);
+                        userRef.child(FOLLOWING_USERS).child(mAuthData.getUid()).setValue(SELF);
+                        userRef.child(ACCEPTEDUSERS).child(mAuthData.getUid()).setValue(SELF);
+                    }
+                }
+
+                // TODO Let users give own usernames, or fix email to username
+                private String userNameify(String username) {
+                    return username.toLowerCase().replace(" ", "").replace("å", "a").replace("ä", "a").replace("ö", "o");
+                }
+
+                @Override
+                public void onCancelled(FirebaseError firebaseError) {
+
+                }
+            });
+        }
+    }
+
+    private void registerFollowingUsersCallback() {
+        if (mAuthData != null) {
+            mFirebaseRef.child(USERS + mAuthData.getUid() + FOLLOWING_USERS).addChildEventListener(new ChildEventListener() {
+                @Override
+                public void onChildAdded(DataSnapshot dataSnapshot, String s) {
+                    // On added - Check state and make action
+                    User user = new User(dataSnapshot.getKey());
+                    user.setState((String) dataSnapshot.getValue());
+                    if (!user.getState().equals(SELF)) {
+                        setUserInfo(dataSnapshot, user);
+                        followingUsers.add(user);
+                    }
+                    mRemoteOfficesFragment.notifyAdapterDataChanged();
+                }
+
+                @Override
+                public void onChildChanged(DataSnapshot dataSnapshot, String s) {
+                    // On changed - Check new state and make action
+                    for (User u : followingUsers) {
+                        if (dataSnapshot.getKey().equals(u.getUID()) && !dataSnapshot.getValue().equals(SELF)) {
+                            u.setState((String) dataSnapshot.getValue());
+                            setUserInfo(dataSnapshot, u);
+                        }
+                    }
+                    mRemoteOfficesFragment.notifyAdapterDataChanged();
+                }
+
+                @Override
+                public void onChildRemoved(DataSnapshot dataSnapshot) {
+                    // On remove - Check state and make actions
+                    for (int i = 0; i < followingUsers.size(); i++) {
+                        if (dataSnapshot.getKey().equals(followingUsers.get(i).getUID())) {
+                            followingUsers.remove(i);
+                        }
+                    }
+                    mRemoteOfficesFragment.notifyAdapterDataChanged();
+                }
+
+                @Override
+                public void onChildMoved(DataSnapshot dataSnapshot, String s) {
+
+                }
+
+                @Override
+                public void onCancelled(FirebaseError firebaseError) {
+
+                }
+            });
+        }
+    }
+
+    // TODO REFREACTOR, Only new events trigger update activity button
+    private void registerOtherUsersCallback() {
+        if (mAuthData != null) { //TODO MIGHT BE REDUNDANT??
+            mFirebaseRef.child(USERS + mAuthData.getUid() + OTHERUSERS).addChildEventListener(new ChildEventListener() {
+                @Override
+                public void onChildAdded(DataSnapshot dataSnapshot, String s) {
+                    // On added - Check state and make action
+                    User user = new User(dataSnapshot.getKey());
+                    user.setState((String) dataSnapshot.getValue());
+                    setUserInfo(dataSnapshot, user);
+                    if (user.getState().equals(PENDING)) {
+                        otherUsers.add(user);
+                        mRemoteOfficesFragment.updateActivityButton(getActivityNumber());
+                    }
+                }
+
+                @Override
+                public void onChildChanged(DataSnapshot dataSnapshot, String s) {
+                    // On changed - Check new state and make action
+                    for (User u: otherUsers) {
+                        if (dataSnapshot.getKey().equals(u.getUID())) {
+                            u.setState((String)dataSnapshot.getValue());
+                        }
+                    }
+                    mRemoteOfficesFragment.updateActivityButton(getActivityNumber());
+                }
+
+                @Override
+                public void onChildRemoved(DataSnapshot dataSnapshot) {
+                    // On remove - Check state and make actions
+                    for (int i=0; i<otherUsers.size(); i++) {
+                        if (dataSnapshot.getKey().equals(otherUsers.get(i).getUID())) {
+                            otherUsers.remove(i);
+                        }
+                    }
+                    mRemoteOfficesFragment.updateActivityButton(getActivityNumber());
+                }
+
+                @Override
+                public void onChildMoved(DataSnapshot dataSnapshot, String s) {
+
+                }
+
+                @Override
+                public void onCancelled(FirebaseError firebaseError) {
+
+                }
+            });
+        }
+    }
+
+    private void setUserInfo(DataSnapshot dataSnapshot, final User user) {
+        mFirebaseRef.child(USERS).child(dataSnapshot.getKey()).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                user.setName((String)dataSnapshot.child(NAME).getValue());
+                user.setUsername((String)dataSnapshot.child(USERNAME).getValue());
+            }
+
+            @Override
+            public void onCancelled(FirebaseError firebaseError) {
+
+            }
+        });
+    }
+
+    private String getActivityNumber() {
+        return "" + otherUsers.size();
     }
 
     /* A helper method to resolve the current ConnectionResult error. */
@@ -278,22 +466,35 @@ public class MainActivity extends ActionBarActivity implements
         if (authData != null) {
             /* Hide all the login buttons */
             mGoogleLoginButton.setVisibility(View.GONE);
-            mLoggedInStatusTextView.setVisibility(View.VISIBLE);
-            /* show a provider specific status text */
-            String name = null;
-            if (authData.getProvider().equals("facebook")
-                    || authData.getProvider().equals("google")
-                    || authData.getProvider().equals("twitter")) {
-                name = (String) authData.getProviderData().get("displayName");
-            } else if (authData.getProvider().equals("anonymous")
-                    || authData.getProvider().equals("password")) {
-                name = authData.getUid();
-            } else {
-                Log.e(TAG, "Invalid provider: " + authData.getProvider());
-            }
-            if (name != null) {
-                mLoggedInStatusTextView.setText("Logged in as " + name + " (" + authData.getProvider() + ")");
-            }
+
+            registerOtherUsersCallback();
+            registerFollowingUsersCallback();
+
+            FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+
+            mRemoteOfficesFragment.setFirebase(mFirebaseRef, authData.getUid());
+            // Replace whatever is in the fragment_container view with this fragment,
+            // and add the transaction to the back stack so the user can navigate back
+            transaction.replace(R.id.office_fragment, mRemoteOfficesFragment);
+            transaction.addToBackStack(null);
+
+            // Commit the transaction
+            transaction.commit();
+
+            transaction = getSupportFragmentManager().beginTransaction();
+
+            // Replace whatever is in the fragment_container view with this fragment,
+            // and add the transaction to the back stack so the user can navigate back
+            String homeName = mAuthData != null ?
+                    getResources().getString(R.string.office_home) + " - " + (String)mAuthData.getProviderData().get("displayName") :
+                    getResources().getString(R.string.office_home);
+            mHomeFragment.setHomeName(homeName);
+            transaction.replace(R.id.info_fragment, mHomeFragment);
+            transaction.addToBackStack(null);
+
+            // Commit the transaction
+            transaction.commit();
+
         } else {
             /* No authenticated user show all the login buttons */
             mGoogleLoginButton.setVisibility(View.VISIBLE);
@@ -319,9 +520,54 @@ public class MainActivity extends ActionBarActivity implements
                     mGoogleApiClient.disconnect();
                 }
             }
+            Fragment fragment = getSupportFragmentManager().findFragmentById(R.id.office_fragment);
+            if(fragment != null)
+                getSupportFragmentManager().beginTransaction().remove(fragment).commit();
+
+            fragment = getSupportFragmentManager().findFragmentById(R.id.info_fragment);
+            if(fragment != null)
+                getSupportFragmentManager().beginTransaction().remove(fragment).commit();
             /* Update authenticated user and show login buttons */
             setAuthenticatedUser(null);
         }
     }
+
+    private AdapterView.OnItemClickListener onItemClickListener = new AdapterView.OnItemClickListener() {
+        @Override
+        public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+            // TODO MAX TREE NUMBERS OF FOLLOWING
+            // Follow new clicked
+            if (position == followingUsers.size()) {
+                // Start follow new fragment
+                FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+
+                // Replace whatever is in the fragment_container view with this fragment,
+                // and add the transaction to the back stack so the user can navigate back
+                FollowNewFragment followFragment = new FollowNewFragment();
+                followFragment.setFireRef(mFirebaseRef, mAuthData.getUid());
+                transaction.replace(R.id.info_fragment, followFragment);
+                transaction.addToBackStack(null);
+
+                // Commit the transaction
+                transaction.commit();
+            } else { // Load setup of pressed office
+                // Start user info fragment
+                UserInfoFragment userInfoFragment = new UserInfoFragment();
+                userInfoFragment.setUser(followingUsers.get(position));
+                userInfoFragment.setFirebaseRef(mFirebaseRef, mAuthData.getUid());
+
+                FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+
+                // Replace whatever is in the fragment_container view with this fragment,
+                // and add the transaction to the back stack so the user can navigate back
+                transaction.replace(R.id.info_fragment, userInfoFragment);
+                transaction.addToBackStack(null);
+
+                // Commit the transaction
+                transaction.commit();
+            }
+        }
+    };
+
 
 }

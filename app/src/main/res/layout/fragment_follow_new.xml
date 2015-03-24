@@ -1,0 +1,53 @@
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools" android:layout_width="match_parent"
+    android:layout_height="match_parent" tools:context="nu.larka.ambientpresence.fragment.FollowNewFragment"
+    android:paddingTop="@dimen/info_fragment_top_padding">
+
+    <LinearLayout
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/follow_new_office"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/follow_new_office"
+            style="@style/InfoText"/>
+
+        <LinearLayout
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:paddingTop="12sp">
+            
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:src="@drawable/search_icon"
+            android:contentDescription="Search icon"
+            android:scaleType="fitEnd"
+            android:cropToPadding="false"
+            android:padding="8dp" />
+            
+        <EditText
+            android:inputType="text"
+            android:id="@+id/office_search"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:paddingRight="18dp" />
+            
+        </LinearLayout>
+
+        <ListView
+            android:id="@+id/search_result_list"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:divider="@android:color/transparent"
+            android:dividerHeight="12dp"
+            android:paddingTop="18dp">
+
+        </ListView>
+
+    </LinearLayout>
+</FrameLayout>

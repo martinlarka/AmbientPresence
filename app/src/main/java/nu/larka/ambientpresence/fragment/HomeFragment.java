@@ -22,7 +22,10 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.firebase.client.DataSnapshot;
 import com.firebase.client.Firebase;
+import com.firebase.client.FirebaseError;
+import com.firebase.client.ValueEventListener;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -35,15 +38,17 @@ import java.util.Date;
 
 import nu.larka.ambientpresence.MainActivity;
 import nu.larka.ambientpresence.R;
+import nu.larka.ambientpresence.model.User;
 
 /**
  * A simple {@link Fragment} subclass.
  */
-public class HomeFragment extends Fragment {
+public class HomeFragment extends Fragment implements ValueEventListener {
 
-    private String displayName;
+    private User user;
     private Uri imageUri;
     private ImageView userImageView;
+    private TextView titleView;
 
     public static final int CAPTURE_IMAGE_ACTIVITY_REQUEST_CODE = 100;
     private Firebase mFirebaseRef;
@@ -58,9 +63,8 @@ public class HomeFragment extends Fragment {
                              Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.fragment_home, container, false);
 
-        TextView titleView = (TextView) v.findViewById(R.id.home_name);
-        titleView.setText(displayName);
-
+        mFirebaseRef.addListenerForSingleValueEvent(this);
+        titleView = (TextView) v.findViewById(R.id.home_name);
         userImageView = (ImageView) v.findViewById(R.id.home_image_view);
         userImageView.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -104,7 +108,7 @@ public class HomeFragment extends Fragment {
                         ensurePhotoNotRotated(context, imageUri);
                         bitmap = MediaStore.Images.Media.getBitmap(getActivity().getContentResolver(), imageUri);
                         userImageView.setImageBitmap(bitmap);
-                        
+
                         new UploadImageToFirebase().execute(imageUri);
                     } catch (IOException e) {
                     }
@@ -113,8 +117,23 @@ public class HomeFragment extends Fragment {
     }
 
 
-    public void setHomeName(String displayName) {
-        this.displayName = displayName;
+    public void setHomeUser(User user) {
+        this.user = user;
+    }
+
+    @Override
+    public void onDataChange(DataSnapshot dataSnapshot) {
+        titleView.setText(getResources().getString(R.string.office_home) + " - " + dataSnapshot.child(MainActivity.NAME).getValue());
+        String str = (String) dataSnapshot.child(MainActivity.USER_IMAGE).getValue();
+        if (str != null) {
+            byte[] imageAsBytes = com.firebase.tubesock.Base64.decode(str.getBytes());
+            userImageView.setImageBitmap(BitmapFactory.decodeByteArray(imageAsBytes, 0, imageAsBytes.length));
+        }
+    }
+
+    @Override
+    public void onCancelled(FirebaseError firebaseError) {
+
     }
 
     private class UploadImageToFirebase extends AsyncTask<Uri, Void, Void> {
@@ -125,7 +144,7 @@ public class HomeFragment extends Fragment {
             try {
                 bmp = MediaStore.Images.Media.getBitmap(getActivity().getContentResolver(), uris[0]);
                 ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-                bmp.compress(Bitmap.CompressFormat.PNG, 100, byteArrayOutputStream);
+                bmp.compress(Bitmap.CompressFormat.PNG, 5, byteArrayOutputStream);
                 bmp.recycle();
                 byte[] byteArray = byteArrayOutputStream.toByteArray();
                 String imageFile = Base64.encodeToString(byteArray, Base64.DEFAULT);
@@ -179,7 +198,7 @@ public class HomeFragment extends Fragment {
                 e.printStackTrace();
                 return;
             }
-            bmp.compress(Bitmap.CompressFormat.PNG, 100, os);
+            bmp.compress(Bitmap.CompressFormat.PNG, 5, os);
 
             try {
                 exif.setAttribute(ExifInterface.TAG_ORIENTATION, String.valueOf(ExifInterface.ORIENTATION_NORMAL));

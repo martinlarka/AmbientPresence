@@ -1,13 +1,18 @@
 package nu.larka.ambientpresence.model;
 
+import android.graphics.Bitmap;
+
 /**
  * Created by martin on 15-03-12.
  */
 public class User {
     private String UID;
     private String name;
+
+
     private String username;
     private String state;
+    private Bitmap image;
 
     public User() {}
 
@@ -48,5 +53,13 @@ public class User {
 
     public void setUsername(String username) {
         this.username = username;
+    }
+
+    public Bitmap getImage() {
+        return image;
+    }
+
+    public void setImage(Bitmap image) {
+        this.image = image;
     }
 }

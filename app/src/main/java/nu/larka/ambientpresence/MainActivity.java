@@ -1,10 +1,10 @@
 package nu.larka.ambientpresence;
 
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.Intent;
 import android.content.IntentSender;
+import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
@@ -22,6 +22,7 @@ import com.firebase.client.DataSnapshot;
 import com.firebase.client.Firebase;
 import com.firebase.client.FirebaseError;
 import com.firebase.client.ValueEventListener;
+import com.firebase.tubesock.Base64;
 import com.google.android.gms.auth.GoogleAuthException;
 import com.google.android.gms.auth.GoogleAuthUtil;
 import com.google.android.gms.auth.UserRecoverableAuthException;
@@ -94,9 +95,11 @@ public class MainActivity extends FragmentActivity implements
 
     private ArrayList<User> followingUsers = new ArrayList<>();
     /* Fragments */
-    RemoteOfficesFragment mRemoteOfficesFragment;
+    private RemoteOfficesFragment mRemoteOfficesFragment;
 
-    HomeFragment mHomeFragment;
+    private HomeFragment mHomeFragment;
+    private User homeUser;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -246,7 +249,7 @@ public class MainActivity extends FragmentActivity implements
                     User user = new User(dataSnapshot.getKey());
                     user.setState((String) dataSnapshot.getValue());
                     if (!user.getState().equals(SELF)) {
-                        setUserInfo(dataSnapshot, user);
+                        setUserInfo(dataSnapshot.getKey(), user);
                         followingUsers.add(user);
                     }
                     mRemoteOfficesFragment.notifyAdapterDataChanged();
@@ -258,7 +261,7 @@ public class MainActivity extends FragmentActivity implements
                     for (User u : followingUsers) {
                         if (dataSnapshot.getKey().equals(u.getUID()) && !dataSnapshot.getValue().equals(SELF)) {
                             u.setState((String) dataSnapshot.getValue());
-                            setUserInfo(dataSnapshot, u);
+                            setUserInfo(dataSnapshot.getKey(), u);
                         }
                     }
                     mRemoteOfficesFragment.notifyAdapterDataChanged();
@@ -297,7 +300,7 @@ public class MainActivity extends FragmentActivity implements
                     // On added - Check state and make action
                     User user = new User(dataSnapshot.getKey());
                     user.setState((String) dataSnapshot.getValue());
-                    setUserInfo(dataSnapshot, user);
+                    setUserInfo(dataSnapshot.getKey(), user);
                     if (user.getState().equals(PENDING)) {
                         otherUsers.add(user);
                         mRemoteOfficesFragment.updateActivityButton(getActivityNumber());
@@ -309,7 +312,7 @@ public class MainActivity extends FragmentActivity implements
                     // On changed - Check new state and make action
                     for (User u: otherUsers) {
                         if (dataSnapshot.getKey().equals(u.getUID())) {
-                            u.setState((String)dataSnapshot.getValue());
+                            u.setState((String) dataSnapshot.getValue());
                         }
                     }
                     mRemoteOfficesFragment.updateActivityButton(getActivityNumber());
@@ -339,12 +342,13 @@ public class MainActivity extends FragmentActivity implements
         }
     }
 
-    private void setUserInfo(DataSnapshot dataSnapshot, final User user) {
-        mFirebaseRef.child(USERS).child(dataSnapshot.getKey()).addListenerForSingleValueEvent(new ValueEventListener() {
+    private void setUserInfo(String userUID, final User user) {
+        mFirebaseRef.child(USERS).child(userUID).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-                user.setName((String)dataSnapshot.child(NAME).getValue());
-                user.setUsername((String)dataSnapshot.child(USERNAME).getValue());
+                user.setName((String) dataSnapshot.child(NAME).getValue());
+                user.setUsername((String) dataSnapshot.child(USERNAME).getValue());
+
             }
 
             @Override
@@ -488,10 +492,6 @@ public class MainActivity extends FragmentActivity implements
 
             // Replace whatever is in the fragment_container view with this fragment,
             // and add the transaction to the back stack so the user can navigate back
-            String homeName = mAuthData != null ?
-                    getResources().getString(R.string.office_home) + " - " + (String)mAuthData.getProviderData().get("displayName") :
-                    getResources().getString(R.string.office_home);
-            mHomeFragment.setHomeName(homeName);
             mHomeFragment.setFirebaseRef(mFirebaseRef.child(USERS).child(authData.getUid()));
             transaction.replace(R.id.info_fragment, mHomeFragment);
             transaction.addToBackStack(null);

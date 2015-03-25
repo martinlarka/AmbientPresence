@@ -45,6 +45,8 @@ public class MainActivity extends FragmentActivity implements
     public static final String FOLLOWING_USERS = "/following_users/";
     public static final String ACCEPTEDUSERS = "/accepted_users/";
     public static final String USER_IMAGE = "/user_image/";
+    public static final String CREATEDAT = "created_at";
+    public static final String STATE = "state";
     public static final String USERNAME ="username";
     public static final String NAME ="name";
 

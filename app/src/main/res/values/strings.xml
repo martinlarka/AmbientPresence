@@ -12,4 +12,8 @@
     <string name="follow_new_office">Follow new office</string>
     <string name="office_home">Home</string>
     <string name="office_activity">Home - Activity</string>
+
+    <string name="user_is_banned">is banned</string>
+    <string name="user_is_following">is following you</string>
+    <string name="user_is_pending">wants to follow you</string>
 </resources>

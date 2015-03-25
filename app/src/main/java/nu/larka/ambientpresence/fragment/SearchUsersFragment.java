@@ -31,7 +31,7 @@ import nu.larka.ambientpresence.model.User;
 /**
  * A simple {@link Fragment} subclass.
  */
-public class FollowNewFragment extends Fragment {
+public class SearchUsersFragment extends Fragment {
 
     private Firebase mFireRef;
     private EditText searchText;
@@ -40,7 +40,7 @@ public class FollowNewFragment extends Fragment {
     private OfficeSearchAdapter officeSearchAdapter;
     private String uid;
 
-    public FollowNewFragment() {
+    public SearchUsersFragment() {
     }
 
 

@@ -23,9 +23,11 @@ import nu.larka.ambientpresence.model.User;
  * Created by martin on 15-03-18.
  */
 public class UserActivityAdapter extends ArrayAdapter<User> {
+    private Context context;
 
     public UserActivityAdapter(Context context, ArrayList<User> otherUsers) {
         super(context, 0, otherUsers);
+        this.context = context;
     }
 
     @Override
@@ -40,11 +42,13 @@ public class UserActivityAdapter extends ArrayAdapter<User> {
         // Lookup view for data population
         TextView nameTextView = (TextView) convertView.findViewById(R.id.user_name);
         TextView usernameTextView = (TextView) convertView.findViewById(R.id.user_username);
+        TextView userState = (TextView) convertView.findViewById(R.id.user_state);
         ImageView userImage = (ImageView) convertView.findViewById(R.id.office_image);
 
         // Populate the data into the template view using the data object
         nameTextView.setText(user.getName());
         usernameTextView.setText(user.getUsername());
+        userState.setText(getStateText(user.getState()));
         if (user.hasImage()) {
             userImage.setImageBitmap(user.getImage());
         } else {
@@ -54,5 +58,19 @@ public class UserActivityAdapter extends ArrayAdapter<User> {
 
         // Return the completed view to render on screen
         return convertView;
+    }
+
+    private String getStateText(String state) {
+            switch (state) {
+                case MainActivity.BANNED:
+                    return context.getString(R.string.user_is_banned);
+                case MainActivity.FOLLOWING:
+                    return context.getString(R.string.user_is_following);
+                case MainActivity.PENDING:
+                    return context.getString(R.string.user_is_pending);
+                default:
+                    return "";
+            }
+
     }
 }

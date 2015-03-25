@@ -38,7 +38,9 @@ public class SearchItemListener implements View.OnClickListener {
             v.setBackground(v.getResources().getDrawable(R.drawable.follow));
         } else { // Follow user
             mFirebaseRef.child(MainActivity.USERS + user.getUID() + MainActivity.OTHERUSERS)
-                    .child(uid).setValue(MainActivity.PENDING);
+                    .child(uid).child(MainActivity.STATE).setValue(MainActivity.PENDING);
+            mFirebaseRef.child(MainActivity.USERS + user.getUID() + MainActivity.OTHERUSERS)
+                    .child(uid).child(MainActivity.CREATEDAT).setValue(System.currentTimeMillis());
             mFirebaseRef.child(MainActivity.USERS + uid + MainActivity.FOLLOWING_USERS)
                     .child(user.getUID()).setValue(MainActivity.PENDING);
             user.setState(MainActivity.PENDING);

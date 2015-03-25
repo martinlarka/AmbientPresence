@@ -32,9 +32,13 @@
             android:text="Username"
             style="@style/OfficeUserName"/>
 
-
-
     </LinearLayout>
 
+    <TextView
+        android:id="@+id/user_state"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:paddingTop="8dp"
+        android:paddingRight="8dp" />
 
 </LinearLayout>

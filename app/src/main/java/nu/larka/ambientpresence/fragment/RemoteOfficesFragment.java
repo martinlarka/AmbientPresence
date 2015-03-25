@@ -4,6 +4,7 @@ import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -18,6 +19,7 @@ import com.firebase.client.ChildEventListener;
 import com.firebase.client.DataSnapshot;
 import com.firebase.client.Firebase;
 import com.firebase.client.FirebaseError;
+import com.firebase.client.Query;
 import com.firebase.client.ValueEventListener;
 import com.firebase.tubesock.Base64;
 
@@ -38,6 +40,7 @@ public class RemoteOfficesFragment extends Fragment {
     private Firebase mFirebaseRef;
     private String uid;
     private GridView followedUsersGridView;
+    private int newActivities = 0;
 
     public RemoteOfficesFragment() {
     }
@@ -55,6 +58,8 @@ public class RemoteOfficesFragment extends Fragment {
 
         activityButton = (Button) view.findViewById(R.id.activity_button);
         activityButton.setOnClickListener(activityButtonClickListener);
+        // Populate otheruserlist
+        populateOtherUsersList();
         registerUserActivityCallback();
 
         followedUsersGridView.setOnItemClickListener(itemClickListener);
@@ -78,91 +83,116 @@ public class RemoteOfficesFragment extends Fragment {
     }
 
     private void registerFollowingUsersCallback() {
-            mFirebaseRef.child(MainActivity.USERS + uid + MainActivity.FOLLOWING_USERS).addChildEventListener(new ChildEventListener() {
-                @Override
-                public void onChildAdded(DataSnapshot dataSnapshot, String s) {
-                    // On added - Check state and make action
-                    if (!dataSnapshot.getValue().equals(MainActivity.SELF)) {
-                        setFollowingUserInfo(dataSnapshot.getKey(), (String) dataSnapshot.getValue());
-                    }
-                }
-
-                @Override
-                public void onChildChanged(DataSnapshot dataSnapshot, String s) {
-                    // On changed - Check new state and make action
-                    for (User u : followerList) {
-                        if (dataSnapshot.getKey().equals(u.getUID()) && !dataSnapshot.getValue().equals(MainActivity.SELF)) {
-                            u.setState((String) dataSnapshot.getValue());
+        mFirebaseRef.child(MainActivity.USERS + uid + MainActivity.FOLLOWING_USERS)
+                .addChildEventListener(new ChildEventListener() {
+                    @Override
+                    public void onChildAdded(DataSnapshot dataSnapshot, String s) {
+                        // On added - Check state and make action
+                        if (!dataSnapshot.getValue().equals(MainActivity.SELF)) {
+                            setFollowingUserInfo(dataSnapshot.getKey(), (String) dataSnapshot.getValue());
                         }
                     }
-                    notifyAdapterDataChanged();
-                }
 
-                @Override
-                public void onChildRemoved(DataSnapshot dataSnapshot) {
-                    // On remove - Check state and make actions
-                    for (int i = 0; i < followerList.size(); i++) {
-                        if (dataSnapshot.getKey().equals(followerList.get(i).getUID())) {
-                            followerList.remove(i);
+                    @Override
+                    public void onChildChanged(DataSnapshot dataSnapshot, String s) {
+                        // On changed - Check new state and make action
+                        for (User u : followerList) {
+                            if (dataSnapshot.getKey().equals(u.getUID()) && !dataSnapshot.getValue().equals(MainActivity.SELF)) {
+                                u.setState((String) dataSnapshot.getValue());
+                                notifyAdapterDataChanged();
+                            }
                         }
                     }
-                    notifyAdapterDataChanged();
-                }
 
-                @Override
-                public void onChildMoved(DataSnapshot dataSnapshot, String s) {
+                    @Override
+                    public void onChildRemoved(DataSnapshot dataSnapshot) {
+                        // On remove - Check state and make actions
+                        for (int i = 0; i < followerList.size(); i++) {
+                            if (dataSnapshot.getKey().equals(followerList.get(i).getUID())) {
+                                followerList.remove(i);
+                            }
+                        }
+                        notifyAdapterDataChanged();
+                    }
 
-                }
+                    @Override
+                    public void onChildMoved(DataSnapshot dataSnapshot, String s) {
 
-                @Override
-                public void onCancelled(FirebaseError firebaseError) {
+                    }
 
-                }
-            });
+                    @Override
+                    public void onCancelled(FirebaseError firebaseError) {
+
+                    }
+                });
     }
 
-    // TODO REFREACTOR, Only new events trigger update activity button
+    private void populateOtherUsersList() {
+        mFirebaseRef.child(MainActivity.USERS + uid + MainActivity.OTHERUSERS)
+                .addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(DataSnapshot dataSnapshot) {
+                        Iterable<DataSnapshot> snapShots = dataSnapshot.getChildren();
+                        for (DataSnapshot d: snapShots) {
+                            if (!d.child(MainActivity.STATE).getValue().equals(MainActivity.SELF)) {
+                                setUserActivityInfo(d.getKey(), (String) d.child(MainActivity.STATE).getValue());
+                            }
+                        }
+                    }
+
+                    @Override
+                    public void onCancelled(FirebaseError firebaseError) {
+                    }
+                });
+    }
+
     private void registerUserActivityCallback() {
-            mFirebaseRef.child(MainActivity.USERS + uid + MainActivity.OTHERUSERS).addChildEventListener(new ChildEventListener() {
-                @Override
-                public void onChildAdded(DataSnapshot dataSnapshot, String s) {
-                    // On added - Check state and make action
-                    if (!dataSnapshot.getValue().equals(MainActivity.SELF)) {
-                        setUserActivityInfo(dataSnapshot.getKey(), (String) dataSnapshot.getValue());
+        Query q = mFirebaseRef.child(MainActivity.USERS + uid + MainActivity.OTHERUSERS)
+                .orderByChild(MainActivity.CREATEDAT).startAt(System.currentTimeMillis());
+        Log.i("NOW", ""+System.currentTimeMillis());
+        q.addChildEventListener(new ChildEventListener() {
+            @Override
+            public void onChildAdded(DataSnapshot dataSnapshot, String s) {
+                // On added - Check state and make action
+                if (!dataSnapshot.child(MainActivity.STATE).getValue().equals(MainActivity.SELF)) {
+                    setUserActivityInfo(dataSnapshot.getKey(), (String) dataSnapshot.child(MainActivity.STATE).getValue());
+                    newActivities++;
+                    updateActivityButton(""+newActivities);
+                }
+            }
+
+            @Override
+            public void onChildChanged(DataSnapshot dataSnapshot, String s) {
+                // On changed - Check new state and make action
+                for (User u : otherUsersList) {
+                    if (dataSnapshot.getKey().equals(u.getUID())) {
+                        u.setState((String) dataSnapshot.child(MainActivity.STATE).getValue());
+                        newActivities++;
+                        updateActivityButton("" + newActivities);
                     }
                 }
+            }
 
-                @Override
-                public void onChildChanged(DataSnapshot dataSnapshot, String s) {
-                    // On changed - Check new state and make action
-                    /*for (User u : otherUsersList) {
-                        if (dataSnapshot.getKey().equals(u.getUID())) {
-                            u.setState((String) dataSnapshot.getValue());
-                        }
-                    }
-                    updateActivityButton("BARFOO");*/
-                }
-
-                @Override
-                public void onChildRemoved(DataSnapshot dataSnapshot) {
-                    // On remove - Check state and make actions
-                    for (int i = 0; i < otherUsersList.size(); i++) {
-                        if (dataSnapshot.getKey().equals(otherUsersList.get(i).getUID())) {
-                            otherUsersList.remove(i);
-                        }
+            @Override
+            public void onChildRemoved(DataSnapshot dataSnapshot) {
+                // On remove - Check state and make actions
+                for (int i = 0; i < otherUsersList.size(); i++) {
+                    if (dataSnapshot.getKey().equals(otherUsersList.get(i).getUID())) {
+                        otherUsersList.remove(i);
                     }
                 }
+            }
 
-                @Override
-                public void onChildMoved(DataSnapshot dataSnapshot, String s) {
+            @Override
+            public void onChildMoved(DataSnapshot dataSnapshot, String s) {
 
-                }
+            }
 
-                @Override
-                public void onCancelled(FirebaseError firebaseError) {
+            @Override
+            public void onCancelled(FirebaseError firebaseError) {
 
-                }
-            });
+            }
+        });
     }
 
     private void setFollowingUserInfo(final String userUID, final String userState) {
@@ -204,8 +234,7 @@ public class RemoteOfficesFragment extends Fragment {
                     byte[] imageAsBytes = Base64.decode(str.getBytes());
                     user.setImage(BitmapFactory.decodeByteArray(imageAsBytes, 0, imageAsBytes.length));
                 }
-                otherUsersList.add(user);
-                updateActivityButton("FOOBAR");
+                otherUsersList.add(0, user);
             }
 
             @Override
@@ -226,9 +255,9 @@ public class RemoteOfficesFragment extends Fragment {
 
                 // Replace whatever is in the fragment_container view with this fragment,
                 // and add the transaction to the back stack so the user can navigate back
-                FollowNewFragment followFragment = new FollowNewFragment();
-                followFragment.setFireRef(mFirebaseRef, uid);
-                transaction.replace(R.id.info_fragment, followFragment);
+                SearchUsersFragment searchUsersFragment = new SearchUsersFragment();
+                searchUsersFragment.setFireRef(mFirebaseRef, uid);
+                transaction.replace(R.id.info_fragment, searchUsersFragment);
                 transaction.addToBackStack(null);
 
                 // Commit the transaction
@@ -255,6 +284,10 @@ public class RemoteOfficesFragment extends Fragment {
     private View.OnClickListener activityButtonClickListener = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
+
+            newActivities = 0;
+            activityButton.setText(""+newActivities);
+
             // Start activity fragment!!
             FragmentTransaction transaction = getActivity().getSupportFragmentManager().beginTransaction();
 

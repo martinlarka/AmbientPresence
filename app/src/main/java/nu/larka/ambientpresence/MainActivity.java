@@ -4,7 +4,6 @@ import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.Intent;
 import android.content.IntentSender;
-import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
@@ -14,15 +13,12 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.AdapterView;
 
 import com.firebase.client.AuthData;
-import com.firebase.client.ChildEventListener;
 import com.firebase.client.DataSnapshot;
 import com.firebase.client.Firebase;
 import com.firebase.client.FirebaseError;
 import com.firebase.client.ValueEventListener;
-import com.firebase.tubesock.Base64;
 import com.google.android.gms.auth.GoogleAuthException;
 import com.google.android.gms.auth.GoogleAuthUtil;
 import com.google.android.gms.auth.UserRecoverableAuthException;
@@ -33,12 +29,9 @@ import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.plus.Plus;
 
 import java.io.IOException;
-import java.util.ArrayList;
 
-import nu.larka.ambientpresence.fragment.FollowNewFragment;
 import nu.larka.ambientpresence.fragment.HomeFragment;
 import nu.larka.ambientpresence.fragment.RemoteOfficesFragment;
-import nu.larka.ambientpresence.fragment.UserInfoFragment;
 import nu.larka.ambientpresence.model.User;
 
 
@@ -407,43 +400,4 @@ public class MainActivity extends FragmentActivity implements
             setAuthenticatedUser(null);
         }
     }
-
-   /* private AdapterView.OnItemClickListener onItemClickListener = new AdapterView.OnItemClickListener() {
-        @Override
-        public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-            // TODO MAX TREE NUMBERS OF FOLLOWING
-            // Follow new clicked
-            if (position == followingUsers.size()) {
-                // Start follow new fragment
-                FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-
-                // Replace whatever is in the fragment_container view with this fragment,
-                // and add the transaction to the back stack so the user can navigate back
-                FollowNewFragment followFragment = new FollowNewFragment();
-                followFragment.setFireRef(mFirebaseRef, mAuthData.getUid());
-                transaction.replace(R.id.info_fragment, followFragment);
-                transaction.addToBackStack(null);
-
-                // Commit the transaction
-                transaction.commit();
-            } else { // Load setup of pressed office
-                // Start user info fragment
-                UserInfoFragment userInfoFragment = new UserInfoFragment();
-                userInfoFragment.setUser(followingUsers.get(position));
-                userInfoFragment.setFirebaseRef(mFirebaseRef, mAuthData.getUid());
-
-                FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-
-                // Replace whatever is in the fragment_container view with this fragment,
-                // and add the transaction to the back stack so the user can navigate back
-                transaction.replace(R.id.info_fragment, userInfoFragment);
-                transaction.addToBackStack(null);
-
-                // Commit the transaction
-                transaction.commit();
-            }
-        }
-    }; */
-
-
 }

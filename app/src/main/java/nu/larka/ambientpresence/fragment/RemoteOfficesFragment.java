@@ -29,7 +29,7 @@ import nu.larka.ambientpresence.adapter.FollowedUsersAdapter;
 import nu.larka.ambientpresence.model.User;
 
 
-public class RemoteOfficesFragment extends Fragment implements View.OnClickListener {
+public class RemoteOfficesFragment extends Fragment {
 
     private FollowedUsersAdapter mAdapter;
     private ArrayList<User> followerList = new ArrayList<>();
@@ -54,11 +54,11 @@ public class RemoteOfficesFragment extends Fragment implements View.OnClickListe
         followedUsersGridView.setAdapter(mAdapter);
 
         activityButton = (Button) view.findViewById(R.id.activity_button);
-        activityButton.setOnClickListener(this);
+        activityButton.setOnClickListener(activityButtonClickListener);
 
         // TODO How to populate grid with office imgs
 
-        //gridview.setOnItemClickListener(itemClickListener);
+        followedUsersGridView.setOnItemClickListener(itemClickListener);
         registerFollowingUsersCallback();
 
         return view;
@@ -84,7 +84,7 @@ public class RemoteOfficesFragment extends Fragment implements View.OnClickListe
                 public void onChildAdded(DataSnapshot dataSnapshot, String s) {
                     // On added - Check state and make action
                     if (!dataSnapshot.getValue().equals(MainActivity.SELF)) {
-                        setFollowingUserInfo(dataSnapshot.getKey(), (String)dataSnapshot.getValue());
+                        setFollowingUserInfo(dataSnapshot.getKey(), (String) dataSnapshot.getValue());
                     }
                 }
 
@@ -215,23 +215,62 @@ public class RemoteOfficesFragment extends Fragment implements View.OnClickListe
         });
     }
 
-    @Override
-    public void onClick(View v) {
-        // Start activity fragment!!
-        FragmentTransaction transaction = getActivity().getSupportFragmentManager().beginTransaction();
+    private AdapterView.OnItemClickListener itemClickListener = new AdapterView.OnItemClickListener() {
+        @Override
+        public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+// TODO MAX TREE NUMBERS OF FOLLOWING
+            // Follow new clicked
+            if (position == followerList.size()) {
+                // Start follow new fragment
+                FragmentTransaction transaction = getActivity().getSupportFragmentManager().beginTransaction();
 
-        // Replace whatever is in the fragment_container view with this fragment,
-        // and add the transaction to the back stack so the user can navigate back
-        ActivityFragment mActivityFragment = new ActivityFragment();
-        // TODO Send correct user list
-        mActivityFragment.setOtherUsersList(otherUsersList);
-        mActivityFragment.setFirebaseRef(mFirebaseRef, uid);
-        transaction.replace(R.id.info_fragment, mActivityFragment);
-        transaction.addToBackStack(null);
+                // Replace whatever is in the fragment_container view with this fragment,
+                // and add the transaction to the back stack so the user can navigate back
+                FollowNewFragment followFragment = new FollowNewFragment();
+                followFragment.setFireRef(mFirebaseRef, uid);
+                transaction.replace(R.id.info_fragment, followFragment);
+                transaction.addToBackStack(null);
 
-        // Commit the transaction
-        transaction.commit();
-    }
+                // Commit the transaction
+                transaction.commit();
+            } else { // Load setup of pressed office
+                // Start user info fragment
+                UserInfoFragment userInfoFragment = new UserInfoFragment();
+                userInfoFragment.setUser(followerList.get(position));
+                userInfoFragment.setFirebaseRef(mFirebaseRef, uid);
+
+                FragmentTransaction transaction = getActivity().getSupportFragmentManager().beginTransaction();
+
+                // Replace whatever is in the fragment_container view with this fragment,
+                // and add the transaction to the back stack so the user can navigate back
+                transaction.replace(R.id.info_fragment, userInfoFragment);
+                transaction.addToBackStack(null);
+
+                // Commit the transaction
+                transaction.commit();
+            }
+        }
+    };
+
+    private View.OnClickListener activityButtonClickListener = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            // Start activity fragment!!
+            FragmentTransaction transaction = getActivity().getSupportFragmentManager().beginTransaction();
+
+            // Replace whatever is in the fragment_container view with this fragment,
+            // and add the transaction to the back stack so the user can navigate back
+            ActivityFragment mActivityFragment = new ActivityFragment();
+            // TODO Send correct user list
+            mActivityFragment.setOtherUsersList(otherUsersList);
+            mActivityFragment.setFirebaseRef(mFirebaseRef, uid);
+            transaction.replace(R.id.info_fragment, mActivityFragment);
+            transaction.addToBackStack(null);
+
+            // Commit the transaction
+            transaction.commit();
+        }
+    };
 
     public void setFirebase(Firebase mFirebaseRef, String uid) {
         this.mFirebaseRef = mFirebaseRef;

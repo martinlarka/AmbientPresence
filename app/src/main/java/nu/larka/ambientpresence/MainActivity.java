@@ -140,9 +140,9 @@ public class MainActivity extends FragmentActivity implements
         });
 
         /* Fragments */
-        mRemoteOfficesFragment = new RemoteOfficesFragment();
-
         mHomeFragment = new HomeFragment();
+        mRemoteOfficesFragment = new RemoteOfficesFragment();
+        mRemoteOfficesFragment.setHomeFragment(mHomeFragment);
     }
 
 

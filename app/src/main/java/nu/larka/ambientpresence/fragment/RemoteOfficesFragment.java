@@ -38,10 +38,12 @@ public class RemoteOfficesFragment extends Fragment {
     private ArrayList<User> followerList = new ArrayList<>();
     private ArrayList<User> otherUsersList = new ArrayList<>();
     private Button activityButton;
+    private Button homeButton;
     private Firebase mFirebaseRef;
     private String uid;
     private GridView followedUsersGridView;
     private int newActivities = 0;
+    private HomeFragment mHomeFragment;
 
     public RemoteOfficesFragment() {
     }
@@ -59,6 +61,9 @@ public class RemoteOfficesFragment extends Fragment {
 
         activityButton = (Button) view.findViewById(R.id.activity_button);
         activityButton.setOnClickListener(activityButtonClickListener);
+        homeButton = (Button) view.findViewById(R.id.home_button);
+        homeButton.setOnClickListener(homeButtonClickListener);
+
         // Populate otheruserlist
         populateOtherUsersList();
         registerUserActivityCallback();
@@ -307,8 +312,27 @@ public class RemoteOfficesFragment extends Fragment {
         }
     };
 
+    private View.OnClickListener homeButtonClickListener = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            FragmentTransaction transaction = getActivity().getSupportFragmentManager().beginTransaction();
+
+            // Replace whatever is in the fragment_container view with this fragment,
+            // and add the transaction to the back stack so the user can navigate back
+            transaction.replace(R.id.info_fragment, mHomeFragment);
+            transaction.addToBackStack(null);
+
+            // Commit the transaction
+            transaction.commit();
+        }
+    };
+
     public void setFirebase(Firebase mFirebaseRef, String uid) {
         this.mFirebaseRef = mFirebaseRef;
         this.uid = uid;
+    }
+
+    public void setHomeFragment(HomeFragment mHomeFragment) {
+        this.mHomeFragment = mHomeFragment;
     }
 }

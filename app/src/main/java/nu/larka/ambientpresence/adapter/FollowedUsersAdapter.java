@@ -18,12 +18,12 @@ import nu.larka.ambientpresence.model.User;
 /**
  * Created by martin on 15-03-16.
  */
-public class ImageAdapter extends BaseAdapter {
+public class FollowedUsersAdapter extends BaseAdapter {
 
     private Context mContext;
     private ArrayList<User> followers = new ArrayList<>();
 
-    public ImageAdapter(Context context) {
+    public FollowedUsersAdapter(Context context) {
         this.mContext = context;
     }
 
@@ -63,7 +63,7 @@ public class ImageAdapter extends BaseAdapter {
             } else {
                 imageView.setImageBitmap(user.getImage());
             }
-            if (followers.get(position).getState().equals(MainActivity.PENDING))
+            if (user.getState().equals(MainActivity.PENDING))
                 imageView.setImageAlpha(100);
         }
 

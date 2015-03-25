@@ -1,5 +1,6 @@
 package nu.larka.ambientpresence.fragment;
 
+import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
@@ -13,25 +14,30 @@ import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.GridView;
 
+import com.firebase.client.ChildEventListener;
+import com.firebase.client.DataSnapshot;
 import com.firebase.client.Firebase;
+import com.firebase.client.FirebaseError;
+import com.firebase.client.ValueEventListener;
+import com.firebase.tubesock.Base64;
 
 import java.util.ArrayList;
 
+import nu.larka.ambientpresence.MainActivity;
 import nu.larka.ambientpresence.R;
-import nu.larka.ambientpresence.adapter.ImageAdapter;
+import nu.larka.ambientpresence.adapter.FollowedUsersAdapter;
 import nu.larka.ambientpresence.model.User;
 
 
 public class RemoteOfficesFragment extends Fragment implements View.OnClickListener {
 
-    private ImageAdapter mAdapter;
-    private AdapterView.OnItemClickListener itemClickListener;
+    private FollowedUsersAdapter mAdapter;
     private ArrayList<User> followerList = new ArrayList<>();
     private ArrayList<User> otherUsersList = new ArrayList<>();
     private Button activityButton;
     private Firebase mFirebaseRef;
     private String uid;
-    private GridView gridview;
+    private GridView followedUsersGridView;
 
     public RemoteOfficesFragment() {
     }
@@ -42,44 +48,21 @@ public class RemoteOfficesFragment extends Fragment implements View.OnClickListe
 
         View view = inflater.inflate(R.layout.fragment_remote_offices, container, false);
         // Inflate the layout for this fragment
-        gridview = (GridView) view.findViewById(R.id.gridview);
-        mAdapter = new ImageAdapter(view.getContext());
+        followedUsersGridView = (GridView) view.findViewById(R.id.gridview);
+        mAdapter = new FollowedUsersAdapter(view.getContext());
         mAdapter.setFollowers(followerList);
-        gridview.setAdapter(mAdapter);
+        followedUsersGridView.setAdapter(mAdapter);
 
         activityButton = (Button) view.findViewById(R.id.activity_button);
         activityButton.setOnClickListener(this);
 
         // TODO How to populate grid with office imgs
 
-        gridview.setOnItemClickListener(itemClickListener);
+        //gridview.setOnItemClickListener(itemClickListener);
+        registerFollowingUsersCallback();
+
         return view;
     }
-
-    @Override
-    public void onActivityCreated(Bundle savedInstanceState) {
-        super.onActivityCreated(savedInstanceState);
-
-    }
-
-    public void setOnItemClickListener(AdapterView.OnItemClickListener listener) {
-        this.itemClickListener = listener;
-    }
-
-    public void setFollowerList(ArrayList<User> followerList) {
-        this.followerList = followerList;
-    }
-    
-    public void setOtherUsersList(ArrayList<User> otherUsersList) {
-        this.otherUsersList = otherUsersList;
-    }
-
-    public void notifyAdapterDataChanged() {
-        mAdapter.notifyDataSetChanged();
-        gridview.invalidateViews();
-        gridview.setAdapter(mAdapter);
-    }
-
 
     public void updateActivityButton(String str) {
         activityButton.setText(str);
@@ -87,6 +70,149 @@ public class RemoteOfficesFragment extends Fragment implements View.OnClickListe
         animation.setDuration(500);
         animation.setInterpolator(new LinearInterpolator());
         activityButton.setAnimation(animation);
+    }
+
+    private void notifyAdapterDataChanged() {
+        mAdapter.notifyDataSetChanged();
+        followedUsersGridView.invalidateViews();
+        followedUsersGridView.setAdapter(mAdapter);
+    }
+
+    private void registerFollowingUsersCallback() {
+            mFirebaseRef.child(MainActivity.USERS + uid + MainActivity.FOLLOWING_USERS).addChildEventListener(new ChildEventListener() {
+                @Override
+                public void onChildAdded(DataSnapshot dataSnapshot, String s) {
+                    // On added - Check state and make action
+                    if (!dataSnapshot.getValue().equals(MainActivity.SELF)) {
+                        setFollowingUserInfo(dataSnapshot.getKey(), (String)dataSnapshot.getValue());
+                    }
+                }
+
+                @Override
+                public void onChildChanged(DataSnapshot dataSnapshot, String s) {
+                    // On changed - Check new state and make action
+                    for (User u : followerList) {
+                        if (dataSnapshot.getKey().equals(u.getUID()) && !dataSnapshot.getValue().equals(MainActivity.SELF)) {
+                            u.setState((String) dataSnapshot.getValue());
+                        }
+                    }
+                    notifyAdapterDataChanged();
+                }
+
+                @Override
+                public void onChildRemoved(DataSnapshot dataSnapshot) {
+                    // On remove - Check state and make actions
+                    for (int i = 0; i < followerList.size(); i++) {
+                        if (dataSnapshot.getKey().equals(followerList.get(i).getUID())) {
+                            followerList.remove(i);
+                        }
+                    }
+                    notifyAdapterDataChanged();
+                }
+
+                @Override
+                public void onChildMoved(DataSnapshot dataSnapshot, String s) {
+
+                }
+
+                @Override
+                public void onCancelled(FirebaseError firebaseError) {
+
+                }
+            });
+    }
+
+    // TODO REFREACTOR, Only new events trigger update activity button
+    private void registerUserActivityCallback() {
+            mFirebaseRef.child(MainActivity.USERS + uid + MainActivity.OTHERUSERS).addChildEventListener(new ChildEventListener() {
+                @Override
+                public void onChildAdded(DataSnapshot dataSnapshot, String s) {
+                    // On added - Check state and make action
+                    if (!dataSnapshot.getValue().equals(MainActivity.SELF)) {
+                        setUserActivityInfo(dataSnapshot.getKey());
+                    }
+                }
+
+                @Override
+                public void onChildChanged(DataSnapshot dataSnapshot, String s) {
+                    // On changed - Check new state and make action
+                    /*for (User u : otherUsersList) {
+                        if (dataSnapshot.getKey().equals(u.getUID())) {
+                            u.setState((String) dataSnapshot.getValue());
+                        }
+                    }
+                    updateActivityButton("BARFOO");*/
+                }
+
+                @Override
+                public void onChildRemoved(DataSnapshot dataSnapshot) {
+                    // On remove - Check state and make actions
+                    for (int i = 0; i < otherUsersList.size(); i++) {
+                        if (dataSnapshot.getKey().equals(otherUsersList.get(i).getUID())) {
+                            otherUsersList.remove(i);
+                        }
+                    }
+                }
+
+                @Override
+                public void onChildMoved(DataSnapshot dataSnapshot, String s) {
+
+                }
+
+                @Override
+                public void onCancelled(FirebaseError firebaseError) {
+
+                }
+            });
+    }
+
+    private void setFollowingUserInfo(final String userUID, final String userState) {
+        mFirebaseRef.child(MainActivity.USERS).child(userUID).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                User user = new User(userUID, (String) dataSnapshot.child(MainActivity.NAME).getValue());
+                user.setUsername((String) dataSnapshot.child(MainActivity.USERNAME).getValue());
+                user.setState(userState);
+
+                // TODO USE thumbnails for small images
+                String str = (String) dataSnapshot.child(MainActivity.USER_IMAGE).getValue();
+                if (str != null) {
+                    byte[] imageAsBytes = Base64.decode(str.getBytes());
+                    user.setImage(BitmapFactory.decodeByteArray(imageAsBytes, 0, imageAsBytes.length));
+                }
+                followerList.add(user);
+                notifyAdapterDataChanged();
+            }
+
+            @Override
+            public void onCancelled(FirebaseError firebaseError) {
+
+            }
+        });
+    }
+
+    private void setUserActivityInfo(final String userUID) {
+        mFirebaseRef.child(MainActivity.USERS).child(userUID).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                User user = new User(userUID, (String) dataSnapshot.child(MainActivity.NAME).getValue());
+                user.setUsername((String) dataSnapshot.child(MainActivity.USERNAME).getValue());
+
+                // TODO USE thumbnails for small images
+                String str = (String) dataSnapshot.child(MainActivity.USER_IMAGE).getValue();
+                if (str != null) {
+                    byte[] imageAsBytes = Base64.decode(str.getBytes());
+                    user.setImage(BitmapFactory.decodeByteArray(imageAsBytes, 0, imageAsBytes.length));
+                }
+                otherUsersList.add(user);
+                updateActivityButton("FOOBAR");
+            }
+
+            @Override
+            public void onCancelled(FirebaseError firebaseError) {
+
+            }
+        });
     }
 
     @Override

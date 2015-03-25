@@ -62,11 +62,11 @@ public class UserActivityAdapter extends ArrayAdapter<User> {
 
     private String getStateText(String state) {
             switch (state) {
-                case MainActivity.BANNED:
+                case User.BANNED:
                     return context.getString(R.string.user_is_banned);
-                case MainActivity.FOLLOWING:
+                case User.FOLLOWING:
                     return context.getString(R.string.user_is_following);
-                case MainActivity.PENDING:
+                case User.PENDING:
                     return context.getString(R.string.user_is_pending);
                 default:
                     return "";

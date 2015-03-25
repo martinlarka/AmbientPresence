@@ -29,21 +29,21 @@ public class SearchItemListener implements View.OnClickListener {
         String state = user.getState();
 
             // Unfollow or remove pending
-        if (state.equals(MainActivity.FOLLOWING) || state.equals(MainActivity.PENDING) || state.equals(MainActivity.BANNED)) {
+        if (state.equals(User.FOLLOWING) || state.equals(User.PENDING) || state.equals(User.BANNED)) {
             mFirebaseRef.child(MainActivity.USERS + user.getUID() + MainActivity.OTHERUSERS)
                     .child(uid).removeValue();
             mFirebaseRef.child(MainActivity.USERS + uid + MainActivity.FOLLOWING_USERS)
                     .child(user.getUID()).removeValue();
-            user.setState(MainActivity.NOSTATE);
+            user.setState(User.NOSTATE);
             v.setBackground(v.getResources().getDrawable(R.drawable.follow));
         } else { // Follow user
             mFirebaseRef.child(MainActivity.USERS + user.getUID() + MainActivity.OTHERUSERS)
-                    .child(uid).child(MainActivity.STATE).setValue(MainActivity.PENDING);
+                    .child(uid).child(MainActivity.STATE).setValue(User.PENDING);
             mFirebaseRef.child(MainActivity.USERS + user.getUID() + MainActivity.OTHERUSERS)
                     .child(uid).child(MainActivity.CREATEDAT).setValue(System.currentTimeMillis());
             mFirebaseRef.child(MainActivity.USERS + uid + MainActivity.FOLLOWING_USERS)
-                    .child(user.getUID()).setValue(MainActivity.PENDING);
-            user.setState(MainActivity.PENDING);
+                    .child(user.getUID()).setValue(User.PENDING);
+            user.setState(User.PENDING);
             v.setBackground(v.getResources().getDrawable(R.drawable.pending));
         }
     }

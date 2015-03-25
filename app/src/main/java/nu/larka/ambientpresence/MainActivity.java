@@ -50,13 +50,6 @@ public class MainActivity extends FragmentActivity implements
     public static final String USERNAME ="username";
     public static final String NAME ="name";
 
-    public static final String FOLLOWING = "following";
-    public static final String PENDING = "pending";
-    public static final String BANNED = "banned";
-    public static final String SELF = "self";
-    public static final String NOSTATE = "nostate";
-    public static final String ACCEPTED = "accepted";
-
     public static final int RC_GOOGLE_LOGIN = 1;
 
     /* A reference to the Firebase */
@@ -210,9 +203,9 @@ public class MainActivity extends FragmentActivity implements
                         Firebase userRef = mFirebaseRef.child(USERS + mAuthData.getUid()); // FIXME UID needs to be changed to something user searchable
                         userRef.child(USERNAME).setValue(userNameify(username));
                         userRef.child(NAME).setValue(mAuthData.getProviderData().get("displayName"));
-                        userRef.child(OTHERUSERS).child(mAuthData.getUid()).setValue(SELF);
-                        userRef.child(FOLLOWING_USERS).child(mAuthData.getUid()).setValue(SELF);
-                        userRef.child(ACCEPTEDUSERS).child(mAuthData.getUid()).setValue(SELF);
+                        userRef.child(OTHERUSERS).child(mAuthData.getUid()).setValue(User.SELF);
+                        userRef.child(FOLLOWING_USERS).child(mAuthData.getUid()).setValue(User.SELF);
+                        userRef.child(ACCEPTEDUSERS).child(mAuthData.getUid()).setValue(User.SELF);
                     }
                 }
 

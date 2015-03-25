@@ -48,19 +48,19 @@ public class UserInfoFragment extends Fragment {
             public void onClick(View v) {
                 // TODO CHANGE TO UNFOLLOW after pressed
                 // Accept follow request
-                mFirebaseRef.child(MainActivity.USERS).child(user.getUID()).child(MainActivity.FOLLOWING_USERS).child(uid).setValue(MainActivity.FOLLOWING);
-                mFirebaseRef.child(MainActivity.USERS).child(uid).child(MainActivity.ACCEPTEDUSERS).child(user.getUID()).setValue(MainActivity.ACCEPTED);
-                mFirebaseRef.child(MainActivity.USERS).child(uid).child(MainActivity.OTHERUSERS).child(user.getUID()).setValue(MainActivity.FOLLOWING);
-                user.setState(MainActivity.FOLLOWING);
+                mFirebaseRef.child(MainActivity.USERS).child(user.getUID()).child(MainActivity.FOLLOWING_USERS).child(uid).setValue(User.FOLLOWING);
+                mFirebaseRef.child(MainActivity.USERS).child(uid).child(MainActivity.ACCEPTEDUSERS).child(user.getUID()).setValue(User.ACCEPTED);
+                mFirebaseRef.child(MainActivity.USERS).child(uid).child(MainActivity.OTHERUSERS).child(user.getUID()).setValue(User.FOLLOWING);
+                user.setState(User.FOLLOWING);
             }
         });
 
         banUserButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mFirebaseRef.child(MainActivity.USERS).child(uid).child(MainActivity.OTHERUSERS).child(user.getUID()).setValue(MainActivity.BANNED);
-                mFirebaseRef.child(MainActivity.USERS).child(user.getUID()).child(MainActivity.FOLLOWING).child(uid).setValue(MainActivity.BANNED);
-                user.setState(MainActivity.BANNED);
+                mFirebaseRef.child(MainActivity.USERS).child(uid).child(MainActivity.OTHERUSERS).child(user.getUID()).setValue(User.BANNED);
+                mFirebaseRef.child(MainActivity.USERS).child(user.getUID()).child(User.FOLLOWING).child(uid).setValue(User.BANNED);
+                user.setState(User.BANNED);
             }
         });
 

@@ -24,6 +24,7 @@ import com.firebase.client.ValueEventListener;
 import com.firebase.tubesock.Base64;
 
 import java.util.ArrayList;
+import java.util.Collections;
 
 import nu.larka.ambientpresence.MainActivity;
 import nu.larka.ambientpresence.R;
@@ -88,7 +89,7 @@ public class RemoteOfficesFragment extends Fragment {
                     @Override
                     public void onChildAdded(DataSnapshot dataSnapshot, String s) {
                         // On added - Check state and make action
-                        if (!dataSnapshot.getValue().equals(MainActivity.SELF)) {
+                        if (!dataSnapshot.getValue().equals(User.SELF)) {
                             setFollowingUserInfo(dataSnapshot.getKey(), (String) dataSnapshot.getValue());
                         }
                     }
@@ -97,7 +98,7 @@ public class RemoteOfficesFragment extends Fragment {
                     public void onChildChanged(DataSnapshot dataSnapshot, String s) {
                         // On changed - Check new state and make action
                         for (User u : followerList) {
-                            if (dataSnapshot.getKey().equals(u.getUID()) && !dataSnapshot.getValue().equals(MainActivity.SELF)) {
+                            if (dataSnapshot.getKey().equals(u.getUID()) && !dataSnapshot.getValue().equals(User.SELF)) {
                                 u.setState((String) dataSnapshot.getValue());
                                 notifyAdapterDataChanged();
                             }
@@ -134,7 +135,7 @@ public class RemoteOfficesFragment extends Fragment {
                     public void onDataChange(DataSnapshot dataSnapshot) {
                         Iterable<DataSnapshot> snapShots = dataSnapshot.getChildren();
                         for (DataSnapshot d: snapShots) {
-                            if (!d.child(MainActivity.STATE).getValue().equals(MainActivity.SELF)) {
+                            if (!d.child(MainActivity.STATE).getValue().equals(User.SELF)) {
                                 setUserActivityInfo(d.getKey(), (String) d.child(MainActivity.STATE).getValue());
                             }
                         }
@@ -154,7 +155,7 @@ public class RemoteOfficesFragment extends Fragment {
             @Override
             public void onChildAdded(DataSnapshot dataSnapshot, String s) {
                 // On added - Check state and make action
-                if (!dataSnapshot.child(MainActivity.STATE).getValue().equals(MainActivity.SELF)) {
+                if (!dataSnapshot.child(MainActivity.STATE).getValue().equals(User.SELF)) {
                     setUserActivityInfo(dataSnapshot.getKey(), (String) dataSnapshot.child(MainActivity.STATE).getValue());
                     newActivities++;
                     updateActivityButton(""+newActivities);
@@ -294,7 +295,8 @@ public class RemoteOfficesFragment extends Fragment {
             // Replace whatever is in the fragment_container view with this fragment,
             // and add the transaction to the back stack so the user can navigate back
             ActivityFragment mActivityFragment = new ActivityFragment();
-            // TODO Send correct user list
+
+            Collections.sort(otherUsersList);
             mActivityFragment.setOtherUsersList(otherUsersList);
             mActivityFragment.setFirebaseRef(mFirebaseRef, uid);
             transaction.replace(R.id.info_fragment, mActivityFragment);

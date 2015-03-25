@@ -5,7 +5,15 @@ import android.graphics.Bitmap;
 /**
  * Created by martin on 15-03-12.
  */
-public class User {
+public class User implements Comparable<User> {
+
+    public static final String FOLLOWING = "following";
+    public static final String PENDING = "pending";
+    public static final String BANNED = "banned";
+    public static final String SELF = "self";
+    public static final String NOSTATE = "nostate";
+    public static final String ACCEPTED = "accepted";
+
     private String UID;
     private String name;
 
@@ -65,5 +73,22 @@ public class User {
 
     public boolean hasImage() {
         return this.image != null;
+    }
+
+    @Override
+    public int compareTo(User another) {
+        switch (this.getState()) {
+            case PENDING:
+                if (another.getState().equals(PENDING)) return this.getName().compareTo(another.getName());
+                else return -1;
+            case FOLLOWING:
+                if (another.getState().equals(PENDING)) return 1;
+                else if (another.getState().equals(BANNED)) return -1;
+                else return this.getName().compareTo(another.getName());
+            case BANNED:
+                if (!another.getState().equals(BANNED)) return 1;
+                else return this.getName().compareTo(another.getName());
+        }
+        return 0;
     }
 }

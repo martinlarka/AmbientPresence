@@ -62,13 +62,13 @@ public class OfficeSearchAdapter extends ArrayAdapter<User> {
 
     private Drawable getUserStateImage(String state) {
         switch (state) {
-            case MainActivity.BANNED:
+            case User.BANNED:
                 Drawable d = getContext().getResources().getDrawable(R.drawable.follow);
                 d.setAlpha(100);
                 return d;
-            case MainActivity.FOLLOWING:
+            case User.FOLLOWING:
                 return getContext().getResources().getDrawable(R.drawable.following);
-            case MainActivity.PENDING:
+            case User.PENDING:
                 return getContext().getResources().getDrawable(R.drawable.pending);
             default:
                 return getContext().getResources().getDrawable(R.drawable.follow);

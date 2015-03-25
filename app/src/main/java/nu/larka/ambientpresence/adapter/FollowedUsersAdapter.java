@@ -63,7 +63,7 @@ public class FollowedUsersAdapter extends BaseAdapter {
             } else {
                 imageView.setImageBitmap(user.getImage());
             }
-            if (user.getState().equals(MainActivity.PENDING))
+            if (user.getState().equals(User.PENDING))
                 imageView.setImageAlpha(100);
         }
 

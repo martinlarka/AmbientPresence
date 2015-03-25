@@ -15,7 +15,7 @@ import com.firebase.client.Firebase;
 import java.util.ArrayList;
 
 import nu.larka.ambientpresence.R;
-import nu.larka.ambientpresence.adapter.ActivityAdapter;
+import nu.larka.ambientpresence.adapter.UserActivityAdapter;
 import nu.larka.ambientpresence.model.User;
 
 /**
@@ -37,10 +37,10 @@ public class ActivityFragment extends Fragment implements AdapterView.OnItemClic
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_activity, container, false);
 
-        ActivityAdapter activityAdapter = new ActivityAdapter(view.getContext(), otherUserList);
+        UserActivityAdapter userActivityAdapter = new UserActivityAdapter(view.getContext(), otherUserList);
         ListView searchResultList = (ListView) view.findViewById(R.id.home_activity_list);
         searchResultList.setOnItemClickListener(this);
-        searchResultList.setAdapter(activityAdapter);
+        searchResultList.setAdapter(userActivityAdapter);
         // Inflate the layout for this fragment
         return view;
     }

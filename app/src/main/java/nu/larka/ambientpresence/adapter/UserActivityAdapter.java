@@ -22,9 +22,9 @@ import nu.larka.ambientpresence.model.User;
 /**
  * Created by martin on 15-03-18.
  */
-public class ActivityAdapter extends ArrayAdapter<User> {
+public class UserActivityAdapter extends ArrayAdapter<User> {
 
-    public ActivityAdapter(Context context, ArrayList<User> otherUsers) {
+    public UserActivityAdapter(Context context, ArrayList<User> otherUsers) {
         super(context, 0, otherUsers);
     }
 
@@ -37,32 +37,22 @@ public class ActivityAdapter extends ArrayAdapter<User> {
             convertView = LayoutInflater.from(getContext()).inflate(R.layout.activity_list_item, parent, false);
         }
 
-        ImageView officeImage = (ImageView) convertView.findViewById(R.id.office_image);
-        //TODO Add image to office
-
         // Lookup view for data population
-        TextView officeName = (TextView) convertView.findViewById(R.id.offce_name);
-        TextView officeUID = (TextView) convertView.findViewById(R.id.office_uid);
+        TextView nameTextView = (TextView) convertView.findViewById(R.id.user_name);
+        TextView usernameTextView = (TextView) convertView.findViewById(R.id.user_username);
+        ImageView userImage = (ImageView) convertView.findViewById(R.id.office_image);
+
         // Populate the data into the template view using the data object
-        officeName.setText(user.getName());
-        officeUID.setText(user.getUID());
+        nameTextView.setText(user.getName());
+        usernameTextView.setText(user.getUsername());
+        if (user.hasImage()) {
+            userImage.setImageBitmap(user.getImage());
+        } else {
+            userImage.setImageResource(R.drawable.home250);
+        }
+
 
         // Return the completed view to render on screen
         return convertView;
-    }
-
-    private Drawable getUserStateImage(String state) {
-        switch (state) {
-            case MainActivity.BANNED:
-                Drawable d = getContext().getResources().getDrawable(R.drawable.follow);
-                d.setAlpha(100);
-                return d;
-            case MainActivity.FOLLOWING:
-                return getContext().getResources().getDrawable(R.drawable.following);
-            case MainActivity.PENDING:
-                return getContext().getResources().getDrawable(R.drawable.pending);
-            default:
-                return getContext().getResources().getDrawable(R.drawable.follow);
-        }
     }
 }

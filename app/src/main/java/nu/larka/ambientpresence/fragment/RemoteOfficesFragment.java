@@ -31,7 +31,7 @@ import nu.larka.ambientpresence.model.User;
 
 public class RemoteOfficesFragment extends Fragment {
 
-    private FollowedUsersAdapter mAdapter;
+    private FollowedUsersAdapter followedUsersAdapter;
     private ArrayList<User> followerList = new ArrayList<>();
     private ArrayList<User> otherUsersList = new ArrayList<>();
     private Button activityButton;
@@ -49,14 +49,13 @@ public class RemoteOfficesFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_remote_offices, container, false);
         // Inflate the layout for this fragment
         followedUsersGridView = (GridView) view.findViewById(R.id.gridview);
-        mAdapter = new FollowedUsersAdapter(view.getContext());
-        mAdapter.setFollowers(followerList);
-        followedUsersGridView.setAdapter(mAdapter);
+        followedUsersAdapter = new FollowedUsersAdapter(view.getContext());
+        followedUsersAdapter.setFollowers(followerList);
+        followedUsersGridView.setAdapter(followedUsersAdapter);
 
         activityButton = (Button) view.findViewById(R.id.activity_button);
         activityButton.setOnClickListener(activityButtonClickListener);
-
-        // TODO How to populate grid with office imgs
+        registerUserActivityCallback();
 
         followedUsersGridView.setOnItemClickListener(itemClickListener);
         registerFollowingUsersCallback();
@@ -73,9 +72,9 @@ public class RemoteOfficesFragment extends Fragment {
     }
 
     private void notifyAdapterDataChanged() {
-        mAdapter.notifyDataSetChanged();
+        followedUsersAdapter.notifyDataSetChanged();
         followedUsersGridView.invalidateViews();
-        followedUsersGridView.setAdapter(mAdapter);
+        followedUsersGridView.setAdapter(followedUsersAdapter);
     }
 
     private void registerFollowingUsersCallback() {
@@ -129,7 +128,7 @@ public class RemoteOfficesFragment extends Fragment {
                 public void onChildAdded(DataSnapshot dataSnapshot, String s) {
                     // On added - Check state and make action
                     if (!dataSnapshot.getValue().equals(MainActivity.SELF)) {
-                        setUserActivityInfo(dataSnapshot.getKey());
+                        setUserActivityInfo(dataSnapshot.getKey(), (String) dataSnapshot.getValue());
                     }
                 }
 
@@ -191,12 +190,13 @@ public class RemoteOfficesFragment extends Fragment {
         });
     }
 
-    private void setUserActivityInfo(final String userUID) {
+    private void setUserActivityInfo(final String userUID, final String userState) {
         mFirebaseRef.child(MainActivity.USERS).child(userUID).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 User user = new User(userUID, (String) dataSnapshot.child(MainActivity.NAME).getValue());
                 user.setUsername((String) dataSnapshot.child(MainActivity.USERNAME).getValue());
+                user.setState(userState);
 
                 // TODO USE thumbnails for small images
                 String str = (String) dataSnapshot.child(MainActivity.USER_IMAGE).getValue();

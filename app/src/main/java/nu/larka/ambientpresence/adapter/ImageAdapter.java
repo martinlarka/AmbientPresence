@@ -57,7 +57,12 @@ public class ImageAdapter extends BaseAdapter {
         if (position == followers.size()) {
             imageView.setImageResource(R.drawable.addhome);
         } else {
-            imageView.setImageResource(R.drawable.home250);
+            User user = followers.get(position);
+            if (!user.hasImage()) {
+                imageView.setImageResource(R.drawable.home250);
+            } else {
+                imageView.setImageBitmap(user.getImage());
+            }
             if (followers.get(position).getState().equals(MainActivity.PENDING))
                 imageView.setImageAlpha(100);
         }

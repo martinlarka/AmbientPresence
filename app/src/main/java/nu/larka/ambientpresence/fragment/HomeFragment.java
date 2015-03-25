@@ -49,6 +49,8 @@ public class HomeFragment extends Fragment implements ValueEventListener {
     private Uri imageUri;
     private ImageView userImageView;
     private TextView titleView;
+    private Bitmap bmp;
+    private String userName;
 
     public static final int CAPTURE_IMAGE_ACTIVITY_REQUEST_CODE = 100;
     private Firebase mFirebaseRef;
@@ -58,6 +60,7 @@ public class HomeFragment extends Fragment implements ValueEventListener {
     }
 
 
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -65,10 +68,21 @@ public class HomeFragment extends Fragment implements ValueEventListener {
 
         mFirebaseRef.addListenerForSingleValueEvent(this);
         titleView = (TextView) v.findViewById(R.id.home_name);
+        if (userName == null) {
+            titleView.setText(getResources().getString(R.string.office_home));
+        } else {
+            titleView.setText(userName);
+        }
+
         userImageView = (ImageView) v.findViewById(R.id.home_image_view);
-        userImageView.setOnClickListener(new View.OnClickListener() {
+        if (bmp == null) {
+            userImageView.setImageResource(R.drawable.home500);
+        } else {
+            userImageView.setImageBitmap(bmp);
+        }
+        userImageView.setOnLongClickListener(new View.OnLongClickListener() {
             @Override
-            public void onClick(View v) {
+            public boolean onLongClick(View v) {
                 // Upload new image
                 Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
                 // Create an image file name
@@ -89,6 +103,7 @@ public class HomeFragment extends Fragment implements ValueEventListener {
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
+                return true;
             }
         });
 
@@ -123,11 +138,13 @@ public class HomeFragment extends Fragment implements ValueEventListener {
 
     @Override
     public void onDataChange(DataSnapshot dataSnapshot) {
-        titleView.setText(getResources().getString(R.string.office_home) + " - " + dataSnapshot.child(MainActivity.NAME).getValue());
+        userName = getResources().getString(R.string.office_home) + " - " + dataSnapshot.child(MainActivity.NAME).getValue();
+        titleView.setText(userName);
         String str = (String) dataSnapshot.child(MainActivity.USER_IMAGE).getValue();
         if (str != null) {
             byte[] imageAsBytes = com.firebase.tubesock.Base64.decode(str.getBytes());
-            userImageView.setImageBitmap(BitmapFactory.decodeByteArray(imageAsBytes, 0, imageAsBytes.length));
+            bmp = BitmapFactory.decodeByteArray(imageAsBytes, 0, imageAsBytes.length);
+            userImageView.setImageBitmap(bmp);
         }
     }
 

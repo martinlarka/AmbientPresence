@@ -62,4 +62,8 @@ public class User {
     public void setImage(Bitmap image) {
         this.image = image;
     }
+
+    public boolean hasImage() {
+        return this.image != null;
+    }
 }

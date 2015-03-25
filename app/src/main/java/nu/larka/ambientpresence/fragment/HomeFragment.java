@@ -20,6 +20,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.firebase.client.DataSnapshot;
@@ -49,8 +51,11 @@ public class HomeFragment extends Fragment implements ValueEventListener {
     private Uri imageUri;
     private ImageView userImageView;
     private TextView titleView;
+    private LinearLayout homeLayout;
+    private ProgressBar userProgress;
     private Bitmap bmp;
     private String userName;
+    private boolean isLoaded = false;
 
     public static final int CAPTURE_IMAGE_ACTIVITY_REQUEST_CODE = 100;
     private Firebase mFirebaseRef;
@@ -66,46 +71,56 @@ public class HomeFragment extends Fragment implements ValueEventListener {
                              Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.fragment_home, container, false);
 
-        mFirebaseRef.addListenerForSingleValueEvent(this);
-        titleView = (TextView) v.findViewById(R.id.home_name);
-        if (userName == null) {
-            titleView.setText(getResources().getString(R.string.office_home));
-        } else {
-            titleView.setText(userName);
-        }
-
         userImageView = (ImageView) v.findViewById(R.id.home_image_view);
-        if (bmp == null) {
-            userImageView.setImageResource(R.drawable.home500);
+        titleView = (TextView) v.findViewById(R.id.home_name);
+        homeLayout = (LinearLayout) v.findViewById(R.id.home_layout);
+        userProgress = (ProgressBar) v.findViewById(R.id.user_progressbar);
+        // Hide views, and display progressbar
+
+        if (!isLoaded) {
+
+            homeLayout.setVisibility(View.GONE);
+            userProgress.setVisibility(View.VISIBLE);
+            mFirebaseRef.addListenerForSingleValueEvent(this);
+
+            titleView.setText(userName);
+            if (bmp == null) {
+                userImageView.setImageResource(R.drawable.home500);
+            } else {
+                userImageView.setImageBitmap(bmp);
+            }
+            userImageView.setOnLongClickListener(new View.OnLongClickListener() {
+                @Override
+                public boolean onLongClick(View v) {
+                    // Upload new image
+                    Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+                    // Create an image file name
+                    String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+                    String imageFileName = "AMBIENTPRESENCE_" + timeStamp + "_";
+                    File storageDir = Environment.getExternalStoragePublicDirectory(
+                            Environment.DIRECTORY_PICTURES);
+                    File image = null;
+                    try {
+                        image = File.createTempFile(
+                                imageFileName,  /* prefix */
+                                ".jpg",         /* suffix */
+                                storageDir      /* directory */
+                        );
+                        imageUri = Uri.fromFile(image);
+                        intent.putExtra(MediaStore.EXTRA_OUTPUT, imageUri);
+                        startActivityForResult(intent, CAPTURE_IMAGE_ACTIVITY_REQUEST_CODE);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                    return true;
+                }
+            });
+            isLoaded = true;
         } else {
+            userProgress.setVisibility(View.GONE);
+            titleView.setText(userName);
             userImageView.setImageBitmap(bmp);
         }
-        userImageView.setOnLongClickListener(new View.OnLongClickListener() {
-            @Override
-            public boolean onLongClick(View v) {
-                // Upload new image
-                Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-                // Create an image file name
-                String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
-                String imageFileName = "AMBIENTPRESENCE_" + timeStamp + "_";
-                File storageDir = Environment.getExternalStoragePublicDirectory(
-                        Environment.DIRECTORY_PICTURES);
-                File image = null;
-                try {
-                    image = File.createTempFile(
-                            imageFileName,  /* prefix */
-                            ".jpg",         /* suffix */
-                            storageDir      /* directory */
-                    );
-                    imageUri = Uri.fromFile(image);
-                    intent.putExtra(MediaStore.EXTRA_OUTPUT, imageUri);
-                    startActivityForResult(intent, CAPTURE_IMAGE_ACTIVITY_REQUEST_CODE);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-                return true;
-            }
-        });
 
         // Inflate the layout for this fragment
         return v;
@@ -146,6 +161,8 @@ public class HomeFragment extends Fragment implements ValueEventListener {
             bmp = BitmapFactory.decodeByteArray(imageAsBytes, 0, imageAsBytes.length);
             userImageView.setImageBitmap(bmp);
         }
+        userProgress.setVisibility(View.GONE);
+        homeLayout.setVisibility(View.VISIBLE);
     }
 
     @Override

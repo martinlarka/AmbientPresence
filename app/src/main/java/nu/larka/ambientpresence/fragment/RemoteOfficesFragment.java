@@ -35,6 +35,7 @@ import nu.larka.ambientpresence.model.User;
 public class RemoteOfficesFragment extends Fragment {
 
     private FollowedUsersAdapter followedUsersAdapter;
+    private ActivityFragment mActivityFragment = null;
     private ArrayList<User> followerList = new ArrayList<>();
     private ArrayList<User> otherUsersList = new ArrayList<>();
     private Button activityButton;
@@ -82,7 +83,7 @@ public class RemoteOfficesFragment extends Fragment {
         activityButton.setAnimation(animation);
     }
 
-    private void notifyAdapterDataChanged() {
+    private void notifyFollowedUsersAdapterDataChanged() {
         followedUsersAdapter.notifyDataSetChanged();
         followedUsersGridView.invalidateViews();
         followedUsersGridView.setAdapter(followedUsersAdapter);
@@ -105,7 +106,7 @@ public class RemoteOfficesFragment extends Fragment {
                         for (User u : followerList) {
                             if (dataSnapshot.getKey().equals(u.getUID()) && !dataSnapshot.getValue().equals(User.SELF)) {
                                 u.setState((String) dataSnapshot.getValue());
-                                notifyAdapterDataChanged();
+                                notifyFollowedUsersAdapterDataChanged();
                             }
                         }
                     }
@@ -118,7 +119,7 @@ public class RemoteOfficesFragment extends Fragment {
                                 followerList.remove(i);
                             }
                         }
-                        notifyAdapterDataChanged();
+                        notifyFollowedUsersAdapterDataChanged();
                     }
 
                     @Override
@@ -155,7 +156,6 @@ public class RemoteOfficesFragment extends Fragment {
     private void registerUserActivityCallback() {
         Query q = mFirebaseRef.child(MainActivity.USERS + uid + MainActivity.OTHERUSERS)
                 .orderByChild(MainActivity.CREATEDAT).startAt(System.currentTimeMillis());
-        Log.i("NOW", ""+System.currentTimeMillis());
         q.addChildEventListener(new ChildEventListener() {
             @Override
             public void onChildAdded(DataSnapshot dataSnapshot, String s) {
@@ -163,7 +163,9 @@ public class RemoteOfficesFragment extends Fragment {
                 if (!dataSnapshot.child(MainActivity.STATE).getValue().equals(User.SELF)) {
                     setUserActivityInfo(dataSnapshot.getKey(), (String) dataSnapshot.child(MainActivity.STATE).getValue());
                     newActivities++;
-                    updateActivityButton(""+newActivities);
+                    updateActivityButton("" + newActivities);
+                    if (mActivityFragment != null)
+                        mActivityFragment.notifyUserActivityAdapter();
                 }
             }
 
@@ -175,6 +177,8 @@ public class RemoteOfficesFragment extends Fragment {
                         u.setState((String) dataSnapshot.child(MainActivity.STATE).getValue());
                         newActivities++;
                         updateActivityButton("" + newActivities);
+                        if (mActivityFragment != null)
+                            mActivityFragment.notifyUserActivityAdapter();
                     }
                 }
             }
@@ -185,6 +189,7 @@ public class RemoteOfficesFragment extends Fragment {
                 for (int i = 0; i < otherUsersList.size(); i++) {
                     if (dataSnapshot.getKey().equals(otherUsersList.get(i).getUID())) {
                         otherUsersList.remove(i);
+
                     }
                 }
             }
@@ -216,7 +221,7 @@ public class RemoteOfficesFragment extends Fragment {
                     user.setImage(BitmapFactory.decodeByteArray(imageAsBytes, 0, imageAsBytes.length));
                 }
                 followerList.add(user);
-                notifyAdapterDataChanged();
+                notifyFollowedUsersAdapterDataChanged();
             }
 
             @Override
@@ -299,7 +304,7 @@ public class RemoteOfficesFragment extends Fragment {
 
             // Replace whatever is in the fragment_container view with this fragment,
             // and add the transaction to the back stack so the user can navigate back
-            ActivityFragment mActivityFragment = new ActivityFragment();
+            mActivityFragment = new ActivityFragment();
 
             Collections.sort(otherUsersList);
             mActivityFragment.setOtherUsersList(otherUsersList);

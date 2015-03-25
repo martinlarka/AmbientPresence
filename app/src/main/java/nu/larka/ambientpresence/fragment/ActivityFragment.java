@@ -25,7 +25,9 @@ public class ActivityFragment extends Fragment implements AdapterView.OnItemClic
 
     private ArrayList<User> otherUserList = new ArrayList<>();
     private Firebase mFirebaseRef;
+    private UserActivityAdapter userActivityAdapter;
     private String uid;
+    private ListView searchResultList;
 
     public ActivityFragment() {
         // Required empty public constructor
@@ -37,8 +39,8 @@ public class ActivityFragment extends Fragment implements AdapterView.OnItemClic
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_activity, container, false);
 
-        UserActivityAdapter userActivityAdapter = new UserActivityAdapter(view.getContext(), otherUserList);
-        ListView searchResultList = (ListView) view.findViewById(R.id.home_activity_list);
+        userActivityAdapter = new UserActivityAdapter(view.getContext(), otherUserList);
+        searchResultList = (ListView) view.findViewById(R.id.home_activity_list);
         searchResultList.setOnItemClickListener(this);
         searchResultList.setAdapter(userActivityAdapter);
         // Inflate the layout for this fragment
@@ -72,5 +74,11 @@ public class ActivityFragment extends Fragment implements AdapterView.OnItemClic
 
         // Commit the transaction
         transaction.commit();
+    }
+
+    public void notifyUserActivityAdapter() {
+        userActivityAdapter.notifyDataSetChanged();
+        searchResultList.invalidateViews();
+        searchResultList.setAdapter(userActivityAdapter);
     }
 }

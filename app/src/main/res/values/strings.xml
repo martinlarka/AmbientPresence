@@ -17,4 +17,9 @@
     <string name="user_is_following">is following you</string>
     <string name="user_is_pending">wants to follow you</string>
     <string name="home_button_text">Home</string>
+    <string name="user_image">User image</string>
+    <string name="send_follow_request">Send request</string>
+    <string name="accept_follow_request">Accept request</string>
+    <string name="unfollow_user">Unfollow user</string>
+    <string name="ban_user">Ban user</string>
 </resources>

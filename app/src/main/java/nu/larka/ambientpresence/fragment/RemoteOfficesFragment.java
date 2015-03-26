@@ -140,7 +140,7 @@ public class RemoteOfficesFragment extends Fragment {
                     @Override
                     public void onDataChange(DataSnapshot dataSnapshot) {
                         Iterable<DataSnapshot> snapShots = dataSnapshot.getChildren();
-                        for (DataSnapshot d: snapShots) {
+                        for (DataSnapshot d : snapShots) {
                             if (!d.child(MainActivity.STATE).getValue().equals(User.SELF)) {
                                 setUserActivityInfo(d.getKey(), (String) d.child(MainActivity.STATE).getValue());
                             }
@@ -188,8 +188,14 @@ public class RemoteOfficesFragment extends Fragment {
                 // On remove - Check state and make actions
                 for (int i = 0; i < otherUsersList.size(); i++) {
                     if (dataSnapshot.getKey().equals(otherUsersList.get(i).getUID())) {
-                        otherUsersList.remove(i);
-
+                        User u = otherUsersList.remove(i);
+                        if (u.getState().equals(User.FOLLOWING)) {
+                            // User unfollowed
+                            mFirebaseRef.child(MainActivity.USERS)
+                                    .child(uid)
+                                    .child(MainActivity.ACCEPTEDUSERS)
+                                    .child(u.getUID()).removeValue();
+                        }
                     }
                 }
             }
@@ -276,7 +282,13 @@ public class RemoteOfficesFragment extends Fragment {
             } else { // Load setup of pressed office
                 // Start user info fragment
                 UserInfoFragment userInfoFragment = new UserInfoFragment();
-                userInfoFragment.setUser(followerList.get(position));
+                User follower = followerList.get(position);
+                for (User u : otherUsersList) {
+                    if (follower.getUID().equals(u.getUID())) {
+                        userInfoFragment.setUser(u);
+                    }
+                }
+                userInfoFragment.setSelfState(follower.getState());
                 userInfoFragment.setFirebaseRef(mFirebaseRef, uid);
 
                 FragmentTransaction transaction = getActivity().getSupportFragmentManager().beginTransaction();

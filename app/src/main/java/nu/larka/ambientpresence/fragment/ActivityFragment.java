@@ -10,10 +10,14 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ListView;
 
+import com.firebase.client.DataSnapshot;
 import com.firebase.client.Firebase;
+import com.firebase.client.FirebaseError;
+import com.firebase.client.ValueEventListener;
 
 import java.util.ArrayList;
 
+import nu.larka.ambientpresence.MainActivity;
 import nu.larka.ambientpresence.R;
 import nu.larka.ambientpresence.adapter.UserActivityAdapter;
 import nu.larka.ambientpresence.model.User;
@@ -60,20 +64,41 @@ public class ActivityFragment extends Fragment implements AdapterView.OnItemClic
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
         // Start user info fragment
+        final User user = otherUserList.get(position);
 
-        UserInfoFragment userInfoFragment = new UserInfoFragment();
-        userInfoFragment.setUser(otherUserList.get(position));
-        userInfoFragment.setFirebaseRef(mFirebaseRef, uid);
+        mFirebaseRef.child(MainActivity.USERS)
+                    .child(uid)
+                    .child(MainActivity.FOLLOWING_USERS)
+                    .child(user.getUID()).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                UserInfoFragment userInfoFragment = new UserInfoFragment();
+                userInfoFragment.setUser(user);
+                if (dataSnapshot.getValue() != null) {
+                    userInfoFragment.setSelfState((String)dataSnapshot.getValue());
+                } else {
+                    userInfoFragment.setSelfState(User.NOSTATE);
+                }
+                userInfoFragment.setFirebaseRef(mFirebaseRef, uid);
 
-        FragmentTransaction transaction = getActivity().getSupportFragmentManager().beginTransaction();
+                FragmentTransaction transaction = getActivity().getSupportFragmentManager().beginTransaction();
 
-        // Replace whatever is in the fragment_container view with this fragment,
-        // and add the transaction to the back stack so the user can navigate back
-        transaction.replace(R.id.info_fragment, userInfoFragment);
-        transaction.addToBackStack(null);
+                // Replace whatever is in the fragment_container view with this fragment,
+                // and add the transaction to the back stack so the user can navigate back
+                transaction.replace(R.id.info_fragment, userInfoFragment);
+                transaction.addToBackStack(null);
 
-        // Commit the transaction
-        transaction.commit();
+                // Commit the transaction
+                transaction.commit();
+
+            }
+
+            @Override
+            public void onCancelled(FirebaseError firebaseError) {
+
+            }
+        });
+
     }
 
     public void notifyUserActivityAdapter() {

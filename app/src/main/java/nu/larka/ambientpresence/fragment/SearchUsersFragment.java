@@ -97,8 +97,8 @@ public class SearchUsersFragment extends Fragment {
             public void onDataChange(DataSnapshot dataSnapshot) {
                 Iterable<DataSnapshot> snapShots = dataSnapshot.getChildren();
                 for (DataSnapshot snap: snapShots) {
-                    String state = snap.child(MainActivity.OTHERUSERS).child(uid).getValue() != null ?
-                            (String)snap.child(MainActivity.OTHERUSERS).child(uid).getValue() : User.NOSTATE;
+                    String state = snap.child(MainActivity.OTHERUSERS).child(uid).child(MainActivity.STATE).getValue() != null ?
+                            (String)snap.child(MainActivity.OTHERUSERS).child(uid).child(MainActivity.STATE).getValue() : User.NOSTATE;
                     if (!state.equals(User.SELF)) {
                         fireBaseUsers.add(userFromDataSnapshot(snap, state));
                     }

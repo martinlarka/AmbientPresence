@@ -51,7 +51,6 @@ public class HomeFragment extends Fragment implements ValueEventListener {
     private ImageView userImageView;
     private TextView titleView;
     private LinearLayout homeLayout;
-    private ProgressBar userProgress;
     private Bitmap bmp;
     private String userName;
     private boolean isLoaded = false;
@@ -73,13 +72,11 @@ public class HomeFragment extends Fragment implements ValueEventListener {
         userImageView = (ImageView) v.findViewById(R.id.home_image_view);
         titleView = (TextView) v.findViewById(R.id.home_name);
         homeLayout = (LinearLayout) v.findViewById(R.id.home_layout);
-        userProgress = (ProgressBar) v.findViewById(R.id.user_progressbar);
         // Hide views, and display progressbar
 
         if (!isLoaded) {
 
             homeLayout.setVisibility(View.GONE);
-            userProgress.setVisibility(View.VISIBLE);
             mFirebaseRef.addListenerForSingleValueEvent(this);
 
             titleView.setText(userName);
@@ -116,7 +113,6 @@ public class HomeFragment extends Fragment implements ValueEventListener {
             });
             isLoaded = true;
         } else {
-            userProgress.setVisibility(View.GONE);
             titleView.setText(userName);
             userImageView.setImageBitmap(bmp);
         }
@@ -155,7 +151,6 @@ public class HomeFragment extends Fragment implements ValueEventListener {
             bmp = BitmapFactory.decodeByteArray(imageAsBytes, 0, imageAsBytes.length);
             userImageView.setImageBitmap(bmp);
         }
-        userProgress.setVisibility(View.GONE);
         homeLayout.setVisibility(View.VISIBLE);
     }
 

@@ -47,7 +47,6 @@ import nu.larka.ambientpresence.model.User;
  */
 public class HomeFragment extends Fragment implements ValueEventListener {
 
-    private User user;
     private Uri imageUri;
     private ImageView userImageView;
     private TextView titleView;
@@ -144,11 +143,6 @@ public class HomeFragment extends Fragment implements ValueEventListener {
                     }
                 }
         }
-    }
-
-
-    public void setHomeUser(User user) {
-        this.user = user;
     }
 
     @Override

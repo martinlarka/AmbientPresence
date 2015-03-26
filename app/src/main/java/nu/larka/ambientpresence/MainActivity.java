@@ -208,6 +208,8 @@ public class MainActivity extends FragmentActivity implements
                         userRef.child(FOLLOWING_USERS).child(mAuthData.getUid()).setValue(User.SELF);
                         userRef.child(ACCEPTEDUSERS).child(mAuthData.getUid()).setValue(User.SELF);
                     }
+                    // TODO Register callbacks here??
+
                 }
 
                 // TODO Let users give own usernames, or fix email to username

@@ -67,9 +67,8 @@ public class SearchUsersFragment extends Fragment {
                                 u.getName().toLowerCase().startsWith(s.toString().toLowerCase()))
                                 && !searchResults.contains(u)) {
                             officeSearchAdapter.add(u);
-                        } else if ((!u.getUsername().toLowerCase().startsWith(s.toString().toLowerCase()) ||
-                                !u.getName().toLowerCase().startsWith(s.toString().toLowerCase()))
-                                && searchResults.contains(u)) {
+                        } else if ((!u.getUsername().toLowerCase().startsWith(s.toString().toLowerCase()) &&
+                                !u.getName().toLowerCase().startsWith(s.toString().toLowerCase()))) {
                             officeSearchAdapter.remove(u);
                         }
                     }

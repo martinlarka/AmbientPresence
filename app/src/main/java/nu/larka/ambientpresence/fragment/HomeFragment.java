@@ -85,6 +85,11 @@ public class HomeFragment extends Fragment implements ValueEventListener {
             } else {
                 userImageView.setImageBitmap(bmp);
             }
+            isLoaded = true;
+        } else {
+            titleView.setText(userName);
+            userImageView.setImageBitmap(bmp);
+        }
             userImageView.setOnLongClickListener(new View.OnLongClickListener() {
                 @Override
                 public boolean onLongClick(View v) {
@@ -111,11 +116,6 @@ public class HomeFragment extends Fragment implements ValueEventListener {
                     return true;
                 }
             });
-            isLoaded = true;
-        } else {
-            titleView.setText(userName);
-            userImageView.setImageBitmap(bmp);
-        }
 
         // Inflate the layout for this fragment
         return v;
@@ -166,7 +166,7 @@ public class HomeFragment extends Fragment implements ValueEventListener {
             Bitmap bmp;
             try {
                 bmp = MediaStore.Images.Media.getBitmap(getActivity().getContentResolver(), uris[0]);
-                Bitmap.createScaledBitmap(bmp, bmp.getWidth()/4, bmp.getHeight()/4, false);
+                Bitmap.createScaledBitmap(bmp, 200, 200, false);
                 ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
                 bmp.compress(Bitmap.CompressFormat.PNG, 80, byteArrayOutputStream);
                 bmp.recycle();
@@ -213,7 +213,7 @@ public class HomeFragment extends Fragment implements ValueEventListener {
             mat.postRotate(angle);
 
             Bitmap bmp = BitmapFactory.decodeStream(is);
-            bmp = Bitmap.createBitmap(bmp, 0, 0, bmp.getWidth(), bmp.getHeight(), mat, true);
+            bmp = Bitmap.createBitmap(bmp, 0, 0, 200, 200, mat, true);
 
             OutputStream os;
             try {
@@ -222,7 +222,6 @@ public class HomeFragment extends Fragment implements ValueEventListener {
                 e.printStackTrace();
                 return;
             }
-            Bitmap.createScaledBitmap(bmp, bmp.getWidth()/4, bmp.getHeight()/4, false);
             bmp.compress(Bitmap.CompressFormat.PNG, 80, os);
 
             try {

@@ -218,14 +218,27 @@ public class RemoteOfficesFragment extends Fragment {
             public void onDataChange(DataSnapshot dataSnapshot) {
                 User user = new User(userUID, (String) dataSnapshot.child(MainActivity.NAME).getValue());
                 user.setUsername((String) dataSnapshot.child(MainActivity.USERNAME).getValue());
-                user.setState(userState);
+                user.setSelfState(userState);
 
                 // TODO USE thumbnails for small images
-                String str = (String) dataSnapshot.child(MainActivity.USER_IMAGE).getValue();
-                if (str != null) {
-                    byte[] imageAsBytes = Base64.decode(str.getBytes());
-                    user.setImage(BitmapFactory.decodeByteArray(imageAsBytes, 0, imageAsBytes.length));
+
+                if (dataSnapshot.hasChild(MainActivity.USER_IMAGE)) {
+                    user.setImage(BitmapFactory.decodeByteArray(
+                            ((String) dataSnapshot.child(
+                                    MainActivity.USER_IMAGE).getValue())
+                                    .getBytes(), 0,
+                            ((String) dataSnapshot.child(MainActivity.USER_IMAGE)
+                                    .getValue()).getBytes().length));
                 }
+
+                if (dataSnapshot.child(MainActivity.OTHERUSERS).hasChild(uid)) {
+                    user.setState((String) dataSnapshot.child(MainActivity.OTHERUSERS)
+                                                       .child(uid)
+                                                       .child(MainActivity.STATE).getValue());
+                } else {
+                    user.setState(User.NOSTATE);
+                }
+
                 followerList.add(user);
                 notifyFollowedUsersAdapterDataChanged();
             }
@@ -282,13 +295,7 @@ public class RemoteOfficesFragment extends Fragment {
             } else { // Load setup of pressed office
                 // Start user info fragment
                 UserInfoFragment userInfoFragment = new UserInfoFragment();
-                User follower = followerList.get(position);
-                for (User u : otherUsersList) {
-                    if (follower.getUID().equals(u.getUID())) {
-                        userInfoFragment.setUser(u);
-                    }
-                }
-                userInfoFragment.setSelfState(follower.getState());
+                userInfoFragment.setUser(followerList.get(position));
                 userInfoFragment.setFirebaseRef(mFirebaseRef, uid);
 
                 FragmentTransaction transaction = getActivity().getSupportFragmentManager().beginTransaction();

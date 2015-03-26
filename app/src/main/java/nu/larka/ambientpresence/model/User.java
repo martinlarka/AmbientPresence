@@ -20,6 +20,16 @@ public class User implements Comparable<User> {
 
     private String username;
     private String state;
+
+    public String getSelfState() {
+        return selfState;
+    }
+
+    public void setSelfState(String selfState) {
+        this.selfState = selfState;
+    }
+
+    private String selfState;
     private Bitmap image;
 
     public User() {}

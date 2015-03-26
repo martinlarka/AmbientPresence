@@ -73,12 +73,12 @@ public class ActivityFragment extends Fragment implements AdapterView.OnItemClic
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 UserInfoFragment userInfoFragment = new UserInfoFragment();
-                userInfoFragment.setUser(user);
                 if (dataSnapshot.getValue() != null) {
-                    userInfoFragment.setSelfState((String)dataSnapshot.getValue());
+                    user.setSelfState((String)dataSnapshot.getValue());
                 } else {
-                    userInfoFragment.setSelfState(User.NOSTATE);
+                    user.setSelfState(User.NOSTATE);
                 }
+                userInfoFragment.setUser(user);
                 userInfoFragment.setFirebaseRef(mFirebaseRef, uid);
 
                 FragmentTransaction transaction = getActivity().getSupportFragmentManager().beginTransaction();

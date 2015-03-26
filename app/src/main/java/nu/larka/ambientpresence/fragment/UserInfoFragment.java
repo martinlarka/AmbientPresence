@@ -28,7 +28,6 @@ public class UserInfoFragment extends Fragment {
     private User user;
     private Firebase mFirebaseRef;
     private String uid;
-    private String selfState;
 
     public UserInfoFragment() {
         // Required empty public constructor
@@ -74,7 +73,7 @@ public class UserInfoFragment extends Fragment {
                 break;
         }
 
-        if (selfState.equals(User.FOLLOWING) || selfState.equals(User.PENDING)) {
+        if (user.getSelfState().equals(User.FOLLOWING) || user.getSelfState().equals(User.PENDING)) {
             selfStateButton.setOnClickListener(unFollowUserListener);
             selfStateButton.setText(R.string.unfollow_user);
         } else {
@@ -95,9 +94,6 @@ public class UserInfoFragment extends Fragment {
         this.uid = uid;
     }
 
-    public void setSelfState(String value) {
-        this.selfState = value;
-    }
 
     private View.OnClickListener sendFollowRequestListener = new View.OnClickListener() {
         @Override
@@ -114,8 +110,8 @@ public class UserInfoFragment extends Fragment {
         public void onClick(View v) {
             mFirebaseRef.child(MainActivity.USERS).child(user.getUID()).child(MainActivity.FOLLOWING_USERS).child(uid).setValue(User.FOLLOWING);
             mFirebaseRef.child(MainActivity.USERS).child(uid).child(MainActivity.ACCEPTEDUSERS).child(user.getUID()).setValue(User.ACCEPTED);
-            mFirebaseRef.child(MainActivity.USERS).child(uid).child(MainActivity.OTHERUSERS).child(uid).child(MainActivity.STATE).setValue(User.FOLLOWING);
-            mFirebaseRef.child(MainActivity.USERS).child(uid).child(MainActivity.OTHERUSERS).child(uid).child(MainActivity.CREATEDAT).setValue(System.currentTimeMillis());
+            mFirebaseRef.child(MainActivity.USERS).child(uid).child(MainActivity.OTHERUSERS).child(user.getUID()).child(MainActivity.STATE).setValue(User.FOLLOWING);
+            mFirebaseRef.child(MainActivity.USERS).child(uid).child(MainActivity.OTHERUSERS).child(user.getUID()).child(MainActivity.CREATEDAT).setValue(System.currentTimeMillis());
             user.setState(User.FOLLOWING);
         }
     };
@@ -123,7 +119,8 @@ public class UserInfoFragment extends Fragment {
     private View.OnClickListener banUserListener = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
-            mFirebaseRef.child(MainActivity.USERS).child(uid).child(MainActivity.FOLLOWING_USERS).child(user.getUID()).setValue(User.BANNED);
+            mFirebaseRef.child(MainActivity.USERS).child(user.getUID()).child(MainActivity.FOLLOWING_USERS).child(user.getUID()).setValue(User.BANNED);
+            mFirebaseRef.child(MainActivity.USERS).child(uid).child(MainActivity.ACCEPTEDUSERS).child(user.getUID()).removeValue();
             mFirebaseRef.child(MainActivity.USERS).child(user.getUID()).child(MainActivity.OTHERUSERS).child(uid).child(MainActivity.STATE).setValue(User.BANNED);
             mFirebaseRef.child(MainActivity.USERS).child(user.getUID()).child(MainActivity.OTHERUSERS).child(uid).child(MainActivity.CREATEDAT).setValue(System.currentTimeMillis());
             user.setState(User.BANNED);

@@ -84,6 +84,7 @@ public class MainActivity extends FragmentActivity implements
 
     private HomeFragment mHomeFragment;
     private User homeUser;
+    private boolean fragmentsStarted = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -180,7 +181,6 @@ public class MainActivity extends FragmentActivity implements
             Log.i(TAG, provider + " auth successful");
             setAuthenticatedUser(authData);
             // Check if user is in firebase else create
-            registerUser();
         }
 
         @Override
@@ -190,17 +190,16 @@ public class MainActivity extends FragmentActivity implements
         }
 
     }
+
     private void registerUser() {
-        if (mAuthData != null) {
             Firebase childRef = mFirebaseRef.child(USERS+mAuthData.getUid());
             childRef.addListenerForSingleValueEvent(new ValueEventListener() {
                 @Override
                 public void onDataChange(DataSnapshot dataSnapshot) {
-                    // User not registered
-                    if (!dataSnapshot.exists()) {
+                    if (!dataSnapshot.exists()) { // User not registered
                         // Setup user
                         String username = (String) mAuthData.getProviderData().get("displayName");
-                        Firebase userRef = mFirebaseRef.child(USERS + mAuthData.getUid()); // FIXME UID needs to be changed to something user searchable
+                        Firebase userRef = mFirebaseRef.child(USERS + mAuthData.getUid());
                         userRef.child(USERNAME).setValue(userNameify(username));
                         userRef.child(NAME).setValue(mAuthData.getProviderData().get("displayName"));
                         userRef.child(OTHERUSERS).child(mAuthData.getUid()).child(STATE).setValue(User.SELF);
@@ -208,8 +207,8 @@ public class MainActivity extends FragmentActivity implements
                         userRef.child(FOLLOWING_USERS).child(mAuthData.getUid()).setValue(User.SELF);
                         userRef.child(ACCEPTEDUSERS).child(mAuthData.getUid()).setValue(User.SELF);
                     }
-                    // TODO Register callbacks here??
-
+                    startRemoteOfficeFragment(mAuthData);
+                    startHomeFragment(mAuthData);
                 }
 
                 // TODO Let users give own usernames, or fix email to username
@@ -222,7 +221,7 @@ public class MainActivity extends FragmentActivity implements
 
                 }
             });
-        }
+            fragmentsStarted = true;
     }
 
     /* A helper method to resolve the current ConnectionResult error. */
@@ -336,38 +335,45 @@ public class MainActivity extends FragmentActivity implements
         if (authData != null) {
             /* Hide all the login buttons */
             mGoogleLoginButton.setVisibility(View.GONE);
-
-            FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-
-            mRemoteOfficesFragment.setFirebase(mFirebaseRef, authData.getUid());
-            // Replace whatever is in the fragment_container view with this fragment,
-            // and add the transaction to the back stack so the user can navigate back
-            transaction.replace(R.id.office_fragment, mRemoteOfficesFragment);
-            transaction.addToBackStack(null);
-
-            // Commit the transaction
-            transaction.commit();
-
-            transaction = getSupportFragmentManager().beginTransaction();
-
-            // Replace whatever is in the fragment_container view with this fragment,
-            // and add the transaction to the back stack so the user can navigate back
-            mHomeFragment.setHomeUser(homeUser);
-            mHomeFragment.setFirebaseRef(mFirebaseRef.child(USERS).child(authData.getUid()));
-            transaction.replace(R.id.info_fragment, mHomeFragment);
-            transaction.addToBackStack(null);
-
-            // Commit the transaction
-            transaction.commit();
-
-
         } else {
             /* No authenticated user show all the login buttons */
             mGoogleLoginButton.setVisibility(View.VISIBLE);
         }
         this.mAuthData = authData;
+        if (mAuthData != null && !fragmentsStarted) {
+            registerUser();
+        }
         /* invalidate options menu to hide/show the logout button */
         supportInvalidateOptionsMenu();
+    }
+
+    private void startHomeFragment(AuthData authData) {
+        FragmentTransaction transaction;
+
+        transaction = getSupportFragmentManager().beginTransaction();
+
+        // Replace whatever is in the fragment_container view with this fragment,
+        // and add the transaction to the back stack so the user can navigate back
+        mHomeFragment.setHomeUser(homeUser);
+        mHomeFragment.setFirebaseRef(mFirebaseRef.child(USERS).child(authData.getUid()));
+        transaction.replace(R.id.info_fragment, mHomeFragment);
+        transaction.addToBackStack(null);
+
+        // Commit the transaction
+        transaction.commit();
+    }
+
+    private void startRemoteOfficeFragment(AuthData authData) {
+        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+
+        mRemoteOfficesFragment.setFirebase(mFirebaseRef, authData.getUid());
+        // Replace whatever is in the fragment_container view with this fragment,
+        // and add the transaction to the back stack so the user can navigate back
+        transaction.replace(R.id.office_fragment, mRemoteOfficesFragment);
+        transaction.addToBackStack(null);
+
+        // Commit the transaction
+        transaction.commit();
     }
 
 
@@ -396,6 +402,7 @@ public class MainActivity extends FragmentActivity implements
                 getSupportFragmentManager().beginTransaction().remove(fragment).commit();
             /* Update authenticated user and show login buttons */
             setAuthenticatedUser(null);
+            fragmentsStarted = false;
         }
     }
 }

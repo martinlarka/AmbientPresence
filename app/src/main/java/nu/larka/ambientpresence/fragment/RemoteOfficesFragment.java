@@ -168,19 +168,12 @@ public class RemoteOfficesFragment extends Fragment {
             @Override
             public void onChildChanged(DataSnapshot dataSnapshot, String s) {
                 // If UID exists in other users, update else add
-                boolean userUpdated = false;
                 for (User u : otherUsersList) {
                     // User exists in list, and state has changed
                     if (dataSnapshot.getKey().equals(u.getUID()) && !dataSnapshot.getValue().equals(u.getState())) {
                         u.setSelfState((String) dataSnapshot.getValue());
-                        userUpdated = true;
                         pingActivity();
                     }
-                }
-                // If new user, add user to other users
-                if (!userUpdated) { // FIXME Might me unused?
-                    setUserActivityInfo(dataSnapshot.getKey(), (String) (dataSnapshot.getValue()));
-                    pingActivity();
                 }
             }
 
@@ -190,6 +183,10 @@ public class RemoteOfficesFragment extends Fragment {
                 for (User u : otherUsersList) {
                     // User exists in list
                     if (dataSnapshot.getKey().equals(u.getUID())) {
+                        mFirebaseRef.child(MainActivity.USERS)
+                                .child(uid)
+                                .child(MainActivity.ACCEPTEDUSERS)
+                                .child(u.getUID()).removeValue();
                         otherUsersList.remove(u);
                     }
                 }

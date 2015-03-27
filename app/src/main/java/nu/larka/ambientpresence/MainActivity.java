@@ -202,10 +202,9 @@ public class MainActivity extends FragmentActivity implements
                         Firebase userRef = mFirebaseRef.child(USERS + mAuthData.getUid());
                         userRef.child(USERNAME).setValue(userNameify(username));
                         userRef.child(NAME).setValue(mAuthData.getProviderData().get("displayName"));
-                        userRef.child(OTHERUSERS).child(mAuthData.getUid()).child(STATE).setValue(User.SELF);
-                        userRef.child(OTHERUSERS).child(mAuthData.getUid()).child(CREATEDAT).setValue(System.currentTimeMillis());
                         userRef.child(FOLLOWING_USERS).child(mAuthData.getUid()).setValue(User.SELF);
                         userRef.child(ACCEPTEDUSERS).child(mAuthData.getUid()).setValue(User.SELF);
+                        userRef.child(OTHERUSERS).child(String.valueOf(System.currentTimeMillis())).child(mAuthData.getUid()).setValue(User.SELF);
                     }
                     startRemoteOfficeFragment(mAuthData);
                     startHomeFragment(mAuthData);

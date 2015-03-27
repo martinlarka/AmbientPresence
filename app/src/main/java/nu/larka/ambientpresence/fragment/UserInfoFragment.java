@@ -99,9 +99,7 @@ public class UserInfoFragment extends Fragment {
         @Override
         public void onClick(View v) {
             mFirebaseRef.child(MainActivity.USERS).child(uid).child(MainActivity.FOLLOWING_USERS).child(user.getUID()).setValue(User.PENDING);
-            mFirebaseRef.child(MainActivity.USERS).child(user.getUID()).child(MainActivity.OTHERUSERS).child(uid).child(MainActivity.STATE).setValue(User.PENDING);
-            mFirebaseRef.child(MainActivity.USERS).child(user.getUID()).child(MainActivity.OTHERUSERS).child(uid).child(MainActivity.CREATEDAT).setValue(System.currentTimeMillis());
-            user.setState(User.PENDING);
+            user.setState(User.PENDING);mFirebaseRef.child(MainActivity.USERS).child(uid).child(MainActivity.OTHERUSERS).child(String.valueOf(System.currentTimeMillis())).child(user.getUID()).setValue(User.PENDING);
         }
     };
 
@@ -110,8 +108,8 @@ public class UserInfoFragment extends Fragment {
         public void onClick(View v) {
             mFirebaseRef.child(MainActivity.USERS).child(user.getUID()).child(MainActivity.FOLLOWING_USERS).child(uid).setValue(User.FOLLOWING);
             mFirebaseRef.child(MainActivity.USERS).child(uid).child(MainActivity.ACCEPTEDUSERS).child(user.getUID()).setValue(User.ACCEPTED);
-            mFirebaseRef.child(MainActivity.USERS).child(uid).child(MainActivity.OTHERUSERS).child(user.getUID()).child(MainActivity.STATE).setValue(User.FOLLOWING);
-            mFirebaseRef.child(MainActivity.USERS).child(uid).child(MainActivity.OTHERUSERS).child(user.getUID()).child(MainActivity.CREATEDAT).setValue(System.currentTimeMillis());
+            mFirebaseRef.child(MainActivity.USERS).child(uid).child(MainActivity.OTHERUSERS).child(String.valueOf(System.currentTimeMillis())).child(user.getUID()).setValue(User.FOLLOWING);
+            // TODO remove old value in otherusers
             user.setState(User.FOLLOWING);
         }
     };
@@ -121,8 +119,8 @@ public class UserInfoFragment extends Fragment {
         public void onClick(View v) {
             mFirebaseRef.child(MainActivity.USERS).child(user.getUID()).child(MainActivity.FOLLOWING_USERS).child(user.getUID()).setValue(User.BANNED);
             mFirebaseRef.child(MainActivity.USERS).child(uid).child(MainActivity.ACCEPTEDUSERS).child(user.getUID()).removeValue();
-            mFirebaseRef.child(MainActivity.USERS).child(user.getUID()).child(MainActivity.OTHERUSERS).child(uid).child(MainActivity.STATE).setValue(User.BANNED);
-            mFirebaseRef.child(MainActivity.USERS).child(user.getUID()).child(MainActivity.OTHERUSERS).child(uid).child(MainActivity.CREATEDAT).setValue(System.currentTimeMillis());
+            mFirebaseRef.child(MainActivity.USERS).child(uid).child(MainActivity.OTHERUSERS).child(String.valueOf(System.currentTimeMillis())).child(user.getUID()).setValue(User.BANNED);
+            // TODO remove old value in otherusers
             user.setState(User.BANNED);
         }
     };
@@ -131,7 +129,7 @@ public class UserInfoFragment extends Fragment {
         @Override
         public void onClick(View v) {
             mFirebaseRef.child(MainActivity.USERS).child(uid).child(MainActivity.FOLLOWING_USERS).child(user.getUID()).removeValue();
-            mFirebaseRef.child(MainActivity.USERS).child(user.getUID()).child(MainActivity.OTHERUSERS).child(uid).removeValue();
+            // TODO remove old value in otherusers
             user.setState(User.NOSTATE);
         }
     };

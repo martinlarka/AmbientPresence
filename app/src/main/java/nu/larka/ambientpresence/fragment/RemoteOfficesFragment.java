@@ -247,6 +247,7 @@ public class RemoteOfficesFragment extends Fragment {
                                     .getValue()).getBytes().length));
                 }
 
+                // Get state from otheruser FIXME could be checked in otherList??
                 String state = User.NOSTATE;
                 Iterable<DataSnapshot> otherUsers = dataSnapshot.child(MainActivity.OTHERUSERS).getChildren();
                 for (DataSnapshot otherUser : otherUsers) {

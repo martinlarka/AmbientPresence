@@ -2,6 +2,7 @@ package nu.larka.ambientpresence.model;
 
 import android.graphics.Bitmap;
 
+import com.firebase.client.AuthData;
 import com.firebase.client.Firebase;
 
 import nu.larka.ambientpresence.MainActivity;
@@ -133,5 +134,18 @@ public class User implements Comparable<User> {
         firebase.child(MainActivity.USERS).child(selfUID).child(MainActivity.FOLLOWING_USERS).child(this.UID).removeValue();
         // TODO remove old value in otherusers
         this.state = NOSTATE;
+    }
+
+    public static void registerUser(Firebase userRef, AuthData authData) {
+        userRef.child(MainActivity.USERNAME).setValue(userNameify((String) authData.getProviderData().get("displayName")));
+        userRef.child(MainActivity.NAME).setValue(authData.getProviderData().get("displayName"));
+        userRef.child(MainActivity.FOLLOWING_USERS).child(authData.getUid()).setValue(User.SELF);
+        userRef.child(MainActivity.ACCEPTEDUSERS).child(authData.getUid()).setValue(User.SELF);
+        userRef.child(MainActivity.OTHERUSERS).child(String.valueOf(System.currentTimeMillis())).child(authData.getUid()).setValue(User.SELF);
+    }
+
+    // TODO Let users give own usernames, or fix email to username
+    private static String userNameify(String username) {
+        return username.toLowerCase().replace(" ", "").replace("å", "a").replace("ä", "a").replace("ö", "o");
     }
 }

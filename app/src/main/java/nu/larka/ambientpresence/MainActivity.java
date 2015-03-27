@@ -198,21 +198,11 @@ public class MainActivity extends FragmentActivity implements
                 public void onDataChange(DataSnapshot dataSnapshot) {
                     if (!dataSnapshot.exists()) { // User not registered
                         // Setup user
-                        String username = (String) mAuthData.getProviderData().get("displayName");
                         Firebase userRef = mFirebaseRef.child(USERS + mAuthData.getUid());
-                        userRef.child(USERNAME).setValue(userNameify(username));
-                        userRef.child(NAME).setValue(mAuthData.getProviderData().get("displayName"));
-                        userRef.child(FOLLOWING_USERS).child(mAuthData.getUid()).setValue(User.SELF);
-                        userRef.child(ACCEPTEDUSERS).child(mAuthData.getUid()).setValue(User.SELF);
-                        userRef.child(OTHERUSERS).child(String.valueOf(System.currentTimeMillis())).child(mAuthData.getUid()).setValue(User.SELF);
+                        User.registerUser(userRef, mAuthData);
                     }
                     startRemoteOfficeFragment(mAuthData);
                     startHomeFragment(mAuthData);
-                }
-
-                // TODO Let users give own usernames, or fix email to username
-                private String userNameify(String username) {
-                    return username.toLowerCase().replace(" ", "").replace("å", "a").replace("ä", "a").replace("ö", "o");
                 }
 
                 @Override

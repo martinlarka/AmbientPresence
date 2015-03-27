@@ -54,31 +54,77 @@ public class UserInfoFragment extends Fragment {
             userImage.setImageResource(R.drawable.home500);
         }
 
-        switch (user.getState()) {
+        switch (user.getSelfState()) {
             case User.NOSTATE:
-            case User.FOLLOWING:
-                // Send request to follow
-                userStateButton.setOnClickListener(sendFollowRequestListener);
-                userStateButton.setText(R.string.send_follow_request);
+                switch (user.getState()) {
+                    case User.NOSTATE:
+                    case User.FOLLOWING:
+                        userStateButton.setOnClickListener(sendFollowRequestListener);
+                        userStateButton.setText(R.string.send_follow_request);
+                        break;
+                    case User.PENDING:
+                        userStateButton.setOnClickListener(acceptFollowRequestListener);
+                        userStateButton.setText(R.string.accept_follow_request);
+                        break;
+                    case User.BANNED:
+                        userStateButton.setEnabled(false);
+                        userStateButton.setText(R.string.user_is_banned);
+                        break;
+                }
+                selfStateButton.setOnClickListener(banUserListener);
+                selfStateButton.setText(R.string.ban_user);
                 break;
             case User.PENDING:
-                // Accept follow request
-                userStateButton.setOnClickListener(acceptFollowRequestListener);
-                userStateButton.setText(R.string.accept_follow_request);
+                switch (user.getState()) {
+                    case User.NOSTATE:
+                        selfStateButton.setOnClickListener(unFollowUserListener);
+                        selfStateButton.setText(R.string.unfollow_user);
+                        userStateButton.setEnabled(false);
+                        userStateButton.setText(R.string.waiting_for_follow_accept);
+                        break;
+                    case User.FOLLOWING:
+                    case User.BANNED:
+                        userStateButton.setEnabled(false);
+                        userStateButton.setText(R.string.waiting_for_follow_accept);
+                        selfStateButton.setOnClickListener(banUserListener);
+                        selfStateButton.setText(R.string.ban_user);
+                        break;
+                    case User.PENDING:
+                        userStateButton.setOnClickListener(acceptFollowRequestListener);
+                        userStateButton.setText(R.string.accept_follow_request);
+                        selfStateButton.setOnClickListener(unFollowUserListener);
+                        selfStateButton.setText(R.string.unfollow_user);
+                        break;
+                }
+                break;
+            case User.FOLLOWING:
+                switch (user.getState()) {
+                    case User.NOSTATE:
+                        userStateButton.setEnabled(false);
+                        userStateButton.setText(R.string.following_user);
+                        selfStateButton.setOnClickListener(unFollowUserListener);
+                        selfStateButton.setText(R.string.unfollow_user);
+                        break;
+                    case User.BANNED:
+                    case User.FOLLOWING:
+                        userStateButton.setEnabled(false);
+                        userStateButton.setText(R.string.following_user);
+                        selfStateButton.setOnClickListener(banUserListener);
+                        selfStateButton.setText(R.string.ban_user);
+                        break;
+                    case User.PENDING:
+                        userStateButton.setOnClickListener(acceptFollowRequestListener);
+                        userStateButton.setText(R.string.accept_follow_request);
+                        selfStateButton.setOnClickListener(unFollowUserListener);
+                        selfStateButton.setText(R.string.unfollow_user);
+                        break;
+                }
                 break;
             case User.BANNED:
-                // Hidden
                 userStateButton.setEnabled(false);
                 userStateButton.setText(R.string.user_is_banned);
-                break;
-        }
 
-        if (user.getSelfState().equals(User.FOLLOWING) || user.getSelfState().equals(User.PENDING)) {
-            selfStateButton.setOnClickListener(unFollowUserListener);
-            selfStateButton.setText(R.string.unfollow_user);
-        } else {
-            selfStateButton.setOnClickListener(banUserListener);
-            selfStateButton.setText(R.string.ban_user);
+                break;
         }
         // Inflate the layout for this fragment
         return view;
@@ -93,7 +139,6 @@ public class UserInfoFragment extends Fragment {
         this.mFirebaseRef = mFirebaseRef;
         this.uid = uid;
     }
-
 
     private View.OnClickListener sendFollowRequestListener = new View.OnClickListener() {
         @Override
@@ -112,7 +157,14 @@ public class UserInfoFragment extends Fragment {
     private View.OnClickListener banUserListener = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
-         user.banUser(mFirebaseRef, uid);
+            user.banUser(mFirebaseRef, uid);
+        }
+    };
+
+    private View.OnClickListener unBanUserListener = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            user.unBanUser(mFirebaseRef, uid);
         }
     };
 

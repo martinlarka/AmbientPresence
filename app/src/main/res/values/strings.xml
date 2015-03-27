@@ -22,4 +22,6 @@
     <string name="accept_follow_request">Accept request</string>
     <string name="unfollow_user">Unfollow user</string>
     <string name="ban_user">Ban user</string>
+    <string name="waiting_for_follow_accept">Waiting..</string>
+    <string name="following_user">Following</string>
 </resources>

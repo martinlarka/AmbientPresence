@@ -148,4 +148,8 @@ public class User implements Comparable<User> {
     private static String userNameify(String username) {
         return username.toLowerCase().replace(" ", "").replace("å", "a").replace("ä", "a").replace("ö", "o");
     }
+
+    public void unBanUser(Firebase mFirebaseRef, String uid) {
+        // TODO implement mehtod
+    }
 }

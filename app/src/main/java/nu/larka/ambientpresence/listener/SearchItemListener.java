@@ -30,20 +30,11 @@ public class SearchItemListener implements View.OnClickListener {
 
             // Unfollow or remove pending
         if (state.equals(User.FOLLOWING) || state.equals(User.PENDING) || state.equals(User.BANNED)) {
-            // TODO Remove user from "other users"
-            mFirebaseRef.child(MainActivity.USERS + user.getUID() + MainActivity.OTHERUSERS)
-                    .child(uid).removeValue();
-            mFirebaseRef.child(MainActivity.USERS + uid + MainActivity.FOLLOWING_USERS)
-                    .child(user.getUID()).removeValue();
-            user.setState(User.NOSTATE);
+            user.unfollowUser(mFirebaseRef, uid);
+
             v.setBackground(v.getResources().getDrawable(R.drawable.follow));
         } else { // Follow user
-            mFirebaseRef.child(MainActivity.USERS + user.getUID() + MainActivity.OTHERUSERS)
-                    .child(String.valueOf(System.currentTimeMillis()))
-                    .child(uid).setValue(User.PENDING);
-            mFirebaseRef.child(MainActivity.USERS + uid + MainActivity.FOLLOWING_USERS)
-                    .child(user.getUID()).setValue(User.PENDING);
-            user.setState(User.PENDING);
+            user.sendFollowRequest(mFirebaseRef, uid);
             v.setBackground(v.getResources().getDrawable(R.drawable.pending));
         }
     }

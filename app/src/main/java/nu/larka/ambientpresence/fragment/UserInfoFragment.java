@@ -98,39 +98,28 @@ public class UserInfoFragment extends Fragment {
     private View.OnClickListener sendFollowRequestListener = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
-            mFirebaseRef.child(MainActivity.USERS).child(uid).child(MainActivity.FOLLOWING_USERS).child(user.getUID()).setValue(User.PENDING);
-            user.setState(User.PENDING);mFirebaseRef.child(MainActivity.USERS).child(uid).child(MainActivity.OTHERUSERS).child(String.valueOf(System.currentTimeMillis())).child(user.getUID()).setValue(User.PENDING);
+            user.sendFollowRequest(mFirebaseRef, uid);
         }
     };
 
     private View.OnClickListener acceptFollowRequestListener = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
-            mFirebaseRef.child(MainActivity.USERS).child(user.getUID()).child(MainActivity.FOLLOWING_USERS).child(uid).setValue(User.FOLLOWING);
-            mFirebaseRef.child(MainActivity.USERS).child(uid).child(MainActivity.ACCEPTEDUSERS).child(user.getUID()).setValue(User.ACCEPTED);
-            mFirebaseRef.child(MainActivity.USERS).child(uid).child(MainActivity.OTHERUSERS).child(String.valueOf(System.currentTimeMillis())).child(user.getUID()).setValue(User.FOLLOWING);
-            // TODO remove old value in otherusers
-            user.setState(User.FOLLOWING);
+            user.acceptFollowRequest(mFirebaseRef, uid);
         }
     };
 
     private View.OnClickListener banUserListener = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
-            mFirebaseRef.child(MainActivity.USERS).child(user.getUID()).child(MainActivity.FOLLOWING_USERS).child(user.getUID()).setValue(User.BANNED);
-            mFirebaseRef.child(MainActivity.USERS).child(uid).child(MainActivity.ACCEPTEDUSERS).child(user.getUID()).removeValue();
-            mFirebaseRef.child(MainActivity.USERS).child(uid).child(MainActivity.OTHERUSERS).child(String.valueOf(System.currentTimeMillis())).child(user.getUID()).setValue(User.BANNED);
-            // TODO remove old value in otherusers
-            user.setState(User.BANNED);
+         user.banUser(mFirebaseRef, uid);
         }
     };
 
     private View.OnClickListener unFollowUserListener = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
-            mFirebaseRef.child(MainActivity.USERS).child(uid).child(MainActivity.FOLLOWING_USERS).child(user.getUID()).removeValue();
-            // TODO remove old value in otherusers
-            user.setState(User.NOSTATE);
+            user.unfollowUser(mFirebaseRef, uid);
         }
     };
 }

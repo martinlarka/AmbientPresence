@@ -177,7 +177,7 @@ public class RemoteOfficesFragment extends Fragment {
 
             @Override
             public void onChildChanged(DataSnapshot dataSnapshot, String s) {
-
+                // Never acceced?
                 Iterable<DataSnapshot> createdAt = dataSnapshot.getChildren();
                 for (DataSnapshot d : createdAt) {
                     // On changed - Check new state and make action

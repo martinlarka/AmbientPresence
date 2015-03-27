@@ -2,6 +2,10 @@ package nu.larka.ambientpresence.model;
 
 import android.graphics.Bitmap;
 
+import com.firebase.client.Firebase;
+
+import nu.larka.ambientpresence.MainActivity;
+
 /**
  * Created by martin on 15-03-12.
  */
@@ -100,5 +104,34 @@ public class User implements Comparable<User> {
                 else return this.getName().compareTo(another.getName());
         }
         return 0;
+    }
+
+    public void sendFollowRequest(Firebase firebase, String selfUID) {
+        firebase.child(MainActivity.USERS).child(selfUID).child(MainActivity.FOLLOWING_USERS).child(this.UID).setValue(PENDING);
+        firebase.child(MainActivity.USERS).child(this.UID).child(MainActivity.OTHERUSERS).child(String.valueOf(System.currentTimeMillis())).child(this.UID).setValue(PENDING);
+        this.state = PENDING;
+    }
+
+    public void acceptFollowRequest(Firebase firebase, String selfUID) {
+        firebase.child(MainActivity.USERS).child(this.UID).child(MainActivity.FOLLOWING_USERS).child(selfUID).setValue(FOLLOWING);
+        firebase.child(MainActivity.USERS).child(selfUID).child(MainActivity.ACCEPTEDUSERS).child(this.UID).setValue(ACCEPTED);
+        firebase.child(MainActivity.USERS).child(selfUID).child(MainActivity.OTHERUSERS).child(String.valueOf(System.currentTimeMillis())).child(this.UID).setValue(FOLLOWING);
+        // TODO remove old value in otherusers
+        this.state = FOLLOWING;
+    }
+
+
+    public void banUser(Firebase firebase, String selfUID) {
+        firebase.child(MainActivity.USERS).child(this.UID).child(MainActivity.FOLLOWING_USERS).child(this.UID).setValue(BANNED);
+        firebase.child(MainActivity.USERS).child(selfUID).child(MainActivity.ACCEPTEDUSERS).child(this.UID).removeValue();
+        firebase.child(MainActivity.USERS).child(selfUID).child(MainActivity.OTHERUSERS).child(String.valueOf(System.currentTimeMillis())).child(this.UID).setValue(BANNED);
+        // TODO remove old value in otherusers
+        this.state = BANNED;
+    }
+
+    public void unfollowUser(Firebase firebase, String selfUID) {
+        firebase.child(MainActivity.USERS).child(selfUID).child(MainActivity.FOLLOWING_USERS).child(this.UID).removeValue();
+        // TODO remove old value in otherusers
+        this.state = NOSTATE;
     }
 }

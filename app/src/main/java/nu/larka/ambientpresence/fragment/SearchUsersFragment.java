@@ -94,18 +94,15 @@ public class SearchUsersFragment extends Fragment {
         mFireRef.child(MainActivity.USERS).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-                Iterable<DataSnapshot> snapShots = dataSnapshot.getChildren();
-                for (DataSnapshot user : snapShots) {
+                Iterable<DataSnapshot> users = dataSnapshot.getChildren();
+                for (DataSnapshot user : users) {
                     if (!user.getKey().equals(uid)) { // If not self, add user
                         String state = User.NOSTATE;
                         Iterable<DataSnapshot> otherUsers = user.child(MainActivity.OTHERUSERS).getChildren();
                         for (DataSnapshot otherUser : otherUsers) {
-                            Iterable<DataSnapshot> userInfo = otherUser.getChildren();
-                            for (DataSnapshot u : userInfo) {
-                                if (u.getKey().equals(uid)) {
-                                    // Self found in other user
-                                    state = (String) u.getValue();
-                                }
+                            if (otherUser.getKey().equals(uid)) {
+                                // Self found in other user
+                                state = (String) otherUser.getValue();
                             }
                         }
                         fireBaseUsers.add(userFromDataSnapshot(user, state));

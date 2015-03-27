@@ -109,14 +109,14 @@ public class User implements Comparable<User> {
 
     public void sendFollowRequest(Firebase firebase, String selfUID) {
         firebase.child(MainActivity.USERS).child(selfUID).child(MainActivity.FOLLOWING_USERS).child(this.UID).setValue(PENDING);
-        firebase.child(MainActivity.USERS).child(this.UID).child(MainActivity.OTHERUSERS).child(String.valueOf(System.currentTimeMillis())).child(this.UID).setValue(PENDING);
+        firebase.child(MainActivity.USERS).child(this.UID).child(MainActivity.OTHERUSERS).child(selfUID).setValue(PENDING);
         this.state = PENDING;
     }
 
     public void acceptFollowRequest(Firebase firebase, String selfUID) {
         firebase.child(MainActivity.USERS).child(this.UID).child(MainActivity.FOLLOWING_USERS).child(selfUID).setValue(FOLLOWING);
         firebase.child(MainActivity.USERS).child(selfUID).child(MainActivity.ACCEPTEDUSERS).child(this.UID).setValue(ACCEPTED);
-        firebase.child(MainActivity.USERS).child(selfUID).child(MainActivity.OTHERUSERS).child(String.valueOf(System.currentTimeMillis())).child(this.UID).setValue(FOLLOWING);
+        firebase.child(MainActivity.USERS).child(selfUID).child(MainActivity.OTHERUSERS).child(this.UID).setValue(FOLLOWING);
         // TODO remove old value in otherusers
         this.state = FOLLOWING;
     }
@@ -125,7 +125,7 @@ public class User implements Comparable<User> {
     public void banUser(Firebase firebase, String selfUID) {
         firebase.child(MainActivity.USERS).child(this.UID).child(MainActivity.FOLLOWING_USERS).child(this.UID).setValue(BANNED);
         firebase.child(MainActivity.USERS).child(selfUID).child(MainActivity.ACCEPTEDUSERS).child(this.UID).removeValue();
-        firebase.child(MainActivity.USERS).child(selfUID).child(MainActivity.OTHERUSERS).child(String.valueOf(System.currentTimeMillis())).child(this.UID).setValue(BANNED);
+        firebase.child(MainActivity.USERS).child(selfUID).child(MainActivity.OTHERUSERS).child(this.UID).setValue(BANNED);
         // TODO remove old value in otherusers
         this.state = BANNED;
     }
@@ -141,7 +141,7 @@ public class User implements Comparable<User> {
         userRef.child(MainActivity.NAME).setValue(authData.getProviderData().get("displayName"));
         userRef.child(MainActivity.FOLLOWING_USERS).child(authData.getUid()).setValue(User.SELF);
         userRef.child(MainActivity.ACCEPTEDUSERS).child(authData.getUid()).setValue(User.SELF);
-        userRef.child(MainActivity.OTHERUSERS).child(String.valueOf(System.currentTimeMillis())).child(authData.getUid()).setValue(User.SELF);
+        userRef.child(MainActivity.OTHERUSERS).child(authData.getUid()).setValue(User.SELF);
     }
 
     // TODO Let users give own usernames, or fix email to username

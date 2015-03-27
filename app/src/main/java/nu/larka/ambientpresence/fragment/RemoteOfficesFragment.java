@@ -67,7 +67,6 @@ public class RemoteOfficesFragment extends Fragment {
 
         // Populate otheruserlist
         populateOtherUsersList();
-        registerUserActivityCallback();
 
         followedUsersGridView.setOnItemClickListener(itemClickListener);
         registerFollowingUsersCallback();
@@ -98,6 +97,7 @@ public class RemoteOfficesFragment extends Fragment {
                         if (!dataSnapshot.getValue().equals(User.SELF)) {
                             setFollowingUserInfo(dataSnapshot.getKey(), (String) dataSnapshot.getValue());
                         }
+                        // FIXME ?? Change userState in otherslist??
                     }
 
                     @Override
@@ -105,7 +105,7 @@ public class RemoteOfficesFragment extends Fragment {
                         // On changed - Check new state and make action
                         for (User u : followerList) {
                             if (dataSnapshot.getKey().equals(u.getUID()) && !dataSnapshot.getValue().equals(User.SELF)) {
-                                u.setState((String) dataSnapshot.getValue());
+                                u.setSelfState((String) dataSnapshot.getValue());
                                 notifyFollowedUsersAdapterDataChanged();
                             }
                         }
@@ -139,15 +139,13 @@ public class RemoteOfficesFragment extends Fragment {
                 .addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
                     public void onDataChange(DataSnapshot dataSnapshot) {
-                        Iterable<DataSnapshot> createdAt = dataSnapshot.getChildren();
-                        for (DataSnapshot d : createdAt) {
-                            Iterable<DataSnapshot> otherUsers = d.getChildren();
-                            for (DataSnapshot user : otherUsers) {
-                                if (!user.getValue().equals(User.SELF)) {
-                                    setUserActivityInfo(user.getKey(), (String) user.getValue());
-                                }
+                        Iterable<DataSnapshot> otherUsers = dataSnapshot.getChildren();
+                        for (DataSnapshot user : otherUsers) {
+                            if (!user.getKey().equals(uid)) {
+                                setUserActivityInfo(user.getKey(), (String) user.getValue());
                             }
                         }
+                        registerUserActivityCallback();
                     }
 
                     @Override
@@ -157,63 +155,45 @@ public class RemoteOfficesFragment extends Fragment {
     }
 
     private void registerUserActivityCallback() {
-        Query q = mFirebaseRef.child(MainActivity.USERS + uid + MainActivity.OTHERUSERS)
-                .orderByKey().startAt(String.valueOf(System.currentTimeMillis()));
-        q.addChildEventListener(new ChildEventListener() {
+        mFirebaseRef.child(MainActivity.USERS + uid + MainActivity.OTHERUSERS).addChildEventListener(new ChildEventListener() {
             @Override
             public void onChildAdded(DataSnapshot dataSnapshot, String s) {
-                // On added - Check state and make action
-                Iterable<DataSnapshot> createdAt = dataSnapshot.getChildren();
-                for (DataSnapshot d : createdAt) {
-                    if (!d.getValue().equals(User.SELF)) {
-                        setUserActivityInfo(d.getKey(), String.valueOf(d.getValue()));
-                        newActivities++;
-                        updateActivityButton("" + newActivities);
-                        if (mActivityFragment != null)
-                            mActivityFragment.notifyUserActivityAdapter();
-                    }
+                // User exists in list, and state has changed
+                if (!dataSnapshot.getKey().equals(uid)) {  // Not self
+                    setUserActivityInfo(dataSnapshot.getKey(), (String) dataSnapshot.getValue());
+                    pingActivity();
                 }
             }
 
             @Override
             public void onChildChanged(DataSnapshot dataSnapshot, String s) {
-                // Never acceced?
-                Iterable<DataSnapshot> createdAt = dataSnapshot.getChildren();
-                for (DataSnapshot d : createdAt) {
-                    // On changed - Check new state and make action
-                    for (User u : otherUsersList) {
-                        if (d.getKey().equals(u.getUID())) {
-                            // Check if values changed
-                            u.setState((String) d.getValue());
-                            newActivities++;
-                            updateActivityButton("" + newActivities);
-                            if (mActivityFragment != null)
-                                mActivityFragment.notifyUserActivityAdapter();
-                        }
+                // If UID exists in other users, update else add
+                boolean userUpdated = false;
+                for (User u : otherUsersList) {
+                    // User exists in list, and state has changed
+                    if (dataSnapshot.getKey().equals(u.getUID()) && !dataSnapshot.getValue().equals(u.getState())) {
+                        u.setSelfState((String) dataSnapshot.getValue());
+                        userUpdated = true;
+                        pingActivity();
                     }
+                }
+                // If new user, add user to other users
+                if (!userUpdated) { // FIXME Might me unused?
+                    setUserActivityInfo(dataSnapshot.getKey(), (String) (dataSnapshot.getValue()));
+                    pingActivity();
                 }
             }
 
             @Override
             public void onChildRemoved(DataSnapshot dataSnapshot) {
                 // On remove - Check state and make actions
-
-                Iterable<DataSnapshot> createdAt = dataSnapshot.getChildren();
-                for (DataSnapshot d : createdAt) {
-                    for (int i = 0; i < otherUsersList.size(); i++) {
-                        if (d.getKey().equals(otherUsersList.get(i).getUID())) {
-                            User u = otherUsersList.remove(i);
-                            if (u.getState().equals(User.FOLLOWING)) {
-                                // User unfollowed
-                                mFirebaseRef.child(MainActivity.USERS)
-                                        .child(uid)
-                                        .child(MainActivity.ACCEPTEDUSERS)
-                                        .child(u.getUID()).removeValue();
-                            }
-                            // TODO update adapter!!
-                        }
+                for (User u : otherUsersList) {
+                    // User exists in list
+                    if (dataSnapshot.getKey().equals(u.getUID())) {
+                        otherUsersList.remove(u);
                     }
                 }
+                // TODO update adapter!!
             }
 
             @Override
@@ -224,6 +204,20 @@ public class RemoteOfficesFragment extends Fragment {
             @Override
             public void onCancelled(FirebaseError firebaseError) {
 
+            }
+
+            private void pingActivity() {
+                newActivities++;
+                updateActivityButton("" + newActivities);
+                if (mActivityFragment != null)
+                    mActivityFragment.notifyUserActivityAdapter();
+            }
+
+            private void removeActivity() {
+                newActivities--;
+                updateActivityButton("" + newActivities);
+                if (mActivityFragment != null)
+                    mActivityFragment.notifyUserActivityAdapter();
             }
         });
     }
@@ -247,16 +241,11 @@ public class RemoteOfficesFragment extends Fragment {
                                     .getValue()).getBytes().length));
                 }
 
-                // Get state from otheruser FIXME could be checked in otherList??
                 String state = User.NOSTATE;
-                Iterable<DataSnapshot> otherUsers = dataSnapshot.child(MainActivity.OTHERUSERS).getChildren();
-                for (DataSnapshot otherUser : otherUsers) {
-                    Iterable<DataSnapshot> userInfo = otherUser.getChildren();
-                    for (DataSnapshot u : userInfo) {
-                        if (u.getKey().equals(uid)) {
-                            // Self found in other user
-                            state = (String) u.getValue();
-                        }
+                for (User u : otherUsersList) {
+                    // User exists in others list
+                    if (u.getUID().equals(userUID)) {
+                        state = u.getState();
                     }
                 }
                 user.setState(state);
@@ -338,7 +327,7 @@ public class RemoteOfficesFragment extends Fragment {
         public void onClick(View v) {
 
             newActivities = 0;
-            activityButton.setText(""+newActivities);
+            activityButton.setText("" + newActivities);
 
             // Start activity fragment!!
             FragmentTransaction transaction = getActivity().getSupportFragmentManager().beginTransaction();

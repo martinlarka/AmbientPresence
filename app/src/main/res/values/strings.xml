@@ -24,4 +24,5 @@
     <string name="ban_user">Ban user</string>
     <string name="waiting_for_follow_accept">Waiting..</string>
     <string name="following_user">Following</string>
+    <string name="unbann_user">Unban user</string>
 </resources>

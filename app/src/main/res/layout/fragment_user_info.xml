@@ -12,11 +12,24 @@
         android:scaleType="centerCrop"
         android:contentDescription="@string/user_image" />
 
-    <TextView
-        android:id="@+id/user_fullname"
+    <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        style="@style/OfficeName"/>
+        android:orientation="horizontal">
+
+        <TextView
+            android:id="@+id/user_fullname"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            style="@style/OfficeName"/>
+
+        <TextView
+            android:id="@+id/user_status"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            style="@style/OfficeName"/>
+
+    </LinearLayout>
 
     <TextView
         android:id="@+id/user_username"

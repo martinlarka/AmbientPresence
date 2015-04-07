@@ -110,12 +110,14 @@ public class User implements Comparable<User> {
     public void sendFollowRequest(Firebase firebase, String selfUID) {
         firebase.child(MainActivity.USERS).child(selfUID).child(MainActivity.FOLLOWING_USERS).child(this.UID).setValue(PENDING);
         firebase.child(MainActivity.USERS).child(this.UID).child(MainActivity.OTHERUSERS).child(selfUID).setValue(PENDING);
+        this.state = PENDING;
     }
 
     public void acceptFollowRequest(Firebase firebase, String selfUID) {
         firebase.child(MainActivity.USERS).child(this.UID).child(MainActivity.FOLLOWING_USERS).child(selfUID).setValue(FOLLOWING);
         firebase.child(MainActivity.USERS).child(selfUID).child(MainActivity.ACCEPTEDUSERS).child(this.UID).setValue(ACCEPTED);
         firebase.child(MainActivity.USERS).child(selfUID).child(MainActivity.OTHERUSERS).child(this.UID).setValue(FOLLOWING);
+        this.state = FOLLOWING;
     }
 
 
@@ -123,11 +125,14 @@ public class User implements Comparable<User> {
         firebase.child(MainActivity.USERS).child(this.UID).child(MainActivity.FOLLOWING_USERS).child(this.UID).setValue(BANNED);
         firebase.child(MainActivity.USERS).child(selfUID).child(MainActivity.ACCEPTEDUSERS).child(this.UID).removeValue();
         firebase.child(MainActivity.USERS).child(selfUID).child(MainActivity.OTHERUSERS).child(this.UID).setValue(BANNED);
+        this.state = BANNED;
     }
 
     public void unfollowUser(Firebase firebase, String selfUID) {
         firebase.child(MainActivity.USERS).child(selfUID).child(MainActivity.FOLLOWING_USERS).child(this.UID).removeValue();
         firebase.child(MainActivity.USERS).child(this.UID).child(MainActivity.OTHERUSERS).child(selfUID).removeValue();
+        this.state = NOSTATE;
+        this.selfState = NOSTATE;
     }
 
     public static void registerUser(Firebase userRef, AuthData authData) {

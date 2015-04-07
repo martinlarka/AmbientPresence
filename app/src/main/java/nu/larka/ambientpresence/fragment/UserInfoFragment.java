@@ -12,6 +12,8 @@ import android.widget.TextView;
 
 import com.firebase.client.Firebase;
 
+import org.w3c.dom.Text;
+
 import java.awt.font.TextAttribute;
 import java.util.jar.Manifest;
 
@@ -28,6 +30,10 @@ public class UserInfoFragment extends Fragment {
     private User user;
     private Firebase mFirebaseRef;
     private String uid;
+    private Button userStateButton;
+    private Button selfStateButton;
+    private TextView userStatusTextView;
+
 
     public UserInfoFragment() {
         // Required empty public constructor
@@ -42,11 +48,13 @@ public class UserInfoFragment extends Fragment {
         TextView userName = (TextView) view.findViewById(R.id.user_username);
         TextView userFullName = (TextView) view.findViewById(R.id.user_fullname);
         ImageView userImage = (ImageView) view.findViewById(R.id.user_image_view);
-        Button userStateButton = (Button) view.findViewById(R.id.user_info_button);
-        Button selfStateButton = (Button) view.findViewById(R.id.user_ban_button);
+        userStatusTextView = (TextView) view.findViewById(R.id.user_status);
+        userStateButton = (Button) view.findViewById(R.id.user_info_button);
+        selfStateButton = (Button) view.findViewById(R.id.user_ban_button);
 
         userName.setText(user.getUsername());
         userFullName.setText(user.getName());
+        userStatusTextView.setText(getUserStatusText());
 
         if (user.hasImage()) {
             userImage.setImageBitmap(user.getImage());
@@ -54,6 +62,26 @@ public class UserInfoFragment extends Fragment {
             userImage.setImageResource(R.drawable.home500);
         }
 
+        setStateOfButtons();
+
+        // Inflate the layout for this fragment
+        return view;
+    }
+
+    private String getUserStatusText() {
+        switch (user.getState()) {
+            case User.PENDING:
+                return " - " + getString(R.string.user_is_pending);
+            case User.FOLLOWING:
+                return " - " + getString(R.string.user_is_following);
+            case User.BANNED:
+                return " - " + getString(R.string.user_is_banned);
+            default:
+                return "";
+        }
+    }
+
+    private void setStateOfButtons() {
         switch (user.getSelfState()) {
             case User.NOSTATE:
                 switch (user.getState()) {
@@ -100,13 +128,13 @@ public class UserInfoFragment extends Fragment {
             case User.FOLLOWING:
                 switch (user.getState()) {
                     case User.NOSTATE:
+                    case User.FOLLOWING:
                         userStateButton.setEnabled(false);
                         userStateButton.setText(R.string.following_user);
                         selfStateButton.setOnClickListener(unFollowUserListener);
                         selfStateButton.setText(R.string.unfollow_user);
                         break;
                     case User.BANNED:
-                    case User.FOLLOWING:
                         userStateButton.setEnabled(false);
                         userStateButton.setText(R.string.following_user);
                         selfStateButton.setOnClickListener(banUserListener);
@@ -123,11 +151,10 @@ public class UserInfoFragment extends Fragment {
             case User.BANNED:
                 userStateButton.setEnabled(false);
                 userStateButton.setText(R.string.user_is_banned);
-
+                selfStateButton.setOnClickListener(unBanUserListener);
+                selfStateButton.setText(R.string.unbann_user);
                 break;
         }
-        // Inflate the layout for this fragment
-        return view;
     }
 
 
@@ -144,6 +171,8 @@ public class UserInfoFragment extends Fragment {
         @Override
         public void onClick(View v) {
             user.sendFollowRequest(mFirebaseRef, uid);
+            setStateOfButtons();
+            userStatusTextView.setText(getUserStatusText());
         }
     };
 
@@ -151,6 +180,8 @@ public class UserInfoFragment extends Fragment {
         @Override
         public void onClick(View v) {
             user.acceptFollowRequest(mFirebaseRef, uid);
+            setStateOfButtons();
+            userStatusTextView.setText(getUserStatusText());
         }
     };
 
@@ -158,6 +189,8 @@ public class UserInfoFragment extends Fragment {
         @Override
         public void onClick(View v) {
             user.banUser(mFirebaseRef, uid);
+            setStateOfButtons();
+            userStatusTextView.setText(getUserStatusText());
         }
     };
 
@@ -165,6 +198,8 @@ public class UserInfoFragment extends Fragment {
         @Override
         public void onClick(View v) {
             user.unBanUser(mFirebaseRef, uid);
+            setStateOfButtons();
+            userStatusTextView.setText(getUserStatusText());
         }
     };
 
@@ -172,6 +207,8 @@ public class UserInfoFragment extends Fragment {
         @Override
         public void onClick(View v) {
             user.unfollowUser(mFirebaseRef, uid);
+            setStateOfButtons();
+            userStatusTextView.setText(getUserStatusText());
         }
     };
 }

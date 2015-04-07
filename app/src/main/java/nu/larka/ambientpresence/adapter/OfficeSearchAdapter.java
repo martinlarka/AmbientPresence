@@ -42,7 +42,11 @@ public class OfficeSearchAdapter extends ArrayAdapter<User> {
         }
 
         ImageView officeImage = (ImageView) convertView.findViewById(R.id.office_image);
-        //TODO Add image to office
+        if (!user.hasImage()) {
+            officeImage.setImageResource(R.drawable.home250);
+        } else {
+            officeImage.setImageBitmap(user.getImage());
+        }
 
         // Lookup view for data population
         TextView userName = (TextView) convertView.findViewById(R.id.user_name);

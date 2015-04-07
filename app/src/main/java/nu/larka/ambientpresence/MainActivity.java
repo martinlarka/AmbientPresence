@@ -141,9 +141,7 @@ public class MainActivity extends FragmentActivity implements
         });
 
         /* Fragments */
-        mHomeFragment = new HomeFragment();
         mRemoteOfficesFragment = new RemoteOfficesFragment();
-        mRemoteOfficesFragment.setHomeFragment(mHomeFragment);
     }
 
 
@@ -202,7 +200,6 @@ public class MainActivity extends FragmentActivity implements
                         User.registerUser(userRef, mAuthData);
                     }
                     startRemoteOfficeFragment(mAuthData);
-                    startHomeFragment(mAuthData);
                 }
 
                 @Override
@@ -334,21 +331,6 @@ public class MainActivity extends FragmentActivity implements
         }
         /* invalidate options menu to hide/show the logout button */
         supportInvalidateOptionsMenu();
-    }
-
-    private void startHomeFragment(AuthData authData) {
-        FragmentTransaction transaction;
-
-        transaction = getSupportFragmentManager().beginTransaction();
-
-        // Replace whatever is in the fragment_container view with this fragment,
-        // and add the transaction to the back stack so the user can navigate back
-        mHomeFragment.setFirebaseRef(mFirebaseRef.child(USERS).child(authData.getUid()));
-        transaction.replace(R.id.info_fragment, mHomeFragment);
-        transaction.addToBackStack(null);
-
-        // Commit the transaction
-        transaction.commit();
     }
 
     private void startRemoteOfficeFragment(AuthData authData) {

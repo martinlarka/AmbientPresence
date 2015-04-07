@@ -44,7 +44,7 @@ public class RemoteOfficesFragment extends Fragment {
     private String uid;
     private GridView followedUsersGridView;
     private int newActivities = 0;
-    private HomeFragment mHomeFragment;
+    private HomeFragment mHomeFragment = new HomeFragment();
 
     public RemoteOfficesFragment() {
     }
@@ -65,12 +65,27 @@ public class RemoteOfficesFragment extends Fragment {
         homeButton = (Button) view.findViewById(R.id.home_button);
         homeButton.setOnClickListener(homeButtonClickListener);
 
+        startHomeFragment();
+
         registerUserActivityCallback();
 
         followedUsersGridView.setOnItemClickListener(itemClickListener);
         registerFollowingUsersCallback();
 
         return view;
+    }
+
+    private void startHomeFragment() {
+        FragmentTransaction transaction = getActivity().getSupportFragmentManager().beginTransaction();
+
+        mHomeFragment.setFirebaseRef(mFirebaseRef.child(MainActivity.USERS).child(uid));
+        // Replace whatever is in the fragment_container view with this fragment,
+        // and add the transaction to the back stack so the user can navigate back
+        transaction.replace(R.id.info_fragment, mHomeFragment);
+        transaction.addToBackStack(null);
+
+        // Commit the transaction
+        transaction.commit();
     }
 
     public void updateActivityButton(String str) {
@@ -335,24 +350,12 @@ public class RemoteOfficesFragment extends Fragment {
     private View.OnClickListener homeButtonClickListener = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
-            FragmentTransaction transaction = getActivity().getSupportFragmentManager().beginTransaction();
-
-            // Replace whatever is in the fragment_container view with this fragment,
-            // and add the transaction to the back stack so the user can navigate back
-            transaction.replace(R.id.info_fragment, mHomeFragment);
-            transaction.addToBackStack(null);
-
-            // Commit the transaction
-            transaction.commit();
+            startHomeFragment();
         }
     };
 
     public void setFirebase(Firebase mFirebaseRef, String uid) {
         this.mFirebaseRef = mFirebaseRef;
         this.uid = uid;
-    }
-
-    public void setHomeFragment(HomeFragment mHomeFragment) {
-        this.mHomeFragment = mHomeFragment;
     }
 }

@@ -45,15 +45,13 @@ import nu.larka.ambientpresence.model.User;
 /**
  * A simple {@link Fragment} subclass.
  */
-public class HomeFragment extends Fragment implements ValueEventListener {
+public class HomeFragment extends Fragment implements ValueEventListener, View.OnLongClickListener {
 
+    private User homeUser = null;
     private Uri imageUri;
     private ImageView userImageView;
     private TextView titleView;
-    private LinearLayout homeLayout;
     private Bitmap bmp;
-    private String userName;
-    private boolean isLoaded = false;
 
     public static final int CAPTURE_IMAGE_ACTIVITY_REQUEST_CODE = 100;
     private Firebase mFirebaseRef;
@@ -71,51 +69,21 @@ public class HomeFragment extends Fragment implements ValueEventListener {
 
         userImageView = (ImageView) v.findViewById(R.id.home_image_view);
         titleView = (TextView) v.findViewById(R.id.home_name);
-        homeLayout = (LinearLayout) v.findViewById(R.id.home_layout);
-        // Hide views, and display progressbar
 
-        if (!isLoaded) {
+        if (homeUser != null) {
+            titleView.setText(getResources().getString(R.string.office_home) + " - " + homeUser.getName());
 
-            homeLayout.setVisibility(View.GONE);
-            mFirebaseRef.addListenerForSingleValueEvent(this);
-
-            titleView.setText(userName);
-            if (bmp == null) {
+            if (!homeUser.hasImage()) {
                 userImageView.setImageResource(R.drawable.home500);
             } else {
                 userImageView.setImageBitmap(bmp);
             }
-            isLoaded = true;
+
         } else {
-            titleView.setText(userName);
-            userImageView.setImageBitmap(bmp);
+            mFirebaseRef.addListenerForSingleValueEvent(this);
         }
-            userImageView.setOnLongClickListener(new View.OnLongClickListener() {
-                @Override
-                public boolean onLongClick(View v) {
-                    // Upload new image
-                    Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-                    // Create an image file name
-                    String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
-                    String imageFileName = "AMBIENTPRESENCE_" + timeStamp + "_";
-                    File storageDir = Environment.getExternalStoragePublicDirectory(
-                            Environment.DIRECTORY_PICTURES);
-                    File image = null;
-                    try {
-                        image = File.createTempFile(
-                                imageFileName,  /* prefix */
-                                ".jpg",         /* suffix */
-                                storageDir      /* directory */
-                        );
-                        imageUri = Uri.fromFile(image);
-                        intent.putExtra(MediaStore.EXTRA_OUTPUT, imageUri);
-                        startActivityForResult(intent, CAPTURE_IMAGE_ACTIVITY_REQUEST_CODE);
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                    return true;
-                }
-            });
+
+        userImageView.setOnLongClickListener(this);
 
         // Inflate the layout for this fragment
         return v;
@@ -143,20 +111,49 @@ public class HomeFragment extends Fragment implements ValueEventListener {
 
     @Override
     public void onDataChange(DataSnapshot dataSnapshot) {
-        userName = getResources().getString(R.string.office_home) + " - " + dataSnapshot.child(MainActivity.NAME).getValue();
-        titleView.setText(userName);
+        homeUser = new User(dataSnapshot.getKey());
+        homeUser.setName((String)dataSnapshot.child(MainActivity.NAME).getValue());
+
+        titleView.setText(getResources().getString(R.string.office_home) + " - " + homeUser.getName());
+
         String str = (String) dataSnapshot.child(MainActivity.USER_IMAGE).getValue();
         if (str != null) {
             byte[] imageAsBytes = com.firebase.tubesock.Base64.decode(str.getBytes());
             bmp = BitmapFactory.decodeByteArray(imageAsBytes, 0, imageAsBytes.length);
             userImageView.setImageBitmap(bmp);
+        } else {
+            userImageView.setImageResource(R.drawable.home500);
         }
-        homeLayout.setVisibility(View.VISIBLE);
     }
 
     @Override
     public void onCancelled(FirebaseError firebaseError) {
 
+    }
+
+    @Override
+    public boolean onLongClick(View v) {
+            // Upload new image
+            Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+            // Create an image file name
+            String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+            String imageFileName = "AMBIENTPRESENCE_" + timeStamp + "_";
+            File storageDir = Environment.getExternalStoragePublicDirectory(
+                    Environment.DIRECTORY_PICTURES);
+            File image = null;
+            try {
+                image = File.createTempFile(
+                        imageFileName,  /* prefix */
+                        ".jpg",         /* suffix */
+                        storageDir      /* directory */
+                );
+                imageUri = Uri.fromFile(image);
+                intent.putExtra(MediaStore.EXTRA_OUTPUT, imageUri);
+                startActivityForResult(intent, CAPTURE_IMAGE_ACTIVITY_REQUEST_CODE);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            return true;
     }
 
     private class UploadImageToFirebase extends AsyncTask<Uri, Void, Void> {

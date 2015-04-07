@@ -65,8 +65,7 @@ public class RemoteOfficesFragment extends Fragment {
         homeButton = (Button) view.findViewById(R.id.home_button);
         homeButton.setOnClickListener(homeButtonClickListener);
 
-        // Populate otheruserlist
-        populateOtherUsersList();
+        registerUserActivityCallback();
 
         followedUsersGridView.setOnItemClickListener(itemClickListener);
         registerFollowingUsersCallback();
@@ -130,26 +129,6 @@ public class RemoteOfficesFragment extends Fragment {
                     @Override
                     public void onCancelled(FirebaseError firebaseError) {
 
-                    }
-                });
-    }
-
-    private void populateOtherUsersList() {
-        mFirebaseRef.child(MainActivity.USERS + uid + MainActivity.OTHERUSERS)
-                .addListenerForSingleValueEvent(new ValueEventListener() {
-                    @Override
-                    public void onDataChange(DataSnapshot dataSnapshot) {
-                        Iterable<DataSnapshot> otherUsers = dataSnapshot.getChildren();
-                        for (DataSnapshot user : otherUsers) {
-                            if (!user.getKey().equals(uid)) {
-                                setUserActivityInfo(user.getKey(), (String) user.getValue());
-                            }
-                        }
-                        registerUserActivityCallback();
-                    }
-
-                    @Override
-                    public void onCancelled(FirebaseError firebaseError) {
                     }
                 });
     }
@@ -272,7 +251,16 @@ public class RemoteOfficesFragment extends Fragment {
                     byte[] imageAsBytes = Base64.decode(str.getBytes());
                     user.setImage(BitmapFactory.decodeByteArray(imageAsBytes, 0, imageAsBytes.length));
                 }
-                otherUsersList.add(0, user);
+
+                boolean userUpdated = false;
+                for (User u : otherUsersList) {
+                    if (u.getUID().equals(user.getUID())) {
+                        u = user;
+                        userUpdated = true;
+                    }
+                }
+                if (!userUpdated)
+                    otherUsersList.add(0, user);
             }
 
             @Override

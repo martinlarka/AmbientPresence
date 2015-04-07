@@ -224,12 +224,7 @@ public class RemoteOfficesFragment extends Fragment {
                 // TODO USE thumbnails for small images
 
                 if (dataSnapshot.hasChild(MainActivity.USER_IMAGE)) {
-                    user.setImage(BitmapFactory.decodeByteArray(
-                            ((String) dataSnapshot.child(
-                                    MainActivity.USER_IMAGE).getValue())
-                                    .getBytes(), 0,
-                            ((String) dataSnapshot.child(MainActivity.USER_IMAGE)
-                                    .getValue()).getBytes().length));
+                    user.setImage((String)dataSnapshot.child(MainActivity.USER_IMAGE).getValue());
                 }
 
                 String state = User.NOSTATE;

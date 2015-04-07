@@ -51,7 +51,6 @@ public class HomeFragment extends Fragment implements ValueEventListener, View.O
     private Uri imageUri;
     private ImageView userImageView;
     private TextView titleView;
-    private Bitmap bmp;
 
     public static final int CAPTURE_IMAGE_ACTIVITY_REQUEST_CODE = 100;
     private Firebase mFirebaseRef;
@@ -76,7 +75,7 @@ public class HomeFragment extends Fragment implements ValueEventListener, View.O
             if (!homeUser.hasImage()) {
                 userImageView.setImageResource(R.drawable.home500);
             } else {
-                userImageView.setImageBitmap(bmp);
+                userImageView.setImageBitmap(homeUser.getImage());
             }
 
         } else {
@@ -100,6 +99,7 @@ public class HomeFragment extends Fragment implements ValueEventListener, View.O
                         Context context = getActivity().getApplicationContext();
                         ensurePhotoNotRotated(context, imageUri);
                         bitmap = MediaStore.Images.Media.getBitmap(getActivity().getContentResolver(), imageUri);
+                        homeUser.setImage(bitmap);
                         userImageView.setImageBitmap(bitmap);
 
                         new UploadImageToFirebase().execute(imageUri);
@@ -119,7 +119,8 @@ public class HomeFragment extends Fragment implements ValueEventListener, View.O
         String str = (String) dataSnapshot.child(MainActivity.USER_IMAGE).getValue();
         if (str != null) {
             byte[] imageAsBytes = com.firebase.tubesock.Base64.decode(str.getBytes());
-            bmp = BitmapFactory.decodeByteArray(imageAsBytes, 0, imageAsBytes.length);
+            Bitmap bmp = BitmapFactory.decodeByteArray(imageAsBytes, 0, imageAsBytes.length);
+            homeUser.setImage(bmp);
             userImageView.setImageBitmap(bmp);
         } else {
             userImageView.setImageResource(R.drawable.home500);
@@ -163,7 +164,8 @@ public class HomeFragment extends Fragment implements ValueEventListener, View.O
             Bitmap bmp;
             try {
                 bmp = MediaStore.Images.Media.getBitmap(getActivity().getContentResolver(), uris[0]);
-                Bitmap.createScaledBitmap(bmp, 200, 200, false);
+
+                Bitmap.createScaledBitmap(bmp, 200, Math.round(200 * bmp.getWidth())/bmp.getHeight(), false);
                 ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
                 bmp.compress(Bitmap.CompressFormat.PNG, 80, byteArrayOutputStream);
                 bmp.recycle();

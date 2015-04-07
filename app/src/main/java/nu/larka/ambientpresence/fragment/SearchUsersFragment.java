@@ -126,7 +126,8 @@ public class SearchUsersFragment extends Fragment {
     private User userFromDataSnapshot(DataSnapshot dataSnapshot, String state) {
         User user = new User(dataSnapshot.getKey(), (String)dataSnapshot.child(MainActivity.NAME).getValue());
         user.setState(state);
-        user.setUsername((String)dataSnapshot.child(MainActivity.USERNAME).getValue());
+        user.setUsername((String) dataSnapshot.child(MainActivity.USERNAME).getValue());
+        user.setImage((String) dataSnapshot.child(MainActivity.USER_IMAGE).getValue());
         return user;
     }
 

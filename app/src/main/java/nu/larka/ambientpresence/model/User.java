@@ -1,6 +1,7 @@
 package nu.larka.ambientpresence.model;
 
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 
 import com.firebase.client.AuthData;
 import com.firebase.client.Firebase;
@@ -78,10 +79,19 @@ public class User implements Comparable<User> {
         this.username = username;
     }
 
+
     public Bitmap getImage() {
         return image;
     }
 
+    public void setImage(String str) {
+        if (str != null) {
+            byte[] imageAsBytes = com.firebase.tubesock.Base64.decode(str.getBytes());
+            this.image = BitmapFactory.decodeByteArray(imageAsBytes, 0, imageAsBytes.length);
+        } else {
+            this.image = null;
+        }
+    }
     public void setImage(Bitmap image) {
         this.image = image;
     }

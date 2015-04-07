@@ -1,0 +1,56 @@
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools" android:layout_width="match_parent"
+    android:layout_height="match_parent" tools:context="nu.larka.ambientpresence.fragment.RemoteOfficesFragment">
+
+    <LinearLayout
+        android:id="@+id/remote_offices"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <LinearLayout
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/offices"
+            android:layout_weight="1"
+            style="@style/InfoText" />
+
+            <Button
+                android:id="@+id/activity_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+
+            <Button
+                android:id="@+id/home_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/home_button_text"/>
+
+        </LinearLayout>
+
+        <GridView
+            android:id="@+id/gridview"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:columnWidth="90dp"
+            android:numColumns="3"
+            android:verticalSpacing="10dp"
+            android:horizontalSpacing="10dp"
+            android:stretchMode="columnWidth"
+            android:gravity="center"
+            />
+
+        <ImageView
+            android:layout_width="fill_parent"
+            android:layout_height="2dp"
+            android:contentDescription="@string/horizontal_line"
+            style="@style/HorizontalLine"/>
+
+    </LinearLayout>
+
+</FrameLayout>

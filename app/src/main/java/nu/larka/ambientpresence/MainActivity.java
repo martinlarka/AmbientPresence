@@ -5,17 +5,20 @@ import android.app.ProgressDialog;
 import android.content.Intent;
 import android.content.IntentSender;
 import android.os.AsyncTask;
-import android.support.v7.app.ActionBarActivity;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
+import android.support.v4.app.FragmentTransaction;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.TextView;
 
 import com.firebase.client.AuthData;
+import com.firebase.client.DataSnapshot;
 import com.firebase.client.Firebase;
 import com.firebase.client.FirebaseError;
+import com.firebase.client.ValueEventListener;
 import com.google.android.gms.auth.GoogleAuthException;
 import com.google.android.gms.auth.GoogleAuthUtil;
 import com.google.android.gms.auth.UserRecoverableAuthException;
@@ -27,15 +30,25 @@ import com.google.android.gms.plus.Plus;
 
 import java.io.IOException;
 
+import nu.larka.ambientpresence.fragment.HomeFragment;
+import nu.larka.ambientpresence.fragment.RemoteOfficesFragment;
+import nu.larka.ambientpresence.model.User;
 
-public class MainActivity extends ActionBarActivity implements
+
+public class MainActivity extends FragmentActivity implements
         GoogleApiClient.ConnectionCallbacks,
         GoogleApiClient.OnConnectionFailedListener{
 
     private static final String TAG = MainActivity.class.getSimpleName();
-
-    /* TextView that is used to display information about the logged in user */
-    private TextView mLoggedInStatusTextView;
+    public static final String USERS = "users/";
+    public static final String OTHERUSERS = "/other_users/";
+    public static final String FOLLOWING_USERS = "/following_users/";
+    public static final String ACCEPTEDUSERS = "/accepted_users/";
+    public static final String USER_IMAGE = "/user_image/";
+    public static final String CREATEDAT = "created_at";
+    public static final String STATE = "state";
+    public static final String USERNAME ="username";
+    public static final String NAME ="name";
 
     public static final int RC_GOOGLE_LOGIN = 1;
 
@@ -48,9 +61,9 @@ public class MainActivity extends ActionBarActivity implements
     /* A dialog that is presented until the Firebase authentication finished. */
     private ProgressDialog mAuthProgressDialog;
 
-
     /* Client used to interact with Google APIs. */
     private GoogleApiClient mGoogleApiClient;
+
 
     /* A flag indicating that a PendingIntent is in progress and prevents us from starting further intents. */
     private boolean mGoogleIntentInProgress;
@@ -66,6 +79,12 @@ public class MainActivity extends ActionBarActivity implements
     /* The login button for Google */
     private SignInButton mGoogleLoginButton;
 
+    /* Fragments */
+    private RemoteOfficesFragment mRemoteOfficesFragment;
+
+    private HomeFragment mHomeFragment;
+    private User homeUser;
+    private boolean fragmentsStarted = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -101,8 +120,6 @@ public class MainActivity extends ActionBarActivity implements
                 .addScope(Plus.SCOPE_PLUS_LOGIN)
                 .build();
 
-        mLoggedInStatusTextView = (TextView) findViewById(R.id.login_status);
-
         /* Create the Firebase ref that is used for all authentication with Firebase */
         mFirebaseRef = new Firebase(getResources().getString(R.string.firebase_url));
 
@@ -122,6 +139,11 @@ public class MainActivity extends ActionBarActivity implements
                 setAuthenticatedUser(authData);
             }
         });
+
+        /* Fragments */
+        mHomeFragment = new HomeFragment();
+        mRemoteOfficesFragment = new RemoteOfficesFragment();
+        mRemoteOfficesFragment.setHomeFragment(mHomeFragment);
     }
 
 
@@ -158,6 +180,7 @@ public class MainActivity extends ActionBarActivity implements
             mAuthProgressDialog.hide();
             Log.i(TAG, provider + " auth successful");
             setAuthenticatedUser(authData);
+            // Check if user is in firebase else create
         }
 
         @Override
@@ -165,6 +188,29 @@ public class MainActivity extends ActionBarActivity implements
             mAuthProgressDialog.hide();
             showErrorDialog(firebaseError.toString());
         }
+
+    }
+
+    private void registerUser() {
+            Firebase childRef = mFirebaseRef.child(USERS+mAuthData.getUid());
+            childRef.addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(DataSnapshot dataSnapshot) {
+                    if (!dataSnapshot.exists()) { // User not registered
+                        // Setup user
+                        Firebase userRef = mFirebaseRef.child(USERS + mAuthData.getUid());
+                        User.registerUser(userRef, mAuthData);
+                    }
+                    startRemoteOfficeFragment(mAuthData);
+                    startHomeFragment(mAuthData);
+                }
+
+                @Override
+                public void onCancelled(FirebaseError firebaseError) {
+
+                }
+            });
+            fragmentsStarted = true;
     }
 
     /* A helper method to resolve the current ConnectionResult error. */
@@ -237,7 +283,6 @@ public class MainActivity extends ActionBarActivity implements
         getGoogleOAuthTokenAndLogin();
     }
 
-
     @Override
     public void onConnectionFailed(ConnectionResult result) {
         if (!mGoogleIntentInProgress) {
@@ -253,6 +298,7 @@ public class MainActivity extends ActionBarActivity implements
             }
         }
     }
+
 
     @Override
     public void onConnectionSuspended(int i) {
@@ -278,30 +324,46 @@ public class MainActivity extends ActionBarActivity implements
         if (authData != null) {
             /* Hide all the login buttons */
             mGoogleLoginButton.setVisibility(View.GONE);
-            mLoggedInStatusTextView.setVisibility(View.VISIBLE);
-            /* show a provider specific status text */
-            String name = null;
-            if (authData.getProvider().equals("facebook")
-                    || authData.getProvider().equals("google")
-                    || authData.getProvider().equals("twitter")) {
-                name = (String) authData.getProviderData().get("displayName");
-            } else if (authData.getProvider().equals("anonymous")
-                    || authData.getProvider().equals("password")) {
-                name = authData.getUid();
-            } else {
-                Log.e(TAG, "Invalid provider: " + authData.getProvider());
-            }
-            if (name != null) {
-                mLoggedInStatusTextView.setText("Logged in as " + name + " (" + authData.getProvider() + ")");
-            }
         } else {
             /* No authenticated user show all the login buttons */
             mGoogleLoginButton.setVisibility(View.VISIBLE);
         }
         this.mAuthData = authData;
+        if (mAuthData != null && !fragmentsStarted) {
+            registerUser();
+        }
         /* invalidate options menu to hide/show the logout button */
         supportInvalidateOptionsMenu();
     }
+
+    private void startHomeFragment(AuthData authData) {
+        FragmentTransaction transaction;
+
+        transaction = getSupportFragmentManager().beginTransaction();
+
+        // Replace whatever is in the fragment_container view with this fragment,
+        // and add the transaction to the back stack so the user can navigate back
+        mHomeFragment.setFirebaseRef(mFirebaseRef.child(USERS).child(authData.getUid()));
+        transaction.replace(R.id.info_fragment, mHomeFragment);
+        transaction.addToBackStack(null);
+
+        // Commit the transaction
+        transaction.commit();
+    }
+
+    private void startRemoteOfficeFragment(AuthData authData) {
+        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+
+        mRemoteOfficesFragment.setFirebase(mFirebaseRef, authData.getUid());
+        // Replace whatever is in the fragment_container view with this fragment,
+        // and add the transaction to the back stack so the user can navigate back
+        transaction.replace(R.id.office_fragment, mRemoteOfficesFragment);
+        transaction.addToBackStack(null);
+
+        // Commit the transaction
+        transaction.commit();
+    }
+
 
     /**
      * Unauthenticate from Firebase and from providers where necessary.
@@ -319,9 +381,16 @@ public class MainActivity extends ActionBarActivity implements
                     mGoogleApiClient.disconnect();
                 }
             }
+            Fragment fragment = getSupportFragmentManager().findFragmentById(R.id.office_fragment);
+            if(fragment != null)
+                getSupportFragmentManager().beginTransaction().remove(fragment).commit();
+
+            fragment = getSupportFragmentManager().findFragmentById(R.id.info_fragment);
+            if(fragment != null)
+                getSupportFragmentManager().beginTransaction().remove(fragment).commit();
             /* Update authenticated user and show login buttons */
             setAuthenticatedUser(null);
+            fragmentsStarted = false;
         }
     }
-
 }

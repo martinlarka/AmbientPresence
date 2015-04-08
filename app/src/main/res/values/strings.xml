@@ -26,4 +26,10 @@
     <string name="following_user">Following</string>
     <string name="unbann_user">Unban user</string>
     <string name="add_device">Add device</string>
+    <string name="add_new_device">Add new device</string>
+
+    <string-array name="supported_devices">
+        <item>Philips Hue</item>
+        <item>Nest Thermostat</item>
+    </string-array>
 </resources>

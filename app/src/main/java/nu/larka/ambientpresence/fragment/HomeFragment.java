@@ -2,7 +2,10 @@ package nu.larka.ambientpresence.fragment;
 
 
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.app.Dialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -13,17 +16,16 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
+import android.support.annotation.NonNull;
+import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
 import android.util.Base64;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.ListView;
-import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.firebase.client.DataSnapshot;
@@ -247,11 +249,33 @@ public class HomeFragment extends Fragment implements ValueEventListener, View.O
         public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
             if (position == deviceArrayList.size()) {
                 // Add device
-
+                addDeviceDialog.show(getFragmentManager(), "devices");
             } else {
                 // Setup device
-                
+
             }
+        }
+    };
+
+    private DialogFragment addDeviceDialog = new DialogFragment() {
+        @NonNull
+        @Override
+        public Dialog onCreateDialog(Bundle savedInstanceState) {
+            AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+            builder.setTitle(R.string.add_new_device)
+                    .setItems(R.array.supported_devices, new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int which) {
+                            switch (which) {
+                                case 0:
+                                    
+                                    break;
+                                case 1:
+
+                                    break;
+                            }
+                        }
+                    });
+            return builder.create();
         }
     };
 }

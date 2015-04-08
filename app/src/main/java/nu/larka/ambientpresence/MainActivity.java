@@ -82,8 +82,6 @@ public class MainActivity extends FragmentActivity implements
     /* Fragments */
     private RemoteOfficesFragment mRemoteOfficesFragment;
 
-    private HomeFragment mHomeFragment;
-    private User homeUser;
     private boolean fragmentsStarted = false;
 
     @Override

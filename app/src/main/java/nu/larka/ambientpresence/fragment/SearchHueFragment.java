@@ -107,6 +107,7 @@ public class SearchHueFragment extends Fragment implements AdapterView.OnItemCli
             phHueSDK.startPushlinkAuthentication(accessPoint);
             Log.i("HUE", "Pushlink autentication");
             Toast t = Toast.makeText(getActivity(), R.string.pushlink_auth, Toast.LENGTH_LONG);
+            t.show();
         }
 
         @Override

@@ -19,6 +19,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
@@ -57,6 +58,7 @@ public class HomeFragment extends Fragment implements ValueEventListener, View.O
     private TextView titleView;
     private ListView deviceListView;
     private DeviceAdapter deviceAdapter;
+    private ArrayList<Device> deviceArrayList = new ArrayList<>();
 
     public static final int CAPTURE_IMAGE_ACTIVITY_REQUEST_CODE = 100;
     private Firebase mFirebaseRef;
@@ -89,8 +91,9 @@ public class HomeFragment extends Fragment implements ValueEventListener, View.O
         }
         userImageView.setOnLongClickListener(this);
         // Inflate the layout for this fragment
-        deviceAdapter = new DeviceAdapter(v.getContext(), new ArrayList<Device>());
+        deviceAdapter = new DeviceAdapter(v.getContext(), deviceArrayList);
         deviceListView.setAdapter(deviceAdapter);
+        deviceListView.setOnItemClickListener(deviceClickListener);
 
         return v;
     }
@@ -238,4 +241,17 @@ public class HomeFragment extends Fragment implements ValueEventListener, View.O
     public void setFirebaseRef(Firebase firebaseRef) {
         this.mFirebaseRef = firebaseRef;
     }
+
+    private AdapterView.OnItemClickListener deviceClickListener = new AdapterView.OnItemClickListener() {
+        @Override
+        public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+            if (position == deviceArrayList.size()) {
+                // Add device
+
+            } else {
+                // Setup device
+                
+            }
+        }
+    };
 }

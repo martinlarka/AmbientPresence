@@ -8,6 +8,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ListView;
+import android.widget.Toast;
 
 import com.philips.lighting.hue.sdk.PHAccessPoint;
 import com.philips.lighting.hue.sdk.PHBridgeSearchManager;
@@ -105,8 +106,7 @@ public class SearchHueFragment extends Fragment implements AdapterView.OnItemCli
         public void onAuthenticationRequired(PHAccessPoint accessPoint) {
             phHueSDK.startPushlinkAuthentication(accessPoint);
             Log.i("HUE", "Pushlink autentication");
-            // Arriving here indicates that Pushlinking is required (to prove the User has physical access to the bridge).  Typically here
-            // you will display a pushlink image (with a timer) indicating to to the user they need to push the button on their bridge within 30 seconds.
+            Toast t = Toast.makeText(getActivity(), R.string.pushlink_auth, Toast.LENGTH_LONG);
         }
 
         @Override
@@ -147,5 +147,6 @@ public class SearchHueFragment extends Fragment implements AdapterView.OnItemCli
             }
         }
         phHueSDK.connect(accessPoint);
+        getFragmentManager().popBackStack();
     }
 }

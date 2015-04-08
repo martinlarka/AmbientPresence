@@ -29,6 +29,7 @@ import android.widget.AdapterView;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.firebase.client.DataSnapshot;
 import com.firebase.client.Firebase;
@@ -73,6 +74,8 @@ public class HomeFragment extends Fragment implements ValueEventListener, View.O
 
     public static final int CAPTURE_IMAGE_ACTIVITY_REQUEST_CODE = 100;
     private Firebase mFirebaseRef;
+    private PHHueSDK phHueSDK;
+    private SearchHueFragment searchHueFragment;
 
     public HomeFragment() {
         // Required empty public constructor
@@ -105,6 +108,13 @@ public class HomeFragment extends Fragment implements ValueEventListener, View.O
         deviceAdapter = new DeviceAdapter(v.getContext(), deviceArrayList);
         deviceListView.setAdapter(deviceAdapter);
         deviceListView.setOnItemClickListener(deviceClickListener);
+
+        // Gets an instance of the Hue SDK.
+        phHueSDK = PHHueSDK.create();
+
+        // Set the Device Name (name of your app). This will be stored in your bridge whitelist entry.
+        phHueSDK.setAppName("AmbientPresenceApp");
+        phHueSDK.setDeviceName(android.os.Build.MODEL);
 
         return v;
     }
@@ -277,7 +287,8 @@ public class HomeFragment extends Fragment implements ValueEventListener, View.O
                             switch (which) {
                                 case 0:
                                     FragmentTransaction transaction = getActivity().getSupportFragmentManager().beginTransaction();
-                                    SearchHueFragment searchHueFragment = new SearchHueFragment();
+                                    searchHueFragment = new SearchHueFragment();
+                                    searchHueFragment.setListener(listener);
                                     // Replace whatever is in the fragment_container view with this fragment,
                                     // and add the transaction to the back stack so the user can navigate back
                                     transaction.replace(R.id.info_fragment, searchHueFragment);
@@ -293,6 +304,77 @@ public class HomeFragment extends Fragment implements ValueEventListener, View.O
                         }
                     });
             return builder.create();
+        }
+    };
+
+    // Local SDK Listener
+    private PHSDKListener listener = new PHSDKListener() {
+
+        @Override
+        public void onAccessPointsFound(List<PHAccessPoint> accessPoint) {
+            // Handle your bridge search results here.  Typically if multiple results are returned you will want to display them in a list
+            // and let the user select their bridge.   If one is found you may opt to connect automatically to that bridge.
+            Log.i("HUE", "AccessPointFound: " + accessPoint.size());
+
+            if (accessPoint.size() > 0) {
+                phHueSDK.getAccessPointsFound().clear();
+                phHueSDK.getAccessPointsFound().addAll(accessPoint);
+
+                getActivity().runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        searchHueFragment.adapterUpdateData(phHueSDK.getAccessPointsFound());
+                    }
+                });
+
+            }
+        }
+
+        @Override
+        public void onCacheUpdated(List cacheNotificationsList, PHBridge bridge) {
+            // Here you receive notifications that the BridgeResource Cache was updated. Use the PHMessageType to
+            // check which cache was updated, e.g.
+            if (cacheNotificationsList.contains(PHMessageType.LIGHTS_CACHE_UPDATED)) {
+                System.out.println("Lights Cache Updated ");
+            }
+        }
+
+        @Override
+        public void onBridgeConnected(PHBridge b) {
+            phHueSDK.setSelectedBridge(b);
+            phHueSDK.enableHeartbeat(b, PHHueSDK.HB_INTERVAL);
+            // Here it is recommended to set your connected bridge in your sdk object (as above) and start the heartbeat.
+            // At this point you are connected to a bridge so you should pass control to your main program/activity.
+            // Also it is recommended you store the connected IP Address/ Username in your app here.  This will allow easy automatic connection on subsequent use.
+            // TODO Add to devicelist!!
+            Log.i("HUE", "Bridge connected");
+        }
+
+        @Override
+        public void onAuthenticationRequired(PHAccessPoint accessPoint) {
+            phHueSDK.startPushlinkAuthentication(accessPoint);
+            Log.i("HUE", "Pushlink autentication");
+            Toast.makeText(getActivity(), R.string.pushlink_auth, Toast.LENGTH_LONG).show();
+        }
+
+        @Override
+        public void onConnectionResumed(PHBridge bridge) {
+
+        }
+
+        @Override
+        public void onConnectionLost(PHAccessPoint accessPoint) {
+            // Here you would handle the loss of connection to your bridge.
+        }
+
+        @Override
+        public void onError(int code, final String message) {
+            // Here you can handle events such as Bridge Not Responding, Authentication Failed and Bridge Not Found
+        }
+
+        @Override
+        public void onParsingErrors(List parsingErrorsList) {
+            // Any JSON parsing errors are returned here.  Typically your program should never return these.
         }
     };
 

@@ -28,10 +28,9 @@ import nu.larka.ambientpresence.preferences.HueSharedPreferences;
  */
 public class SearchHueFragment extends Fragment implements AdapterView.OnItemClickListener {
 
+    private PHSDKListener listener;
     private PHHueSDK phHueSDK;
     private HueDeviceAdapter adapter;
-
-    ListView hueListView;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -39,17 +38,13 @@ public class SearchHueFragment extends Fragment implements AdapterView.OnItemCli
         View v = inflater.inflate(R.layout.search_hue_fragment, container, false);
 
         // Gets an instance of the Hue SDK.
-        phHueSDK = PHHueSDK.create();
-
-        // Set the Device Name (name of your app). This will be stored in your bridge whitelist entry.
-        phHueSDK.setAppName("AmbientPresenceApp");
-        phHueSDK.setDeviceName(android.os.Build.MODEL);
+        phHueSDK = PHHueSDK.getInstance();
 
         // Register the PHSDKListener to receive callbacks from the bridge.
-        phHueSDK.getNotificationManager().registerSDKListener(listener);
+        phHueSDK.getNotificationManager().registerSDKListener(this.listener);
 
         adapter = new HueDeviceAdapter(getActivity(), phHueSDK.getAccessPointsFound());
-        hueListView = (ListView) v.findViewById(R.id.hue_list_view);
+        ListView hueListView = (ListView) v.findViewById(R.id.hue_list_view);
         hueListView.setAdapter(adapter);
         hueListView.setOnItemClickListener(this);
 
@@ -60,84 +55,19 @@ public class SearchHueFragment extends Fragment implements AdapterView.OnItemCli
         return v;
     }
 
-    // Local SDK Listener
-    private PHSDKListener listener = new PHSDKListener() {
+    public void adapterUpdateData(List<PHAccessPoint> accessPoint) {
+        adapter.updateData(accessPoint);
+    }
 
-        @Override
-        public void onAccessPointsFound(List<PHAccessPoint> accessPoint) {
-            // Handle your bridge search results here.  Typically if multiple results are returned you will want to display them in a list
-            // and let the user select their bridge.   If one is found you may opt to connect automatically to that bridge.
-            Log.i("HUE", "AccessPointFound: " + accessPoint.size());
-
-            if (accessPoint.size() > 0) {
-                phHueSDK.getAccessPointsFound().clear();
-                phHueSDK.getAccessPointsFound().addAll(accessPoint);
-
-                getActivity().runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        adapter.updateData(phHueSDK.getAccessPointsFound());
-                    }
-                });
-
-            }
-        }
-
-        @Override
-        public void onCacheUpdated(List cacheNotificationsList, PHBridge bridge) {
-            // Here you receive notifications that the BridgeResource Cache was updated. Use the PHMessageType to
-            // check which cache was updated, e.g.
-            if (cacheNotificationsList.contains(PHMessageType.LIGHTS_CACHE_UPDATED)) {
-                System.out.println("Lights Cache Updated ");
-            }
-        }
-
-        @Override
-        public void onBridgeConnected(PHBridge b) {
-            phHueSDK.setSelectedBridge(b);
-            phHueSDK.enableHeartbeat(b, PHHueSDK.HB_INTERVAL);
-            // Here it is recommended to set your connected bridge in your sdk object (as above) and start the heartbeat.
-            // At this point you are connected to a bridge so you should pass control to your main program/activity.
-            // Also it is recommended you store the connected IP Address/ Username in your app here.  This will allow easy automatic connection on subsequent use.
-            Log.i("HUE", "Bridge connected");
-        }
-
-        @Override
-        public void onAuthenticationRequired(PHAccessPoint accessPoint) {
-            phHueSDK.startPushlinkAuthentication(accessPoint);
-            Log.i("HUE", "Pushlink autentication");
-            Toast t = Toast.makeText(getActivity(), R.string.pushlink_auth, Toast.LENGTH_LONG);
-            t.show();
-        }
-
-        @Override
-        public void onConnectionResumed(PHBridge bridge) {
-
-        }
-
-        @Override
-        public void onConnectionLost(PHAccessPoint accessPoint) {
-            // Here you would handle the loss of connection to your bridge.
-        }
-
-        @Override
-        public void onError(int code, final String message) {
-            // Here you can handle events such as Bridge Not Responding, Authentication Failed and Bridge Not Found
-        }
-
-        @Override
-        public void onParsingErrors(List parsingErrorsList) {
-            // Any JSON parsing errors are returned here.  Typically your program should never return these.
-        }
-    };
+    public void setListener(PHSDKListener listener) {
+        this.listener = listener;
+    }
 
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-
         HueSharedPreferences prefs = HueSharedPreferences.getInstance(getActivity());
         PHAccessPoint accessPoint = (PHAccessPoint) adapter.getItem(position);
         accessPoint.setUsername(prefs.getUsername());
-
         PHBridge connectedBridge = phHueSDK.getSelectedBridge();
 
         if (connectedBridge != null) {

@@ -30,7 +30,6 @@ import com.google.android.gms.plus.Plus;
 
 import java.io.IOException;
 
-import nu.larka.ambientpresence.fragment.HomeFragment;
 import nu.larka.ambientpresence.fragment.RemoteOfficesFragment;
 import nu.larka.ambientpresence.model.User;
 

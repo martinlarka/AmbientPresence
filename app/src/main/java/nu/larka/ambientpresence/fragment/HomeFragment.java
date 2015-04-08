@@ -170,6 +170,10 @@ public class HomeFragment extends Fragment implements ValueEventListener, View.O
         return true;
     }
 
+    public void setFirebaseRef(Firebase firebaseRef) {
+        this.mFirebaseRef = firebaseRef;
+    }
+
     private class UploadImageToFirebase extends AsyncTask<Bitmap, Void, Void> {
 
         @Override
@@ -240,10 +244,6 @@ public class HomeFragment extends Fragment implements ValueEventListener, View.O
         }
     }
 
-    public void setFirebaseRef(Firebase firebaseRef) {
-        this.mFirebaseRef = firebaseRef;
-    }
-
     private AdapterView.OnItemClickListener deviceClickListener = new AdapterView.OnItemClickListener() {
         @Override
         public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
@@ -267,7 +267,6 @@ public class HomeFragment extends Fragment implements ValueEventListener, View.O
                         public void onClick(DialogInterface dialog, int which) {
                             switch (which) {
                                 case 0:
-                                    
                                     break;
                                 case 1:
 
@@ -278,4 +277,5 @@ public class HomeFragment extends Fragment implements ValueEventListener, View.O
             return builder.create();
         }
     };
+
 }

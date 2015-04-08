@@ -101,8 +101,8 @@ public class HomeFragment extends Fragment implements ValueEventListener, View.O
                         bitmap = MediaStore.Images.Media.getBitmap(getActivity().getContentResolver(), imageUri);
                         homeUser.setImage(bitmap);
                         userImageView.setImageBitmap(bitmap);
+                        new UploadImageToFirebase().execute(bitmap);
 
-                        new UploadImageToFirebase().execute(imageUri);
                     } catch (IOException e) {
                     }
                 }
@@ -134,48 +134,42 @@ public class HomeFragment extends Fragment implements ValueEventListener, View.O
 
     @Override
     public boolean onLongClick(View v) {
-            // Upload new image
-            Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-            // Create an image file name
-            String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
-            String imageFileName = "AMBIENTPRESENCE_" + timeStamp + "_";
-            File storageDir = Environment.getExternalStoragePublicDirectory(
-                    Environment.DIRECTORY_PICTURES);
-            File image = null;
-            try {
-                image = File.createTempFile(
-                        imageFileName,  /* prefix */
-                        ".jpg",         /* suffix */
-                        storageDir      /* directory */
-                );
-                imageUri = Uri.fromFile(image);
-                intent.putExtra(MediaStore.EXTRA_OUTPUT, imageUri);
-                startActivityForResult(intent, CAPTURE_IMAGE_ACTIVITY_REQUEST_CODE);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            return true;
+        // Upload new image
+        Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        // Create an image file name
+        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+        String imageFileName = "AMBIENTPRESENCE_" + timeStamp + "_";
+        File storageDir = Environment.getExternalStoragePublicDirectory(
+                Environment.DIRECTORY_PICTURES);
+        File image = null;
+        try {
+            image = File.createTempFile(
+                    imageFileName,  /* prefix */
+                    ".jpg",         /* suffix */
+                    storageDir      /* directory */
+            );
+            imageUri = Uri.fromFile(image);
+            intent.putExtra(MediaStore.EXTRA_OUTPUT, imageUri);
+            startActivityForResult(intent, CAPTURE_IMAGE_ACTIVITY_REQUEST_CODE);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return true;
     }
 
-    private class UploadImageToFirebase extends AsyncTask<Uri, Void, Void> {
+    private class UploadImageToFirebase extends AsyncTask<Bitmap, Void, Void> {
 
         @Override
-        protected Void doInBackground(Uri... uris) {
+        protected Void doInBackground(Bitmap... bmps) {
             Bitmap bmp;
-            try {
-                bmp = MediaStore.Images.Media.getBitmap(getActivity().getContentResolver(), uris[0]);
+            bmp = bmps[0];
+            ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+            bmp.compress(Bitmap.CompressFormat.PNG, 100, byteArrayOutputStream);
+            bmp.recycle();
+            byte[] byteArray = byteArrayOutputStream.toByteArray();
+            String imageFile = Base64.encodeToString(byteArray, Base64.DEFAULT);
 
-                Bitmap.createScaledBitmap(bmp, 200, Math.round(200 * bmp.getWidth())/bmp.getHeight(), false);
-                ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-                bmp.compress(Bitmap.CompressFormat.PNG, 80, byteArrayOutputStream);
-                bmp.recycle();
-                byte[] byteArray = byteArrayOutputStream.toByteArray();
-                String imageFile = Base64.encodeToString(byteArray, Base64.DEFAULT);
-
-                mFirebaseRef.child(MainActivity.USER_IMAGE).setValue(imageFile);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+            mFirebaseRef.child(MainActivity.USER_IMAGE).setValue(imageFile);
             return null;
         }
     }
@@ -212,7 +206,8 @@ public class HomeFragment extends Fragment implements ValueEventListener, View.O
             mat.postRotate(angle);
 
             Bitmap bmp = BitmapFactory.decodeStream(is);
-            bmp = Bitmap.createBitmap(bmp, 0, 0, 200, 200, mat, true);
+            bmp = Bitmap.createScaledBitmap(bmp,400, 400*bmp.getHeight()/bmp.getWidth(), false);
+            bmp = Bitmap.createBitmap(bmp, 0, 0, bmp.getWidth(), bmp.getHeight(), mat, true);
 
             OutputStream os;
             try {
@@ -221,7 +216,7 @@ public class HomeFragment extends Fragment implements ValueEventListener, View.O
                 e.printStackTrace();
                 return;
             }
-            bmp.compress(Bitmap.CompressFormat.PNG, 80, os);
+            bmp.compress(Bitmap.CompressFormat.PNG, 100, os);
 
             try {
                 exif.setAttribute(ExifInterface.TAG_ORIENTATION, String.valueOf(ExifInterface.ORIENTATION_NORMAL));
@@ -230,7 +225,6 @@ public class HomeFragment extends Fragment implements ValueEventListener, View.O
                 e.printStackTrace();
             }
         }
-
     }
 
     public void setFirebaseRef(Firebase firebaseRef) {

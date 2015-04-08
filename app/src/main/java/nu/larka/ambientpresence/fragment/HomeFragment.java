@@ -21,6 +21,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
@@ -36,10 +37,13 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 
 import nu.larka.ambientpresence.MainActivity;
 import nu.larka.ambientpresence.R;
+import nu.larka.ambientpresence.adapter.DeviceAdapter;
+import nu.larka.ambientpresence.model.Device;
 import nu.larka.ambientpresence.model.User;
 
 /**
@@ -51,6 +55,8 @@ public class HomeFragment extends Fragment implements ValueEventListener, View.O
     private Uri imageUri;
     private ImageView userImageView;
     private TextView titleView;
+    private ListView deviceListView;
+    private DeviceAdapter deviceAdapter;
 
     public static final int CAPTURE_IMAGE_ACTIVITY_REQUEST_CODE = 100;
     private Firebase mFirebaseRef;
@@ -68,6 +74,7 @@ public class HomeFragment extends Fragment implements ValueEventListener, View.O
 
         userImageView = (ImageView) v.findViewById(R.id.home_image_view);
         titleView = (TextView) v.findViewById(R.id.home_name);
+        deviceListView = (ListView) v.findViewById(R.id.device_list_view);
 
         if (homeUser != null) {
             titleView.setText(getResources().getString(R.string.office_home) + " - " + homeUser.getName());
@@ -77,14 +84,14 @@ public class HomeFragment extends Fragment implements ValueEventListener, View.O
             } else {
                 userImageView.setImageBitmap(homeUser.getImage());
             }
-
         } else {
             mFirebaseRef.addListenerForSingleValueEvent(this);
         }
-
         userImageView.setOnLongClickListener(this);
-
         // Inflate the layout for this fragment
+        deviceAdapter = new DeviceAdapter(v.getContext(), new ArrayList<Device>());
+        deviceListView.setAdapter(deviceAdapter);
+
         return v;
     }
 
@@ -99,6 +106,7 @@ public class HomeFragment extends Fragment implements ValueEventListener, View.O
                         Context context = getActivity().getApplicationContext();
                         ensurePhotoNotRotated(context, imageUri);
                         bitmap = MediaStore.Images.Media.getBitmap(getActivity().getContentResolver(), imageUri);
+
                         homeUser.setImage(bitmap);
                         userImageView.setImageBitmap(bitmap);
                         new UploadImageToFirebase().execute(bitmap);
@@ -216,7 +224,7 @@ public class HomeFragment extends Fragment implements ValueEventListener, View.O
                 e.printStackTrace();
                 return;
             }
-            bmp.compress(Bitmap.CompressFormat.PNG, 100, os);
+            bmp.compress(Bitmap.CompressFormat.PNG, 50, os);
 
             try {
                 exif.setAttribute(ExifInterface.TAG_ORIENTATION, String.valueOf(ExifInterface.ORIENTATION_NORMAL));

@@ -19,7 +19,9 @@ import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentTransaction;
 import android.util.Base64;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -32,6 +34,12 @@ import com.firebase.client.DataSnapshot;
 import com.firebase.client.Firebase;
 import com.firebase.client.FirebaseError;
 import com.firebase.client.ValueEventListener;
+import com.philips.lighting.hue.sdk.PHAccessPoint;
+import com.philips.lighting.hue.sdk.PHBridgeSearchManager;
+import com.philips.lighting.hue.sdk.PHHueSDK;
+import com.philips.lighting.hue.sdk.PHMessageType;
+import com.philips.lighting.hue.sdk.PHSDKListener;
+import com.philips.lighting.model.PHBridge;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -42,6 +50,7 @@ import java.io.OutputStream;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 import nu.larka.ambientpresence.MainActivity;
 import nu.larka.ambientpresence.R;
@@ -267,6 +276,15 @@ public class HomeFragment extends Fragment implements ValueEventListener, View.O
                         public void onClick(DialogInterface dialog, int which) {
                             switch (which) {
                                 case 0:
+                                    FragmentTransaction transaction = getActivity().getSupportFragmentManager().beginTransaction();
+                                    SearchHueFragment searchHueFragment = new SearchHueFragment();
+                                    // Replace whatever is in the fragment_container view with this fragment,
+                                    // and add the transaction to the back stack so the user can navigate back
+                                    transaction.replace(R.id.info_fragment, searchHueFragment);
+                                    transaction.addToBackStack(null);
+
+                                    // Commit the transaction
+                                    transaction.commit();
                                     break;
                                 case 1:
 

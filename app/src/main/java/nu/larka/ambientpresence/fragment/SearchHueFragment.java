@@ -6,6 +6,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ListView;
 
 import com.philips.lighting.hue.sdk.PHAccessPoint;
@@ -19,11 +20,12 @@ import java.util.List;
 
 import nu.larka.ambientpresence.R;
 import nu.larka.ambientpresence.adapter.HueDeviceAdapter;
+import nu.larka.ambientpresence.preferences.HueSharedPreferences;
 
 /**
  * Created by martin on 15-04-08.
  */
-public class SearchHueFragment extends Fragment {
+public class SearchHueFragment extends Fragment implements AdapterView.OnItemClickListener {
 
     private PHHueSDK phHueSDK;
     private HueDeviceAdapter adapter;
@@ -48,6 +50,7 @@ public class SearchHueFragment extends Fragment {
         adapter = new HueDeviceAdapter(getActivity(), phHueSDK.getAccessPointsFound());
         hueListView = (ListView) v.findViewById(R.id.hue_list_view);
         hueListView.setAdapter(adapter);
+        hueListView.setOnItemClickListener(this);
 
         PHBridgeSearchManager sm = (PHBridgeSearchManager) phHueSDK.getSDKService(PHHueSDK.SEARCH_BRIDGE);
         // Start the UPNP Searching of local bridges.
@@ -126,4 +129,23 @@ public class SearchHueFragment extends Fragment {
             // Any JSON parsing errors are returned here.  Typically your program should never return these.
         }
     };
+
+    @Override
+    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+
+        HueSharedPreferences prefs = HueSharedPreferences.getInstance(getActivity());
+        PHAccessPoint accessPoint = (PHAccessPoint) adapter.getItem(position);
+        accessPoint.setUsername(prefs.getUsername());
+
+        PHBridge connectedBridge = phHueSDK.getSelectedBridge();
+
+        if (connectedBridge != null) {
+            String connectedIP = connectedBridge.getResourceCache().getBridgeConfiguration().getIpAddress();
+            if (connectedIP != null) {   // We are already connected here:-
+                phHueSDK.disableHeartbeat(connectedBridge);
+                phHueSDK.disconnect(connectedBridge);
+            }
+        }
+        phHueSDK.connect(accessPoint);
+    }
 }

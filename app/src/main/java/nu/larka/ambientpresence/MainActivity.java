@@ -48,6 +48,8 @@ public class MainActivity extends FragmentActivity implements
     public static final String STATE = "state";
     public static final String USERNAME ="username";
     public static final String NAME ="name";
+    public static final String DEVICES ="devices";
+    public static final String HUE ="hue";
 
     public static final int RC_GOOGLE_LOGIN = 1;
 

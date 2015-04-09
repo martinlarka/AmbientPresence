@@ -15,6 +15,14 @@ public class HueDevice extends Device {
         this.lastConnectedIPAddress = lastConnectedIPAddress;
     }
 
+    public String getLastConnectedIPAddress() {
+        return lastConnectedIPAddress;
+    }
+
+    public String getHueUsername() {
+        return hueUsername;
+    }
+
     public void setHueUsername(String hueUsername) {
         this.hueUsername = hueUsername;
     }

@@ -106,7 +106,6 @@ public class HomeFragment extends Fragment implements ValueEventListener, View.O
             mFirebaseRef.addListenerForSingleValueEvent(this);
         }
         userImageView.setOnLongClickListener(this);
-        // Inflate the layout for this fragment
         deviceAdapter = new DeviceAdapter(v.getContext(), deviceArrayList);
         deviceListView.setAdapter(deviceAdapter);
         deviceListView.setOnItemClickListener(deviceClickListener);

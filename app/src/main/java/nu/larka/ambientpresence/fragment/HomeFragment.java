@@ -29,19 +29,17 @@ import android.widget.AdapterView;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.firebase.client.DataSnapshot;
 import com.firebase.client.Firebase;
 import com.firebase.client.FirebaseError;
 import com.firebase.client.ValueEventListener;
 import com.philips.lighting.hue.sdk.PHAccessPoint;
-import com.philips.lighting.hue.sdk.PHBridgeSearchManager;
 import com.philips.lighting.hue.sdk.PHHueSDK;
 import com.philips.lighting.hue.sdk.PHMessageType;
 import com.philips.lighting.hue.sdk.PHSDKListener;
+import com.philips.lighting.hue.sdk.connection.impl.PHBridgeInternal;
 import com.philips.lighting.model.PHBridge;
-import com.philips.lighting.model.PHHueError;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -59,6 +57,7 @@ import nu.larka.ambientpresence.R;
 import nu.larka.ambientpresence.adapter.DeviceAdapter;
 import nu.larka.ambientpresence.hue.PHPushlinkActivity;
 import nu.larka.ambientpresence.model.Device;
+import nu.larka.ambientpresence.model.HueDevice;
 import nu.larka.ambientpresence.model.User;
 
 /**
@@ -78,6 +77,7 @@ public class HomeFragment extends Fragment implements ValueEventListener, View.O
     private Firebase mFirebaseRef;
     private PHHueSDK phHueSDK;
     private SearchHueFragment searchHueFragment;
+    private String phUsername;
 
     public HomeFragment() {
         // Required empty public constructor
@@ -117,6 +117,12 @@ public class HomeFragment extends Fragment implements ValueEventListener, View.O
         // Set the Device Name (name of your app). This will be stored in your bridge whitelist entry.
         phHueSDK.setAppName("AmbientPresenceApp");
         phHueSDK.setDeviceName(android.os.Build.MODEL);
+
+        // TODO Connect to linked hue
+//        PHAccessPoint accessPoint = new PHAccessPoint();
+//        accessPoint.setIpAddress(<stored_lastIpAddress>);
+//        accessPoint.setUsername(<stored_username>);
+//        phHueSDK.connect(accessPoint);
 
         return v;
     }
@@ -290,7 +296,8 @@ public class HomeFragment extends Fragment implements ValueEventListener, View.O
                                 case 0:
                                     FragmentTransaction transaction = getActivity().getSupportFragmentManager().beginTransaction();
                                     searchHueFragment = new SearchHueFragment();
-                                    searchHueFragment.setListener(listener);
+                                    searchHueFragment.setListener(phsdkListener);
+                                    searchHueFragment.setOnItemClickListener(onItemClickListener);
                                     // Replace whatever is in the fragment_container view with this fragment,
                                     // and add the transaction to the back stack so the user can navigate back
                                     transaction.replace(R.id.info_fragment, searchHueFragment);
@@ -310,7 +317,7 @@ public class HomeFragment extends Fragment implements ValueEventListener, View.O
     };
 
     // Local SDK Listener
-    private PHSDKListener listener = new PHSDKListener() {
+    private PHSDKListener phsdkListener = new PHSDKListener() {
 
         @Override
         public void onAccessPointsFound(List<PHAccessPoint> accessPoint) {
@@ -345,10 +352,15 @@ public class HomeFragment extends Fragment implements ValueEventListener, View.O
         public void onBridgeConnected(PHBridge b) {
             phHueSDK.setSelectedBridge(b);
             phHueSDK.enableHeartbeat(b, PHHueSDK.HB_INTERVAL);
+            phHueSDK.getLastHeartbeat().put(b.getResourceCache().getBridgeConfiguration() .getIpAddress(), System.currentTimeMillis());
             // Here it is recommended to set your connected bridge in your sdk object (as above) and start the heartbeat.
             // At this point you are connected to a bridge so you should pass control to your main program/activity.
             // Also it is recommended you store the connected IP Address/ Username in your app here.  This will allow easy automatic connection on subsequent use.
-            // TODO Add to devicelist!!
+
+            HueDevice hue = new HueDevice(getString(R.string.hue_light) + b.getResourceCache().getBridgeConfiguration().getIpAddress());
+            hue.setHueUsername(phUsername);
+            hue.setLastConnectedIPAddress(b.getResourceCache().getBridgeConfiguration().getIpAddress());
+            deviceArrayList.add(hue);
             Log.i("HUE", "Bridge connected");
         }
 
@@ -380,4 +392,21 @@ public class HomeFragment extends Fragment implements ValueEventListener, View.O
         }
     };
 
+    private AdapterView.OnItemClickListener onItemClickListener = new AdapterView.OnItemClickListener() {
+        @Override
+        public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+            PHAccessPoint accessPoint = searchHueFragment.getAccessPoint(position);
+            accessPoint.setUsername(phUsername = PHBridgeInternal.generateUniqueKey());
+            PHBridge connectedBridge = phHueSDK.getSelectedBridge();
+
+            if (connectedBridge != null) {
+                String connectedIP = connectedBridge.getResourceCache().getBridgeConfiguration().getIpAddress();
+                if (connectedIP != null) {   // We are already connected here:-
+                    phHueSDK.disableHeartbeat(connectedBridge);
+                    phHueSDK.disconnect(connectedBridge);
+                }
+            }
+            phHueSDK.connect(accessPoint);
+        }
+    };
 }

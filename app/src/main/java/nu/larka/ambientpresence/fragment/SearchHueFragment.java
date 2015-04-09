@@ -18,16 +18,16 @@ import java.util.List;
 
 import nu.larka.ambientpresence.R;
 import nu.larka.ambientpresence.adapter.HueDeviceAdapter;
-import nu.larka.ambientpresence.preferences.HueSharedPreferences;
 
 /**
  * Created by martin on 15-04-08.
  */
-public class SearchHueFragment extends Fragment implements AdapterView.OnItemClickListener {
+public class SearchHueFragment extends Fragment {
 
     private PHSDKListener listener;
     private PHHueSDK phHueSDK;
     private HueDeviceAdapter adapter;
+    private AdapterView.OnItemClickListener onItemClick;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -43,7 +43,7 @@ public class SearchHueFragment extends Fragment implements AdapterView.OnItemCli
         adapter = new HueDeviceAdapter(getActivity(), phHueSDK.getAccessPointsFound());
         ListView hueListView = (ListView) v.findViewById(R.id.hue_list_view);
         hueListView.setAdapter(adapter);
-        hueListView.setOnItemClickListener(this);
+        hueListView.setOnItemClickListener(onItemClick);
 
         PHBridgeSearchManager sm = (PHBridgeSearchManager) phHueSDK.getSDKService(PHHueSDK.SEARCH_BRIDGE);
         // Start the UPNP Searching of local bridges.
@@ -56,24 +56,16 @@ public class SearchHueFragment extends Fragment implements AdapterView.OnItemCli
         adapter.updateData(accessPoint);
     }
 
+    public PHAccessPoint getAccessPoint(int position) {
+        return (PHAccessPoint) adapter.getItem(position);
+    }
+
     public void setListener(PHSDKListener listener) {
         this.listener = listener;
     }
 
-    @Override
-    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-        HueSharedPreferences prefs = HueSharedPreferences.getInstance(getActivity());
-        PHAccessPoint accessPoint = (PHAccessPoint) adapter.getItem(position);
-        accessPoint.setUsername(prefs.getUsername());
-        PHBridge connectedBridge = phHueSDK.getSelectedBridge();
-
-        if (connectedBridge != null) {
-            String connectedIP = connectedBridge.getResourceCache().getBridgeConfiguration().getIpAddress();
-            if (connectedIP != null) {   // We are already connected here:-
-                phHueSDK.disableHeartbeat(connectedBridge);
-                phHueSDK.disconnect(connectedBridge);
-            }
-        }
-        phHueSDK.connect(accessPoint);
+    public void setOnItemClickListener(AdapterView.OnItemClickListener onItemClickListener) {
+        this.onItemClick = onItemClickListener;
     }
+
 }

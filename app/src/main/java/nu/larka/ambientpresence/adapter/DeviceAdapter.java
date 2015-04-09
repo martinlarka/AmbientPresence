@@ -54,6 +54,8 @@ public class DeviceAdapter extends BaseAdapter {
             // Render device view
             if (convertView == null) {
                 convertView = LayoutInflater.from(context).inflate(R.layout.device_list_item, parent, false);
+                TextView deviceName = (TextView) convertView.findViewById(R.id.device_name);
+                deviceName.setText(deviceArrayList.get(position).getDeviceName());
             }
         }
         // Return the completed view to render on screen

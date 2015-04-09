@@ -322,7 +322,7 @@ public class HomeFragment extends Fragment implements ValueEventListener, View.O
                                 case 0:
                                     FragmentTransaction transaction = getActivity().getSupportFragmentManager().beginTransaction();
                                     searchHueFragment = new SearchHueFragment();
-                                    searchHueFragment.setOnItemClickListener(onItemClickListener);
+                                    searchHueFragment.setOnItemClickListener(onHueSearchItemClickListener);
                                     // Replace whatever is in the fragment_container view with this fragment,
                                     // and add the transaction to the back stack so the user can navigate back
                                     transaction.replace(R.id.info_fragment, searchHueFragment);
@@ -444,7 +444,7 @@ public class HomeFragment extends Fragment implements ValueEventListener, View.O
         }
     };
 
-    private AdapterView.OnItemClickListener onItemClickListener = new AdapterView.OnItemClickListener() {
+    private AdapterView.OnItemClickListener onHueSearchItemClickListener = new AdapterView.OnItemClickListener() {
         @Override
         public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
             PHAccessPoint accessPoint = searchHueFragment.getAccessPoint(position);

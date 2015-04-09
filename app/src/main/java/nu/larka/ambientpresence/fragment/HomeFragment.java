@@ -41,6 +41,7 @@ import com.philips.lighting.hue.sdk.PHHueSDK;
 import com.philips.lighting.hue.sdk.PHMessageType;
 import com.philips.lighting.hue.sdk.PHSDKListener;
 import com.philips.lighting.model.PHBridge;
+import com.philips.lighting.model.PHHueError;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -56,6 +57,7 @@ import java.util.List;
 import nu.larka.ambientpresence.MainActivity;
 import nu.larka.ambientpresence.R;
 import nu.larka.ambientpresence.adapter.DeviceAdapter;
+import nu.larka.ambientpresence.hue.PHPushlinkActivity;
 import nu.larka.ambientpresence.model.Device;
 import nu.larka.ambientpresence.model.User;
 
@@ -335,7 +337,7 @@ public class HomeFragment extends Fragment implements ValueEventListener, View.O
             // Here you receive notifications that the BridgeResource Cache was updated. Use the PHMessageType to
             // check which cache was updated, e.g.
             if (cacheNotificationsList.contains(PHMessageType.LIGHTS_CACHE_UPDATED)) {
-                System.out.println("Lights Cache Updated ");
+                Log.i("HUE", "Lights Cache Updated ");
             }
         }
 
@@ -352,9 +354,9 @@ public class HomeFragment extends Fragment implements ValueEventListener, View.O
 
         @Override
         public void onAuthenticationRequired(PHAccessPoint accessPoint) {
+            Log.w("HUE", "Authentication Required.");
             phHueSDK.startPushlinkAuthentication(accessPoint);
-            Log.i("HUE", "Pushlink autentication");
-            Toast.makeText(getActivity(), R.string.pushlink_auth, Toast.LENGTH_LONG).show();
+            startActivity(new Intent(getActivity(), PHPushlinkActivity.class));
         }
 
         @Override

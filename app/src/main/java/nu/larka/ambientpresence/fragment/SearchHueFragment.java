@@ -2,18 +2,15 @@ package nu.larka.ambientpresence.fragment;
 
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ListView;
-import android.widget.Toast;
 
 import com.philips.lighting.hue.sdk.PHAccessPoint;
 import com.philips.lighting.hue.sdk.PHBridgeSearchManager;
 import com.philips.lighting.hue.sdk.PHHueSDK;
-import com.philips.lighting.hue.sdk.PHMessageType;
 import com.philips.lighting.hue.sdk.PHSDKListener;
 import com.philips.lighting.model.PHBridge;
 
@@ -35,7 +32,7 @@ public class SearchHueFragment extends Fragment implements AdapterView.OnItemCli
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        View v = inflater.inflate(R.layout.search_hue_fragment, container, false);
+        View v = inflater.inflate(R.layout.fragment_search_hue, container, false);
 
         // Gets an instance of the Hue SDK.
         phHueSDK = PHHueSDK.getInstance();
@@ -78,6 +75,5 @@ public class SearchHueFragment extends Fragment implements AdapterView.OnItemCli
             }
         }
         phHueSDK.connect(accessPoint);
-        getFragmentManager().popBackStack();
     }
 }

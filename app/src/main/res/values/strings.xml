@@ -28,6 +28,10 @@
     <string name="add_device">Add device</string>
     <string name="add_new_device">Add new device</string>
     <string name="pushlink_auth">Push link button on your hue bridge</string>
+    <string name="searching_for_hue">Searching for hue...</string>
+    <string name="press_pushlink_button">Press push link</string>
+    <string name="txt_pushlink">Pushlink</string>
+    <string name="btn_ok">Ok</string>
 
     <string-array name="supported_devices">
         <item>Philips Hue</item>

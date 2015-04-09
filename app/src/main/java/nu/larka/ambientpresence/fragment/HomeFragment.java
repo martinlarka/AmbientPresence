@@ -104,18 +104,21 @@ public class HomeFragment extends Fragment implements ValueEventListener, View.O
             }
         } else {
             mFirebaseRef.addListenerForSingleValueEvent(this);
+
+            // Gets an instance of the Hue SDK.
+            phHueSDK = PHHueSDK.create();
+
+            // Set the Device Name (name of your app). This will be stored in your bridge whitelist entry.
+            phHueSDK.setAppName("AmbientPresenceApp");
+            phHueSDK.setDeviceName(android.os.Build.MODEL);
+
+            // Register the PHSDKListener to receive callbacks from the bridge.
+            phHueSDK.getNotificationManager().registerSDKListener(phsdkListener);
         }
         userImageView.setOnLongClickListener(this);
         deviceAdapter = new DeviceAdapter(v.getContext(), deviceArrayList);
         deviceListView.setAdapter(deviceAdapter);
         deviceListView.setOnItemClickListener(deviceClickListener);
-
-        // Gets an instance of the Hue SDK.
-        phHueSDK = PHHueSDK.create();
-
-        // Set the Device Name (name of your app). This will be stored in your bridge whitelist entry.
-        phHueSDK.setAppName("AmbientPresenceApp");
-        phHueSDK.setDeviceName(android.os.Build.MODEL);
 
         // TODO Connect to linked hue
 //        PHAccessPoint accessPoint = new PHAccessPoint();
@@ -179,14 +182,12 @@ public class HomeFragment extends Fragment implements ValueEventListener, View.O
                         HueDevice hueDevice = new HueDevice(getString(R.string.hue_light) + ipAddress);
                         hueDevice.setHueUsername(hue.getKey());
                         hueDevice.setLastConnectedIPAddress(ipAddress);
+                        // Connect to bridge
                         deviceArrayList.add(hueDevice);
                     }
                     break;
             }
         }
-        deviceAdapter.notifyDataSetChanged();
-        deviceListView.invalidateViews();
-        deviceListView.setAdapter(deviceAdapter);
     }
 
     @Override
@@ -318,7 +319,6 @@ public class HomeFragment extends Fragment implements ValueEventListener, View.O
                                 case 0:
                                     FragmentTransaction transaction = getActivity().getSupportFragmentManager().beginTransaction();
                                     searchHueFragment = new SearchHueFragment();
-                                    searchHueFragment.setListener(phsdkListener);
                                     searchHueFragment.setOnItemClickListener(onItemClickListener);
                                     // Replace whatever is in the fragment_container view with this fragment,
                                     // and add the transaction to the back stack so the user can navigate back

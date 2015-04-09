@@ -11,8 +11,6 @@ import android.widget.ListView;
 import com.philips.lighting.hue.sdk.PHAccessPoint;
 import com.philips.lighting.hue.sdk.PHBridgeSearchManager;
 import com.philips.lighting.hue.sdk.PHHueSDK;
-import com.philips.lighting.hue.sdk.PHSDKListener;
-import com.philips.lighting.model.PHBridge;
 
 import java.util.List;
 
@@ -24,7 +22,6 @@ import nu.larka.ambientpresence.adapter.HueDeviceAdapter;
  */
 public class SearchHueFragment extends Fragment {
 
-    private PHSDKListener listener;
     private PHHueSDK phHueSDK;
     private HueDeviceAdapter adapter;
     private AdapterView.OnItemClickListener onItemClick;
@@ -36,9 +33,6 @@ public class SearchHueFragment extends Fragment {
 
         // Gets an instance of the Hue SDK.
         phHueSDK = PHHueSDK.getInstance();
-
-        // Register the PHSDKListener to receive callbacks from the bridge.
-        phHueSDK.getNotificationManager().registerSDKListener(this.listener);
 
         adapter = new HueDeviceAdapter(getActivity(), phHueSDK.getAccessPointsFound());
         ListView hueListView = (ListView) v.findViewById(R.id.hue_list_view);
@@ -58,10 +52,6 @@ public class SearchHueFragment extends Fragment {
 
     public PHAccessPoint getAccessPoint(int position) {
         return (PHAccessPoint) adapter.getItem(position);
-    }
-
-    public void setListener(PHSDKListener listener) {
-        this.listener = listener;
     }
 
     public void setOnItemClickListener(AdapterView.OnItemClickListener onItemClickListener) {

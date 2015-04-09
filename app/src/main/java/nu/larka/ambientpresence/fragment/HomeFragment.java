@@ -77,7 +77,7 @@ public class HomeFragment extends Fragment implements ValueEventListener, View.O
     private Firebase mFirebaseRef;
     private PHHueSDK phHueSDK;
     private SearchHueFragment searchHueFragment;
-    private String phUsername;
+    private String phUsername = null;
 
     public HomeFragment() {
         // Required empty public constructor
@@ -119,12 +119,6 @@ public class HomeFragment extends Fragment implements ValueEventListener, View.O
         deviceAdapter = new DeviceAdapter(v.getContext(), deviceArrayList);
         deviceListView.setAdapter(deviceAdapter);
         deviceListView.setOnItemClickListener(deviceClickListener);
-
-        // TODO Connect to linked hue
-//        PHAccessPoint accessPoint = new PHAccessPoint();
-//        accessPoint.setIpAddress(<stored_lastIpAddress>);
-//        accessPoint.setUsername(<stored_username>);
-//        phHueSDK.connect(accessPoint);
 
         return v;
     }
@@ -182,12 +176,21 @@ public class HomeFragment extends Fragment implements ValueEventListener, View.O
                         HueDevice hueDevice = new HueDevice(getString(R.string.hue_light) + ipAddress);
                         hueDevice.setHueUsername(hue.getKey());
                         hueDevice.setLastConnectedIPAddress(ipAddress);
-                        // Connect to bridge
+                        hueDevice.setEnabled(false);
+
+                        hueDevice.connect(phHueSDK);
                         deviceArrayList.add(hueDevice);
                     }
                     break;
             }
         }
+        updateDeviceList();
+    }
+
+    private void updateDeviceList() {
+        deviceAdapter.notifyDataSetChanged();
+        deviceListView.invalidateViews();
+        deviceListView.setAdapter(deviceAdapter);
     }
 
     @Override
@@ -379,12 +382,30 @@ public class HomeFragment extends Fragment implements ValueEventListener, View.O
             // At this point you are connected to a bridge so you should pass control to your main program/activity.
             // Also it is recommended you store the connected IP Address/ Username in your app here.  This will allow easy automatic connection on subsequent use.
 
-            HueDevice hue = new HueDevice(getString(R.string.hue_light) + b.getResourceCache().getBridgeConfiguration().getIpAddress());
-            hue.setHueUsername(phUsername);
-            hue.setLastConnectedIPAddress(b.getResourceCache().getBridgeConfiguration().getIpAddress());
-            deviceArrayList.add(hue);
+            boolean hueFound = false;
+            for (Device device : deviceArrayList) {
+                if (device.getClass() == HueDevice.class &&
+                        ((HueDevice)device).getLastConnectedIPAddress().equals(b.getResourceCache().getBridgeConfiguration().getIpAddress())) {
+                    hueFound = true;
+                    device.setEnabled(true);
+                    ((HueDevice)device).setHueUsername(phUsername);
+                }
+            }
+            if (!hueFound) {
+                HueDevice hue = new HueDevice(getString(R.string.hue_light) + b.getResourceCache().getBridgeConfiguration().getIpAddress());
+                hue.setHueUsername(phUsername);
+                hue.setLastConnectedIPAddress(b.getResourceCache().getBridgeConfiguration().getIpAddress());
+                hue.setEnabled(true);
+                deviceArrayList.add(hue);
+                saveHueOnFirebase(hue);
+            }
+            getActivity().runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    updateDeviceList();
+                }
+            });
 
-            saveHueOnFirebase(hue);
             Log.i("HUE", "Bridge connected");
         }
 
@@ -427,7 +448,10 @@ public class HomeFragment extends Fragment implements ValueEventListener, View.O
         @Override
         public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
             PHAccessPoint accessPoint = searchHueFragment.getAccessPoint(position);
-            accessPoint.setUsername(phUsername = PHBridgeInternal.generateUniqueKey());
+            if (phUsername == null) {
+                phUsername = PHBridgeInternal.generateUniqueKey();
+            }
+            accessPoint.setUsername(phUsername);
             PHBridge connectedBridge = phHueSDK.getSelectedBridge();
 
             if (connectedBridge != null) {

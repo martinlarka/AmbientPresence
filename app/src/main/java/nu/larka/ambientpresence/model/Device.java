@@ -5,6 +5,7 @@ package nu.larka.ambientpresence.model;
  */
 public class Device {
     private String deviceName;
+    private boolean enabled;
 
     public Device(String deviceName) {
         this.deviceName = deviceName;
@@ -16,5 +17,13 @@ public class Device {
 
     public void setDeviceName(String deviceName) {
         this.deviceName = deviceName;
+    }
+
+    public void setEnabled(boolean enabled) {
+        this.enabled = enabled;
+    }
+
+    public boolean isEnabled() {
+        return enabled;
     }
 }

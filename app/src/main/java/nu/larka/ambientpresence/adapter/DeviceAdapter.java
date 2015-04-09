@@ -56,6 +56,11 @@ public class DeviceAdapter extends BaseAdapter {
                 convertView = LayoutInflater.from(context).inflate(R.layout.device_list_item, parent, false);
                 TextView deviceName = (TextView) convertView.findViewById(R.id.device_name);
                 deviceName.setText(deviceArrayList.get(position).getDeviceName());
+                if (!deviceArrayList.get(position).isEnabled()) {
+                    deviceName.setTextColor(convertView.getResources().getColor(R.color.device_not_enabled));
+                } else {
+                    deviceName.setTextColor(convertView.getResources().getColor(R.color.device_enabled));
+                }
             }
         }
         // Return the completed view to render on screen

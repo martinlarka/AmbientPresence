@@ -1,5 +1,8 @@
 package nu.larka.ambientpresence.model;
 
+import com.philips.lighting.hue.sdk.PHAccessPoint;
+import com.philips.lighting.hue.sdk.PHHueSDK;
+
 /**
  * Created by martin on 15-04-08.
  */
@@ -25,5 +28,12 @@ public class HueDevice extends Device {
 
     public void setHueUsername(String hueUsername) {
         this.hueUsername = hueUsername;
+    }
+
+    public void connect(PHHueSDK phHueSDK) {
+        PHAccessPoint accessPoint = new PHAccessPoint();
+        accessPoint.setIpAddress(lastConnectedIPAddress);
+        accessPoint.setUsername(hueUsername);
+        phHueSDK.connect(accessPoint);
     }
 }

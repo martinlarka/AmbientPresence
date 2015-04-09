@@ -164,6 +164,29 @@ public class HomeFragment extends Fragment implements ValueEventListener, View.O
         } else {
             userImageView.setImageResource(R.drawable.home500);
         }
+
+        populateDeviceList(dataSnapshot.child(MainActivity.DEVICES));
+    }
+
+    private void populateDeviceList(DataSnapshot child) {
+        Iterable<DataSnapshot> devices = child.getChildren();
+        for (DataSnapshot type : devices) {
+            switch (type.getKey()) {
+                case MainActivity.HUE:
+                    Iterable<DataSnapshot> hues = type.getChildren();
+                    for (DataSnapshot hue : hues) {
+                        String ipAddress = (String) hue.getValue();
+                        HueDevice hueDevice = new HueDevice(getString(R.string.hue_light) + ipAddress);
+                        hueDevice.setHueUsername(hue.getKey());
+                        hueDevice.setLastConnectedIPAddress(ipAddress);
+                        deviceArrayList.add(hueDevice);
+                    }
+                    break;
+            }
+        }
+        deviceAdapter.notifyDataSetChanged();
+        deviceListView.invalidateViews();
+        deviceListView.setAdapter(deviceAdapter);
     }
 
     @Override
@@ -360,6 +383,8 @@ public class HomeFragment extends Fragment implements ValueEventListener, View.O
             hue.setHueUsername(phUsername);
             hue.setLastConnectedIPAddress(b.getResourceCache().getBridgeConfiguration().getIpAddress());
             deviceArrayList.add(hue);
+
+            saveHueOnFirebase(hue);
             Log.i("HUE", "Bridge connected");
         }
 
@@ -388,6 +413,13 @@ public class HomeFragment extends Fragment implements ValueEventListener, View.O
         @Override
         public void onParsingErrors(List parsingErrorsList) {
             // Any JSON parsing errors are returned here.  Typically your program should never return these.
+        }
+
+        private void saveHueOnFirebase(HueDevice hue) {
+            // TODO Send to firebase
+            mFirebaseRef.child(MainActivity.DEVICES)
+                    .child(MainActivity.HUE)
+                    .child(hue.getHueUsername()).setValue(hue.getLastConnectedIPAddress());
         }
     };
 

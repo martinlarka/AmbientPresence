@@ -58,6 +58,7 @@ import nu.larka.ambientpresence.adapter.DeviceAdapter;
 import nu.larka.ambientpresence.hue.PHPushlinkActivity;
 import nu.larka.ambientpresence.model.Device;
 import nu.larka.ambientpresence.model.HueDevice;
+import nu.larka.ambientpresence.model.TestDevice;
 import nu.larka.ambientpresence.model.User;
 
 /**
@@ -342,6 +343,12 @@ public class HomeFragment extends Fragment implements ValueEventListener, View.O
                                     break;
                                 case 1:
 
+                                    break;
+                                case 2:
+                                    TestDevice td = new TestDevice("Testdevice");
+                                    td.registerEnvironments(mFirebaseRef);
+                                    deviceArrayList.add(td);
+                                    updateDeviceList();
                                     break;
                             }
                         }

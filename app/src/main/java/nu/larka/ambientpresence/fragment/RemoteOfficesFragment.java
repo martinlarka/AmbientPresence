@@ -2,6 +2,7 @@ package nu.larka.ambientpresence.fragment;
 
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
+import android.provider.ContactsContract;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
 import android.view.LayoutInflater;
@@ -20,6 +21,8 @@ import com.firebase.client.Firebase;
 import com.firebase.client.FirebaseError;
 import com.firebase.client.ValueEventListener;
 import com.firebase.tubesock.Base64;
+import com.philips.lighting.hue.sdk.utilities.PHUtilities;
+import com.philips.lighting.model.PHLightState;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -250,11 +253,10 @@ public class RemoteOfficesFragment extends Fragment {
                         mFirebaseRef.child(MainActivity.USERS)
                                 .child(userUID)
                                 .child(MainActivity.ENVIRONMENTS)
-                                .child(d.getKey()).addValueEventListener(new EnvironmentChangedListener());
+                                .child(d.getKey()).addValueEventListener(new EnvironmentChangedListener(user));
                     }
                 }
                 user.setEnvironmentNames(userEnvList);
-                // TODO Register callbacks to change hues on env-change, call homeFragment??
 
                 followerList.add(user);
                 notifyFollowedUsersAdapterDataChanged();
@@ -377,9 +379,30 @@ public class RemoteOfficesFragment extends Fragment {
     }
 
     class EnvironmentChangedListener implements ValueEventListener {
+        private User user;
+
+        public EnvironmentChangedListener(User user) {
+            this.user = user;
+        }
 
         @Override
         public void onDataChange(DataSnapshot dataSnapshot) {
+                for (HueLightDevice light : hueLightArrayList) {
+                    if (user.equals(light.getUser()) && light.getEnvironment().equals(dataSnapshot.getKey())) {
+                        double value = (double)dataSnapshot.getValue();
+
+                        int red = (int) (255*value);
+                        int green = (int) (255*(1-value));
+                        int blue = (int) (255*(1-value/2));
+
+                        float xy[] = PHUtilities.calculateXYFromRGB(red, green, blue, light.getModelNumber());
+                        PHLightState lightState = new PHLightState();
+                        lightState.setX(xy[0]);
+                        lightState.setY(xy[1]);
+
+                        light.getBridge().updateLightState(light, lightState);
+                    }
+                }
 
         }
 

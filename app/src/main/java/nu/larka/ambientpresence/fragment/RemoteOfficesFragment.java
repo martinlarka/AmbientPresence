@@ -29,6 +29,7 @@ import java.util.Collections;
 import nu.larka.ambientpresence.MainActivity;
 import nu.larka.ambientpresence.R;
 import nu.larka.ambientpresence.adapter.FollowedUsersAdapter;
+import nu.larka.ambientpresence.model.Device;
 import nu.larka.ambientpresence.model.User;
 
 
@@ -38,6 +39,7 @@ public class RemoteOfficesFragment extends Fragment {
     private ActivityFragment mActivityFragment = null;
     private ArrayList<User> followerList = new ArrayList<>();
     private ArrayList<User> otherUsersList = new ArrayList<>();
+    private ArrayList<Device> deviceArrayList = new ArrayList<>();
     private Button activityButton;
     private Button homeButton;
     private Firebase mFirebaseRef;
@@ -79,6 +81,7 @@ public class RemoteOfficesFragment extends Fragment {
         FragmentTransaction transaction = getActivity().getSupportFragmentManager().beginTransaction();
 
         mHomeFragment.setFirebaseRef(mFirebaseRef.child(MainActivity.USERS).child(uid));
+        mHomeFragment.setDeviceArrayList(deviceArrayList);
         // Replace whatever is in the fragment_container view with this fragment,
         // and add the transaction to the back stack so the user can navigate back
         transaction.replace(R.id.info_fragment, mHomeFragment);
@@ -119,6 +122,7 @@ public class RemoteOfficesFragment extends Fragment {
                         // On changed - Check new state and make action
                         for (User u : followerList) {
                             if (dataSnapshot.getKey().equals(u.getUID()) && !dataSnapshot.getValue().equals(User.SELF)) {
+                                // TODO Change more of user info - image, env, etc.
                                 u.setSelfState((String) dataSnapshot.getValue());
                                 notifyFollowedUsersAdapterDataChanged();
                             }
@@ -236,6 +240,15 @@ public class RemoteOfficesFragment extends Fragment {
                 }
                 user.setState(state);
 
+                ArrayList<String> userEnvList = new ArrayList<String>();
+                userEnvList.add(getString(R.string.no_environment));
+                if (user.getSelfState().equals(User.FOLLOWING)) {
+                    Iterable<DataSnapshot> userEnvironments = dataSnapshot.child(MainActivity.ENVIRONMENTS).getChildren();
+                    for (DataSnapshot d : userEnvironments) {
+                        userEnvList.add(d.getKey());
+                    }
+                }
+                user.setEnvironments(userEnvList);
                 followerList.add(user);
                 notifyFollowedUsersAdapterDataChanged();
             }
@@ -301,6 +314,7 @@ public class RemoteOfficesFragment extends Fragment {
             } else { // Load setup of pressed office
                 // Start user info fragment
                 UserInfoFragment userInfoFragment = new UserInfoFragment();
+                userInfoFragment.setDeviceArrayList(deviceArrayList);
                 userInfoFragment.setUser(followerList.get(position));
                 userInfoFragment.setFirebaseRef(mFirebaseRef, uid);
 

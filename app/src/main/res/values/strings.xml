@@ -32,7 +32,10 @@
     <string name="press_pushlink_button">Press push link</string>
     <string name="txt_pushlink">Pushlink</string>
     <string name="btn_ok">Ok</string>
-    <string name="hue_light">Hue Light: </string>
+    <string name="hue_light">Hue Bridge: </string>
+    <string name="remove_device">Remove</string>
+    <string name="no_environment">None</string>
+    <string name="flash_light">Flash light</string>
 
     <string-array name="supported_devices">
         <item>Philips Hue</item>

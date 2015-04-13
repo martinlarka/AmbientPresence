@@ -8,17 +8,27 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.ListView;
 import android.widget.TextView;
 
 import com.firebase.client.Firebase;
+import com.philips.lighting.model.PHLight;
 
 import org.w3c.dom.Text;
 
 import java.awt.font.TextAttribute;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.jar.Manifest;
 
 import nu.larka.ambientpresence.MainActivity;
 import nu.larka.ambientpresence.R;
+import nu.larka.ambientpresence.adapter.DeviceAdapter;
+import nu.larka.ambientpresence.adapter.UserInfoDeviceAdapter;
+import nu.larka.ambientpresence.model.Device;
+import nu.larka.ambientpresence.model.HueDevice;
 import nu.larka.ambientpresence.model.User;
 
 /**
@@ -33,6 +43,9 @@ public class UserInfoFragment extends Fragment {
     private Button userStateButton;
     private Button selfStateButton;
     private TextView userStatusTextView;
+    private ListView deviceListView;
+    private UserInfoDeviceAdapter deviceAdapter;
+    private ArrayList<Device> hueDeviceArrayList;
 
 
     public UserInfoFragment() {
@@ -52,6 +65,8 @@ public class UserInfoFragment extends Fragment {
         userStateButton = (Button) view.findViewById(R.id.user_info_button);
         selfStateButton = (Button) view.findViewById(R.id.user_ban_button);
 
+        deviceListView = (ListView) view.findViewById(R.id.device_list_view);
+
         userName.setText(user.getUsername());
         userFullName.setText(user.getName());
         userStatusTextView.setText(getUserStatusText());
@@ -62,10 +77,23 @@ public class UserInfoFragment extends Fragment {
             userImage.setImageResource(R.drawable.home500);
         }
 
+        deviceAdapter = new UserInfoDeviceAdapter(view.getContext(), getHueLigts(hueDeviceArrayList), user);
+        deviceListView.setAdapter(deviceAdapter);
+
         setStateOfButtons();
 
         // Inflate the layout for this fragment
         return view;
+    }
+
+    private List<PHLight> getHueLigts(ArrayList<Device> deviceArrayList) {
+        List<PHLight> allLights = new ArrayList<>();
+        for (Device device : deviceArrayList) {
+            if (device.getClass().equals(HueDevice.class) && device.isEnabled()) {
+                    allLights = ((HueDevice)device).getBridge().getResourceCache().getAllLights();
+            }
+        }
+        return allLights; // FIXME Only one bridge can be used this way!!
     }
 
     private String getUserStatusText() {
@@ -211,4 +239,8 @@ public class UserInfoFragment extends Fragment {
             userStatusTextView.setText(getUserStatusText());
         }
     };
+
+    public void setDeviceArrayList(ArrayList<Device> deviceArrayList) {
+        this.hueDeviceArrayList = deviceArrayList;
+    }
 }

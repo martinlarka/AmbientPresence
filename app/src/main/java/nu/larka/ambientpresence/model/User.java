@@ -6,7 +6,10 @@ import android.graphics.BitmapFactory;
 import com.firebase.client.AuthData;
 import com.firebase.client.Firebase;
 
+import java.util.ArrayList;
+
 import nu.larka.ambientpresence.MainActivity;
+import nu.larka.ambientpresence.R;
 
 /**
  * Created by martin on 15-03-12.
@@ -26,6 +29,8 @@ public class User implements Comparable<User> {
 
     private String username;
     private String state;
+    private ArrayList<String> environments;
+    private int[] selectedEnvironments = new int[10];
 
     public String getSelfState() {
         return selfState;
@@ -160,5 +165,21 @@ public class User implements Comparable<User> {
 
     public void unBanUser(Firebase mFirebaseRef, String uid) {
         // TODO implement mehtod
+    }
+
+    public void setEnvironments(ArrayList<String> environments) {
+        this.environments = environments;
+    }
+
+    public ArrayList<String> getEnvironments() {
+        return environments;
+    }
+
+    public int getSelectedEnvironment(int position) {
+        return selectedEnvironments[position];
+    }
+
+    public void setSelectedEnvironment(int position, int environment) {
+        selectedEnvironments[position] = environment;
     }
 }

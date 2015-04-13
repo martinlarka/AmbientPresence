@@ -71,7 +71,7 @@ public class HomeFragment extends Fragment implements ValueEventListener, View.O
     private TextView titleView;
     private ListView deviceListView;
     private DeviceAdapter deviceAdapter;
-    private ArrayList<Device> deviceArrayList = new ArrayList<>();
+    private ArrayList<Device> deviceArrayList;
 
     public static final int CAPTURE_IMAGE_ACTIVITY_REQUEST_CODE = 100;
     private Firebase mFirebaseRef;
@@ -227,6 +227,10 @@ public class HomeFragment extends Fragment implements ValueEventListener, View.O
         this.mFirebaseRef = firebaseRef;
     }
 
+    public void setDeviceArrayList(ArrayList<Device> deviceArrayList) {
+        this.deviceArrayList = deviceArrayList;
+    }
+
     private class UploadImageToFirebase extends AsyncTask<Bitmap, Void, Void> {
 
         @Override
@@ -302,10 +306,15 @@ public class HomeFragment extends Fragment implements ValueEventListener, View.O
         public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
             if (position == deviceArrayList.size()) {
                 // Add device
-                addDeviceDialog.show(getFragmentManager(), "devices");
+                addDeviceDialog.show(getFragmentManager(), "add_devices");
             } else {
                 // Setup device
-
+                Device device = deviceArrayList.get(position);
+                if (device.getClass().equals(HueDevice.class)) {
+//                    SetupHueDeviceDialog setupDialog = new SetupHueDeviceDialog();
+//                    setupDialog.setDevice((HueDevice)deviceArrayList.get(position));
+//                    setupDialog.show(getFragmentManager(), "setup_device");
+                }
             }
         }
     };
@@ -340,6 +349,8 @@ public class HomeFragment extends Fragment implements ValueEventListener, View.O
             return builder.create();
         }
     };
+
+
 
     // Local SDK Listener
     private PHSDKListener phsdkListener = new PHSDKListener() {
@@ -388,6 +399,7 @@ public class HomeFragment extends Fragment implements ValueEventListener, View.O
                         ((HueDevice)device).getLastConnectedIPAddress().equals(b.getResourceCache().getBridgeConfiguration().getIpAddress())) {
                     hueFound = true;
                     device.setEnabled(true);
+                    ((HueDevice)device).setPHBridge(b);
                     ((HueDevice)device).setHueUsername(phUsername);
                 }
             }

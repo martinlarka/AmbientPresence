@@ -19,7 +19,7 @@ import nu.larka.ambientpresence.MainActivity;
  *
  */
 public class TestDevice extends Device {
-    private String environment = "Environment-" + (char)((new Random().nextInt(26)) + 'A');
+    private String environment = "Environment " + getDeviceName();
     private double value = 0.5;
     Timer timer;
     TimerTask timerTask;

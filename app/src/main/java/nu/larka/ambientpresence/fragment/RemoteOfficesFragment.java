@@ -4,7 +4,6 @@ import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -19,7 +18,6 @@ import com.firebase.client.ChildEventListener;
 import com.firebase.client.DataSnapshot;
 import com.firebase.client.Firebase;
 import com.firebase.client.FirebaseError;
-import com.firebase.client.Query;
 import com.firebase.client.ValueEventListener;
 import com.firebase.tubesock.Base64;
 
@@ -30,6 +28,7 @@ import nu.larka.ambientpresence.MainActivity;
 import nu.larka.ambientpresence.R;
 import nu.larka.ambientpresence.adapter.FollowedUsersAdapter;
 import nu.larka.ambientpresence.model.Device;
+import nu.larka.ambientpresence.model.HueLightDevice;
 import nu.larka.ambientpresence.model.User;
 
 
@@ -40,6 +39,7 @@ public class RemoteOfficesFragment extends Fragment {
     private ArrayList<User> followerList = new ArrayList<>();
     private ArrayList<User> otherUsersList = new ArrayList<>();
     private ArrayList<Device> deviceArrayList = new ArrayList<>();
+    private ArrayList<HueLightDevice> hueLightArrayList = new ArrayList<>();
     private Button activityButton;
     private Button homeButton;
     private Firebase mFirebaseRef;
@@ -82,6 +82,7 @@ public class RemoteOfficesFragment extends Fragment {
 
         mHomeFragment.setFirebaseRef(mFirebaseRef.child(MainActivity.USERS).child(uid));
         mHomeFragment.setDeviceArrayList(deviceArrayList);
+        mHomeFragment.setHueDeviceArrayList(hueLightArrayList);
         // Replace whatever is in the fragment_container view with this fragment,
         // and add the transaction to the back stack so the user can navigate back
         transaction.replace(R.id.info_fragment, mHomeFragment);
@@ -240,15 +241,21 @@ public class RemoteOfficesFragment extends Fragment {
                 }
                 user.setState(state);
 
-                ArrayList<String> userEnvList = new ArrayList<String>();
+                ArrayList<String> userEnvList = new ArrayList<>();
                 userEnvList.add(getString(R.string.no_environment));
                 if (user.getSelfState().equals(User.FOLLOWING)) {
                     Iterable<DataSnapshot> userEnvironments = dataSnapshot.child(MainActivity.ENVIRONMENTS).getChildren();
                     for (DataSnapshot d : userEnvironments) {
                         userEnvList.add(d.getKey());
+                        mFirebaseRef.child(MainActivity.USERS)
+                                .child(userUID)
+                                .child(MainActivity.ENVIRONMENTS)
+                                .child(d.getKey()).addValueEventListener(new EnvironmentChangedListener());
                     }
                 }
-                user.setEnvironments(userEnvList);
+                user.setEnvironmentNames(userEnvList);
+                // TODO Register callbacks to change hues on env-change, call homeFragment??
+
                 followerList.add(user);
                 notifyFollowedUsersAdapterDataChanged();
             }
@@ -314,7 +321,7 @@ public class RemoteOfficesFragment extends Fragment {
             } else { // Load setup of pressed office
                 // Start user info fragment
                 UserInfoFragment userInfoFragment = new UserInfoFragment();
-                userInfoFragment.setDeviceArrayList(deviceArrayList);
+                userInfoFragment.setHueDeviceArrayList(hueLightArrayList);
                 userInfoFragment.setUser(followerList.get(position));
                 userInfoFragment.setFirebaseRef(mFirebaseRef, uid);
 
@@ -347,6 +354,7 @@ public class RemoteOfficesFragment extends Fragment {
 
             Collections.sort(otherUsersList);
             mActivityFragment.setOtherUsersList(otherUsersList);
+            mActivityFragment.setDeviceArrayList(hueLightArrayList);
             mActivityFragment.setFirebaseRef(mFirebaseRef, uid);
             transaction.replace(R.id.info_fragment, mActivityFragment);
             transaction.addToBackStack(null);
@@ -366,5 +374,18 @@ public class RemoteOfficesFragment extends Fragment {
     public void setFirebase(Firebase mFirebaseRef, String uid) {
         this.mFirebaseRef = mFirebaseRef;
         this.uid = uid;
+    }
+
+    class EnvironmentChangedListener implements ValueEventListener {
+
+        @Override
+        public void onDataChange(DataSnapshot dataSnapshot) {
+
+        }
+
+        @Override
+        public void onCancelled(FirebaseError firebaseError) {
+
+        }
     }
 }

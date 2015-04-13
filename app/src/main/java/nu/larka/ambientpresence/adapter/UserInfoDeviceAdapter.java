@@ -16,8 +16,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import nu.larka.ambientpresence.R;
-import nu.larka.ambientpresence.listener.SearchItemListener;
-import nu.larka.ambientpresence.model.Device;
+import nu.larka.ambientpresence.model.HueLightDevice;
 import nu.larka.ambientpresence.model.User;
 
 /**
@@ -25,10 +24,10 @@ import nu.larka.ambientpresence.model.User;
  */
 public class UserInfoDeviceAdapter extends BaseAdapter {
     private Context context;
-    private List<PHLight> lights;
+    private ArrayList<HueLightDevice> lights;
     private User user;
 
-    public UserInfoDeviceAdapter(Context context, List<PHLight> lights, User user) {
+    public UserInfoDeviceAdapter(Context context, ArrayList<HueLightDevice> lights, User user) {
         this.context = context;
         this.lights = lights;
         this.user = user;
@@ -58,10 +57,10 @@ public class UserInfoDeviceAdapter extends BaseAdapter {
                 lightName.setText(lights.get(position).getName());
 
                 Spinner environmentSpinner = (Spinner) convertView.findViewById(R.id.user_environment_spinner);
-                ArrayAdapter<String> adapter = new ArrayAdapter<>(context, android.R.layout.simple_spinner_dropdown_item, user.getEnvironments());
+                ArrayAdapter<String> adapter = new ArrayAdapter<>(context, android.R.layout.simple_spinner_dropdown_item, user.getEnvironmentNames());
                 environmentSpinner.setAdapter(adapter);
-                environmentSpinner.setOnItemSelectedListener(new SelectedEnvironmentListener(position));
-                environmentSpinner.setSelection(user.getSelectedEnvironment(position));
+                environmentSpinner.setOnItemSelectedListener(new SelectedEnvironmentListener(lights.get(position)));
+                environmentSpinner.setSelection(lights.get(position).getEnvironmentPos());
             }
         // Return the completed view to render on screen
         return convertView;
@@ -69,16 +68,17 @@ public class UserInfoDeviceAdapter extends BaseAdapter {
 
     class SelectedEnvironmentListener implements AdapterView.OnItemSelectedListener {
 
-        private int device;
+        private HueLightDevice light;
 
-        public SelectedEnvironmentListener(int device) {
-            this.device = device;
+        public SelectedEnvironmentListener(HueLightDevice light) {
+            this.light = light;
         }
 
         @Override
         public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-            // TODO register these environments to change the lights
-            user.setSelectedEnvironment(device, position);
+            light.setUser(user);
+            light.setEnvironment(user.getEnvironmentNames().get(position));
+            light.setEnvironmentPos(position);
         }
 
         @Override

@@ -4,7 +4,11 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 
 import com.firebase.client.AuthData;
+import com.firebase.client.DataSnapshot;
 import com.firebase.client.Firebase;
+import com.firebase.client.FirebaseError;
+import com.firebase.client.ValueEventListener;
+import com.philips.lighting.model.PHLight;
 
 import java.util.ArrayList;
 
@@ -26,10 +30,9 @@ public class User implements Comparable<User> {
     private String UID;
     private String name;
 
-
     private String username;
     private String state;
-    private ArrayList<String> environments;
+    private ArrayList<String> environmentNames;
     private int[] selectedEnvironments = new int[10];
 
     public String getSelfState() {
@@ -43,7 +46,8 @@ public class User implements Comparable<User> {
     private String selfState;
     private Bitmap image;
 
-    public User() {}
+    public User() {
+    }
 
     public User(String UID) {
         this.UID = UID;
@@ -58,7 +62,9 @@ public class User implements Comparable<User> {
         return UID;
     }
 
-    public String getName() { return name; }
+    public String getName() {
+        return name;
+    }
 
     public String getState() {
         return state;
@@ -97,6 +103,7 @@ public class User implements Comparable<User> {
             this.image = null;
         }
     }
+
     public void setImage(Bitmap image) {
         this.image = image;
     }
@@ -109,7 +116,8 @@ public class User implements Comparable<User> {
     public int compareTo(User another) {
         switch (this.getState()) {
             case PENDING:
-                if (another.getState().equals(PENDING)) return this.getName().compareTo(another.getName());
+                if (another.getState().equals(PENDING))
+                    return this.getName().compareTo(another.getName());
                 else return -1;
             case FOLLOWING:
                 if (another.getState().equals(PENDING)) return 1;
@@ -167,19 +175,12 @@ public class User implements Comparable<User> {
         // TODO implement mehtod
     }
 
-    public void setEnvironments(ArrayList<String> environments) {
-        this.environments = environments;
+    public void setEnvironmentNames(ArrayList<String> environments) {
+        this.environmentNames = environments;
     }
 
-    public ArrayList<String> getEnvironments() {
-        return environments;
+    public ArrayList<String> getEnvironmentNames() {
+        return environmentNames;
     }
 
-    public int getSelectedEnvironment(int position) {
-        return selectedEnvironments[position];
-    }
-
-    public void setSelectedEnvironment(int position, int environment) {
-        selectedEnvironments[position] = environment;
-    }
 }

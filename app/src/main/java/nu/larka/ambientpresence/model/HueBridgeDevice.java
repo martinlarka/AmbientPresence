@@ -7,12 +7,12 @@ import com.philips.lighting.model.PHBridge;
 /**
  * Created by martin on 15-04-08.
  */
-public class HueDevice extends Device {
+public class HueBridgeDevice extends Device {
     private String lastConnectedIPAddress;
     private String hueUsername;
     private PHBridge bridge;
 
-    public HueDevice(String deviceName) {
+    public HueBridgeDevice(String deviceName) {
         super(deviceName);
     }
 

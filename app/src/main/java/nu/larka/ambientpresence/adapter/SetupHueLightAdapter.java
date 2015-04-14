@@ -10,7 +10,12 @@ import android.widget.BaseAdapter;
 import android.widget.Spinner;
 import android.widget.TextView;
 
+import java.io.File;
+import java.io.IOException;
+import java.net.URL;
 import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.List;
 
 import nu.larka.ambientpresence.R;
 import nu.larka.ambientpresence.model.HueLightDevice;
@@ -51,10 +56,10 @@ public class SetupHueLightAdapter extends BaseAdapter {
                 lightName.setText(lights.get(position).getName());
 
                 Spinner themeSpinner = (Spinner) convertView.findViewById(R.id.hue_light_spinner);
-                ArrayAdapter<String> adapter = new ArrayAdapter<>(context, android.R.layout.simple_spinner_dropdown_item, new String[]{"NONE"});
+                ArrayAdapter<String> adapter = new ArrayAdapter<>(context, android.R.layout.simple_spinner_dropdown_item, HueLightDevice.getHueThemes());
                 themeSpinner.setAdapter(adapter);
                 themeSpinner.setOnItemSelectedListener(new SelectedThemeListener(lights.get(position)));
-                themeSpinner.setSelection(lights.get(position).getEnvironmentPos());
+                themeSpinner.setSelection(lights.get(position).getTheme());
             }
         // Return the completed view to render on screen
         return convertView;
@@ -70,7 +75,7 @@ public class SetupHueLightAdapter extends BaseAdapter {
 
         @Override
         public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-            //light.setTheme();
+            light.setTheme(position);
         }
 
         @Override

@@ -389,17 +389,7 @@ public class RemoteOfficesFragment extends Fragment {
                 for (HueLightDevice light : hueLightArrayList) {
                     if (user.equals(light.getUser()) && light.getEnvironment().equals(dataSnapshot.getKey())) {
                         double value = (double)dataSnapshot.getValue();
-
-                        int red = (int) (255*value);
-                        int green = (int) (255*(1-value));
-                        int blue = (int) (255*(1-value/2));
-
-                        float xy[] = PHUtilities.calculateXYFromRGB(red, green, blue, light.getModelNumber());
-                        PHLightState lightState = new PHLightState();
-                        lightState.setX(xy[0]);
-                        lightState.setY(xy[1]);
-
-                        light.getBridge().updateLightState(light, lightState);
+                        light.updateLight(value);
                     }
                 }
 

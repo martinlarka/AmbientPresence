@@ -319,10 +319,33 @@ public class HomeFragment extends Fragment implements ValueEventListener, View.O
             } else {
                 // Setup device
                 // TODO Loop through lights array and only use the lights that are connected to selected bridge
+                SetupHueDeviceDialog setupDialog = new SetupHueDeviceDialog();
+                setupDialog.setDevice(deviceArrayList.get(position));
+                setupDialog.show(getFragmentManager(), "setup_device");
 
             }
         }
     };
+
+
+    public class SetupHueDeviceDialog extends DialogFragment {
+
+
+        private Device device;
+
+        public void setDevice(Device device) {
+            this.device = device;
+        }
+
+        @Override
+        public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+            View view = inflater.inflate(R.layout.fragment_setup_device, container, false);
+            TextView textView = (TextView) view.findViewById(R.id.device_name);
+            textView.setText(device.getDeviceName());
+            getDialog().setTitle(device.getDeviceName());
+            return view;
+        }
+    }
 
     private DialogFragment addDeviceDialog = new DialogFragment() {
         @NonNull

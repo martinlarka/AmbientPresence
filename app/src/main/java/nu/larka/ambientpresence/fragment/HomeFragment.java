@@ -52,9 +52,8 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.Map;
 
-import nu.larka.ambientpresence.MainActivity;
+import nu.larka.ambientpresence.activity.MainActivity;
 import nu.larka.ambientpresence.R;
 import nu.larka.ambientpresence.adapter.DeviceAdapter;
 import nu.larka.ambientpresence.hue.PHPushlinkActivity;
@@ -311,6 +310,7 @@ public class HomeFragment extends Fragment implements ValueEventListener, View.O
     }
 
     private AdapterView.OnItemClickListener deviceClickListener = new AdapterView.OnItemClickListener() {
+
         @Override
         public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
             if (position == deviceArrayList.size()) {
@@ -318,12 +318,11 @@ public class HomeFragment extends Fragment implements ValueEventListener, View.O
                 addDeviceDialog.show(getFragmentManager(), "add_devices");
             } else {
                 // Setup device
-                Device device = deviceArrayList.get(position);
-                if (device.getClass().equals(HueBridgeDevice.class)) {
-//                    SetupHueDeviceDialog setupDialog = new SetupHueDeviceDialog();
-//                    setupDialog.setDevice((HueDevice)deviceArrayList.get(position));
-//                    setupDialog.show(getFragmentManager(), "setup_device");
-                }
+                    // TODO Loop through lights array and only use the lights that are connected to selected bridge
+                    //SetupDialogFragment setupDialog = new SetupDialogFragment();
+                //setupDialog.setDevice(deviceArrayList.get(position));
+                  //  setupDialog.show(getFragmentManager(), "setup_device");
+
             }
         }
     };
@@ -364,8 +363,6 @@ public class HomeFragment extends Fragment implements ValueEventListener, View.O
             return builder.create();
         }
     };
-
-
 
     // Local SDK Listener
     private PHSDKListener phsdkListener = new PHSDKListener() {

@@ -14,7 +14,6 @@ import com.firebase.client.Firebase;
 
 import java.util.ArrayList;
 
-import nu.larka.ambientpresence.MainActivity;
 import nu.larka.ambientpresence.R;
 import nu.larka.ambientpresence.listener.SearchItemListener;
 import nu.larka.ambientpresence.model.User;

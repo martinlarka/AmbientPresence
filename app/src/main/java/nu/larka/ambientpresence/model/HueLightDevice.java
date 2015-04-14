@@ -1,8 +1,8 @@
 package nu.larka.ambientpresence.model;
 
-import com.philips.lighting.hue.listener.PHGroupListener;
 import com.philips.lighting.model.PHBridge;
 import com.philips.lighting.model.PHLight;
+import com.philips.lighting.model.PHLightState;
 
 /**
  * Created by martin on 15-04-13.
@@ -15,10 +15,6 @@ public class HueLightDevice extends PHLight {
     private PHLight light;
     private int environmentPos;
 
-    public HueLightDevice(String name, String identifier, String versionNumber, String modelNumber) {
-        super(name, identifier, versionNumber, modelNumber);
-    }
-
     public HueLightDevice(PHLight light, PHBridge bridge) {
         super(light);
         this.light = light;
@@ -27,10 +23,6 @@ public class HueLightDevice extends PHLight {
 
     public PHBridge getBridge() {
         return bridge;
-    }
-
-    public PHLight getLight() {
-        return light;
     }
 
     public User getUser() {
@@ -55,5 +47,15 @@ public class HueLightDevice extends PHLight {
 
     public int getEnvironmentPos() {
         return environmentPos;
+    }
+
+    public void updateLight(double value) {
+        PHLightState lightState = new PHLightState();
+
+        lightState.setHue((int) (18360 * value)+46920);
+        lightState.setBrightness(254);
+        lightState.setSaturation(254);
+
+        getBridge().updateLightState(light, lightState);
     }
 }

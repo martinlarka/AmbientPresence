@@ -1,4 +1,4 @@
-package nu.larka.ambientpresence;
+package nu.larka.ambientpresence.activity;
 
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
@@ -30,6 +30,7 @@ import com.google.android.gms.plus.Plus;
 
 import java.io.IOException;
 
+import nu.larka.ambientpresence.R;
 import nu.larka.ambientpresence.fragment.RemoteOfficesFragment;
 import nu.larka.ambientpresence.model.User;
 

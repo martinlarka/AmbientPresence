@@ -1,8 +1,6 @@
 package nu.larka.ambientpresence.adapter;
 
 import android.content.Context;
-import android.os.Handler;
-import android.os.Message;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
@@ -11,7 +9,6 @@ import android.widget.ImageView;
 
 import java.util.ArrayList;
 
-import nu.larka.ambientpresence.MainActivity;
 import nu.larka.ambientpresence.R;
 import nu.larka.ambientpresence.model.User;
 

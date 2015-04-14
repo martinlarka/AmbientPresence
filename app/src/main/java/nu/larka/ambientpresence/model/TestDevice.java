@@ -1,7 +1,6 @@
 package nu.larka.ambientpresence.model;
 
 import android.os.Handler;
-import android.util.Log;
 
 import com.firebase.client.Firebase;
 
@@ -9,7 +8,7 @@ import java.util.Random;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import nu.larka.ambientpresence.MainActivity;
+import nu.larka.ambientpresence.activity.MainActivity;
 
 /**
  * Created by martin on 15-04-13.
@@ -64,7 +63,7 @@ public class TestDevice extends Device {
                         //get the current timeStamp
                         double change = (new Random().nextDouble()-0.5)/10;
                         value += change;
-                        value = (value < 0 || value > 1) ? 0.5 : value;
+                        value = (value <= 0 || value >= 1) ? 0.5 : value;
                         mFirebaseRef.child(MainActivity.ENVIRONMENTS).child(getEnvironment()).setValue(value);
                     }
                 });

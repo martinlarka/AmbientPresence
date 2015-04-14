@@ -4,16 +4,11 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 
 import com.firebase.client.AuthData;
-import com.firebase.client.DataSnapshot;
 import com.firebase.client.Firebase;
-import com.firebase.client.FirebaseError;
-import com.firebase.client.ValueEventListener;
-import com.philips.lighting.model.PHLight;
 
 import java.util.ArrayList;
 
-import nu.larka.ambientpresence.MainActivity;
-import nu.larka.ambientpresence.R;
+import nu.larka.ambientpresence.activity.MainActivity;
 
 /**
  * Created by martin on 15-03-12.

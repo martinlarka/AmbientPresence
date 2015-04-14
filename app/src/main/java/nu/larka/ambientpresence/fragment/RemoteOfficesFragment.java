@@ -2,7 +2,6 @@ package nu.larka.ambientpresence.fragment;
 
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
-import android.provider.ContactsContract;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
 import android.view.LayoutInflater;
@@ -27,7 +26,7 @@ import com.philips.lighting.model.PHLightState;
 import java.util.ArrayList;
 import java.util.Collections;
 
-import nu.larka.ambientpresence.MainActivity;
+import nu.larka.ambientpresence.activity.MainActivity;
 import nu.larka.ambientpresence.R;
 import nu.larka.ambientpresence.adapter.FollowedUsersAdapter;
 import nu.larka.ambientpresence.model.Device;

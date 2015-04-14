@@ -17,7 +17,7 @@ import com.firebase.client.ValueEventListener;
 
 import java.util.ArrayList;
 
-import nu.larka.ambientpresence.MainActivity;
+import nu.larka.ambientpresence.activity.MainActivity;
 import nu.larka.ambientpresence.R;
 import nu.larka.ambientpresence.adapter.UserActivityAdapter;
 import nu.larka.ambientpresence.model.HueLightDevice;

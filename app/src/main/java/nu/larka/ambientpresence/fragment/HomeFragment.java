@@ -26,8 +26,10 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.ListView;
+import android.widget.Spinner;
 import android.widget.TextView;
 
 import com.firebase.client.DataSnapshot;
@@ -56,6 +58,8 @@ import java.util.List;
 import nu.larka.ambientpresence.activity.MainActivity;
 import nu.larka.ambientpresence.R;
 import nu.larka.ambientpresence.adapter.DeviceAdapter;
+import nu.larka.ambientpresence.adapter.SetupHueLightAdapter;
+import nu.larka.ambientpresence.adapter.UserInfoDeviceAdapter;
 import nu.larka.ambientpresence.hue.PHPushlinkActivity;
 import nu.larka.ambientpresence.model.Device;
 import nu.larka.ambientpresence.model.HueBridgeDevice;
@@ -330,8 +334,8 @@ public class HomeFragment extends Fragment implements ValueEventListener, View.O
 
     public class SetupHueDeviceDialog extends DialogFragment {
 
-
         private Device device;
+        private ListView deviceSetupListView;
 
         public void setDevice(Device device) {
             this.device = device;
@@ -340,10 +344,27 @@ public class HomeFragment extends Fragment implements ValueEventListener, View.O
         @Override
         public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
             View view = inflater.inflate(R.layout.fragment_setup_device, container, false);
-            TextView textView = (TextView) view.findViewById(R.id.device_name);
-            textView.setText(device.getDeviceName());
             getDialog().setTitle(device.getDeviceName());
+
+            deviceSetupListView = (ListView) view.findViewById(R.id.device_list_view);
+
+            // TODO Build setup view, Read device type and custom view to device??
+            if (device instanceof HueBridgeDevice) { // Setup for Hue Bridge
+                setupForHueBridge(view);
+            }
+
             return view;
+        }
+
+        private void setupForHueBridge(View view) {
+            ArrayList<HueLightDevice> lights = new ArrayList<>();
+            for (HueLightDevice l : hueLightArrayList) {
+                if (l.getBridge().equals(((HueBridgeDevice)device).getBridge())) {
+                    lights.add(l);
+                }
+            }
+            SetupHueLightAdapter deviceAdapter = new SetupHueLightAdapter(view.getContext(), lights);
+            deviceSetupListView.setAdapter(deviceAdapter);
         }
     }
 

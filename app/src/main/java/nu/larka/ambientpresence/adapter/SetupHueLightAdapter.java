@@ -14,20 +14,17 @@ import java.util.ArrayList;
 
 import nu.larka.ambientpresence.R;
 import nu.larka.ambientpresence.model.HueLightDevice;
-import nu.larka.ambientpresence.model.User;
 
 /**
  * Created by martin on 15-03-18.
  */
-public class UserInfoDeviceAdapter extends BaseAdapter {
+public class SetupHueLightAdapter extends BaseAdapter {
     private Context context;
     private ArrayList<HueLightDevice> lights;
-    private User user;
 
-    public UserInfoDeviceAdapter(Context context, ArrayList<HueLightDevice> lights, User user) {
+    public SetupHueLightAdapter(Context context, ArrayList<HueLightDevice> lights) {
         this.context = context;
         this.lights = lights;
-        this.user = user;
     }
 
     @Override
@@ -53,29 +50,27 @@ public class UserInfoDeviceAdapter extends BaseAdapter {
                 TextView lightName = (TextView) convertView.findViewById(R.id.light_name);
                 lightName.setText(lights.get(position).getName());
 
-                Spinner environmentSpinner = (Spinner) convertView.findViewById(R.id.hue_light_spinner);
-                ArrayAdapter<String> adapter = new ArrayAdapter<>(context, android.R.layout.simple_spinner_dropdown_item, user.getEnvironmentNames());
-                environmentSpinner.setAdapter(adapter);
-                environmentSpinner.setOnItemSelectedListener(new SelectedEnvironmentListener(lights.get(position)));
-                environmentSpinner.setSelection(lights.get(position).getEnvironmentPos());
+                Spinner themeSpinner = (Spinner) convertView.findViewById(R.id.hue_light_spinner);
+                ArrayAdapter<String> adapter = new ArrayAdapter<>(context, android.R.layout.simple_spinner_dropdown_item, new String[]{"NONE"});
+                themeSpinner.setAdapter(adapter);
+                themeSpinner.setOnItemSelectedListener(new SelectedThemeListener(lights.get(position)));
+                themeSpinner.setSelection(lights.get(position).getEnvironmentPos());
             }
         // Return the completed view to render on screen
         return convertView;
     }
 
-    class SelectedEnvironmentListener implements AdapterView.OnItemSelectedListener {
+    class SelectedThemeListener implements AdapterView.OnItemSelectedListener {
 
         private HueLightDevice light;
 
-        public SelectedEnvironmentListener(HueLightDevice light) {
+        public SelectedThemeListener(HueLightDevice light) {
             this.light = light;
         }
 
         @Override
         public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-            light.setUser(user);
-            light.setEnvironment(user.getEnvironmentNames().get(position));
-            light.setEnvironmentPos(position);
+            //light.setTheme();
         }
 
         @Override

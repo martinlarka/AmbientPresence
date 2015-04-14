@@ -70,4 +70,8 @@ public class TestDevice extends Device {
             }
         };
     }
+
+    public void disconnect() {
+        timer.cancel();
+    }
 }

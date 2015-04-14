@@ -76,7 +76,7 @@ public class HueLightDevice extends PHLight {
                 redGreenBlue(lightState,value);
                 break;
         }
-
+        lightState.setTransitionTime(1000);
         getBridge().updateLightState(light, lightState);
     }
 

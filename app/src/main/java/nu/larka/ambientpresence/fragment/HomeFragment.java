@@ -27,6 +27,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.Spinner;
@@ -346,6 +347,16 @@ public class HomeFragment extends Fragment implements ValueEventListener, View.O
             View view = inflater.inflate(R.layout.fragment_setup_device, container, false);
             getDialog().setTitle(device.getDeviceName());
 
+            Button removeDeviceButton = (Button) view.findViewById(R.id.remove_device_button);
+            removeDeviceButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    disconnectDevice(device);
+                    updateDeviceList();
+                    getDialog().cancel();
+                }
+            });
+
             deviceSetupListView = (ListView) view.findViewById(R.id.device_list_view);
 
             // TODO Build setup view, Read device type and custom view to device??
@@ -354,6 +365,17 @@ public class HomeFragment extends Fragment implements ValueEventListener, View.O
             }
 
             return view;
+        }
+
+        private void disconnectDevice(Device device) {
+            if (device instanceof HueBridgeDevice) {
+                ((HueBridgeDevice) device).disconnect(phHueSDK);
+                mFirebaseRef.child(MainActivity.DEVICES).child(MainActivity.HUE).child(((HueBridgeDevice) device).getHueUsername()).removeValue();
+            } else if (device instanceof TestDevice) {
+                ((TestDevice) device).disconnect();
+                mFirebaseRef.child(MainActivity.ENVIRONMENTS).child(((TestDevice) device).getEnvironment()).removeValue();
+            }
+            deviceArrayList.remove(device);
         }
 
         private void setupForHueBridge(View view) {
@@ -453,7 +475,6 @@ public class HomeFragment extends Fragment implements ValueEventListener, View.O
                     hueFound = true;
                     device.setEnabled(true);
                     ((HueBridgeDevice)device).setPHBridge(b);
-                    ((HueBridgeDevice)device).setHueUsername(phUsername);
                     addHueLightsToArray(b);
                 }
             }

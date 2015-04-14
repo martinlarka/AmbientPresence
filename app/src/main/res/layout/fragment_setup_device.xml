@@ -10,4 +10,11 @@
 
     </ListView>
 
+    <Button
+        style="@android:style/Widget.Holo.Light.Button.Borderless.Small"
+        android:id="@+id/remove_device_button"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/remove_device"/>
+
 </LinearLayout>

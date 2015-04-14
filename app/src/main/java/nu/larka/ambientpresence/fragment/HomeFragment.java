@@ -318,10 +318,7 @@ public class HomeFragment extends Fragment implements ValueEventListener, View.O
                 addDeviceDialog.show(getFragmentManager(), "add_devices");
             } else {
                 // Setup device
-                    // TODO Loop through lights array and only use the lights that are connected to selected bridge
-                    //SetupDialogFragment setupDialog = new SetupDialogFragment();
-                //setupDialog.setDevice(deviceArrayList.get(position));
-                  //  setupDialog.show(getFragmentManager(), "setup_device");
+                // TODO Loop through lights array and only use the lights that are connected to selected bridge
 
             }
         }

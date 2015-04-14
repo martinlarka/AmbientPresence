@@ -22,7 +22,7 @@ public class HueLightDevice extends PHLight {
         super(light);
         this.light = light;
         this.bridge = bridge;
-        this.theme = 1;
+        this.theme = 0;
     }
 
     public PHBridge getBridge() {
@@ -65,12 +65,15 @@ public class HueLightDevice extends PHLight {
         PHLightState lightState = new PHLightState();
 
         switch (theme) {
+            default:
             case 0:
                 blueToRed(lightState,value);
                 break;
-            default:
             case 1:
                 whiteBrightness(lightState,value);
+                break;
+            case 2:
+                redGreenBlue(lightState,value);
                 break;
         }
 
@@ -86,13 +89,20 @@ public class HueLightDevice extends PHLight {
     private void whiteBrightness(PHLightState lightState, double value) {
         lightState.setHue(0);
         lightState.setSaturation(0);
-        lightState.setBrightness((int) (254*value));
+        lightState.setBrightness((int) (254 * value));
+    }
+
+    private void redGreenBlue(PHLightState lightState, double value) {
+        lightState.setHue((int) (46920 * value));
+        lightState.setBrightness(254);
+        lightState.setSaturation(254);
     }
 
     public static ArrayList<String> getHueThemes() {
         ArrayList<String> themes = new ArrayList<>();
         themes.add("Blue to Red");
         themes.add("White brightness");
+        themes.add("Red green blue");
         return themes;
     }
 }

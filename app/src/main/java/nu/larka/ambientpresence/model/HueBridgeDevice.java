@@ -48,7 +48,13 @@ public class HueBridgeDevice extends Device {
     }
 
     public void disconnect(PHHueSDK phHueSDK) {
-        phHueSDK.disableHeartbeat(getBridge());
-        phHueSDK.disconnect(getBridge());
+        if (hasBridge()) {
+            phHueSDK.disableHeartbeat(getBridge());
+            phHueSDK.disconnect(getBridge());
+        }
+    }
+
+    private boolean hasBridge() {
+        return bridge != null;
     }
 }

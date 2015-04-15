@@ -39,7 +39,7 @@
 
     <string-array name="supported_devices">
         <item>Philips Hue</item>
-        <item>Nest Thermostat</item>
+        <item>Nest Home</item>
         <item>Test device</item>
     </string-array>
 </resources>

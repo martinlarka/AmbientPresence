@@ -49,8 +49,6 @@ public final class NestAPI implements ValueEventListener {
     private NestAPI() {
         Firebase.goOffline();
         Firebase.goOnline();
-        Config defaultConfig = Firebase.getDefaultConfig();
-        defaultConfig.setLogLevel(Logger.Level.DEBUG);
         mFirebaseRef = new Firebase(APIUrls.NEST_FIREBASE_URL);
         mListeners = new ArrayList<>();
     }

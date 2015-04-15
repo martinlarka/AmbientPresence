@@ -7,6 +7,7 @@ import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
@@ -65,6 +66,7 @@ import nu.larka.ambientpresence.hue.PHPushlinkActivity;
 import nu.larka.ambientpresence.model.Device;
 import nu.larka.ambientpresence.model.HueBridgeDevice;
 import nu.larka.ambientpresence.model.HueLightDevice;
+import nu.larka.ambientpresence.model.NestThermostatDevice;
 import nu.larka.ambientpresence.model.TestDevice;
 import nu.larka.ambientpresence.model.User;
 
@@ -374,6 +376,8 @@ public class HomeFragment extends Fragment implements ValueEventListener, View.O
             } else if (device instanceof TestDevice) {
                 ((TestDevice) device).disconnect();
                 mFirebaseRef.child(MainActivity.ENVIRONMENTS).child(((TestDevice) device).getEnvironment()).removeValue();
+            } else if (device instanceof NestThermostatDevice) {
+                ((NestThermostatDevice) device).disconnect();
             }
             deviceArrayList.remove(device);
         }
@@ -398,6 +402,7 @@ public class HomeFragment extends Fragment implements ValueEventListener, View.O
             builder.setTitle(R.string.add_new_device)
                     .setItems(R.array.supported_devices, new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int which) {
+                            String[] supportedDevices = getResources().getStringArray(R.array.supported_devices);
                             switch (which) {
                                 case 0:
                                     FragmentTransaction transaction = getActivity().getSupportFragmentManager().beginTransaction();
@@ -412,10 +417,12 @@ public class HomeFragment extends Fragment implements ValueEventListener, View.O
                                     transaction.commit();
                                     break;
                                 case 1:
-
+                                NestThermostatDevice thermostatDevice = new NestThermostatDevice(supportedDevices[which], getActivity(), mFirebaseRef);
+                                deviceArrayList.add(thermostatDevice);
+                                updateDeviceList();
                                     break;
                                 case 2:
-                                    TestDevice td = new TestDevice("Testdevice");
+                                    TestDevice td = new TestDevice(supportedDevices[which]);
                                     td.registerEnvironments(mFirebaseRef);
                                     deviceArrayList.add(td);
                                     updateDeviceList();

@@ -8,17 +8,20 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.ListView;
 import android.widget.TextView;
 
 import com.firebase.client.Firebase;
+import com.philips.lighting.model.PHLight;
 
-import org.w3c.dom.Text;
+import java.util.ArrayList;
+import java.util.List;
 
-import java.awt.font.TextAttribute;
-import java.util.jar.Manifest;
-
-import nu.larka.ambientpresence.MainActivity;
 import nu.larka.ambientpresence.R;
+import nu.larka.ambientpresence.adapter.UserInfoDeviceAdapter;
+import nu.larka.ambientpresence.model.Device;
+import nu.larka.ambientpresence.model.HueBridgeDevice;
+import nu.larka.ambientpresence.model.HueLightDevice;
 import nu.larka.ambientpresence.model.User;
 
 /**
@@ -33,6 +36,9 @@ public class UserInfoFragment extends Fragment {
     private Button userStateButton;
     private Button selfStateButton;
     private TextView userStatusTextView;
+    private ListView deviceListView;
+    private UserInfoDeviceAdapter deviceAdapter;
+    private ArrayList<HueLightDevice> hueLightDeviceArrayList;
 
 
     public UserInfoFragment() {
@@ -52,6 +58,8 @@ public class UserInfoFragment extends Fragment {
         userStateButton = (Button) view.findViewById(R.id.user_info_button);
         selfStateButton = (Button) view.findViewById(R.id.user_ban_button);
 
+        deviceListView = (ListView) view.findViewById(R.id.device_list_view);
+
         userName.setText(user.getUsername());
         userFullName.setText(user.getName());
         userStatusTextView.setText(getUserStatusText());
@@ -61,6 +69,9 @@ public class UserInfoFragment extends Fragment {
         } else {
             userImage.setImageResource(R.drawable.home500);
         }
+
+        deviceAdapter = new UserInfoDeviceAdapter(view.getContext(), hueLightDeviceArrayList, user);
+        deviceListView.setAdapter(deviceAdapter);
 
         setStateOfButtons();
 
@@ -211,4 +222,8 @@ public class UserInfoFragment extends Fragment {
             userStatusTextView.setText(getUserStatusText());
         }
     };
+
+    public void setHueDeviceArrayList(ArrayList<HueLightDevice> hueLightDeviceArrayList) {
+        this.hueLightDeviceArrayList = hueLightDeviceArrayList;
+    }
 }

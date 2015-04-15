@@ -17,9 +17,10 @@ import com.firebase.client.ValueEventListener;
 
 import java.util.ArrayList;
 
-import nu.larka.ambientpresence.MainActivity;
+import nu.larka.ambientpresence.activity.MainActivity;
 import nu.larka.ambientpresence.R;
 import nu.larka.ambientpresence.adapter.UserActivityAdapter;
+import nu.larka.ambientpresence.model.HueLightDevice;
 import nu.larka.ambientpresence.model.User;
 
 /**
@@ -32,6 +33,7 @@ public class ActivityFragment extends Fragment implements AdapterView.OnItemClic
     private UserActivityAdapter userActivityAdapter;
     private String uid;
     private ListView searchResultList;
+    private ArrayList<HueLightDevice> hueLightArrayList;
 
     public ActivityFragment() {
         // Required empty public constructor
@@ -80,6 +82,7 @@ public class ActivityFragment extends Fragment implements AdapterView.OnItemClic
                 }
                 userInfoFragment.setUser(user);
                 userInfoFragment.setFirebaseRef(mFirebaseRef, uid);
+                userInfoFragment.setHueDeviceArrayList(hueLightArrayList);
 
                 FragmentTransaction transaction = getActivity().getSupportFragmentManager().beginTransaction();
 
@@ -105,5 +108,9 @@ public class ActivityFragment extends Fragment implements AdapterView.OnItemClic
         userActivityAdapter.notifyDataSetChanged();
         searchResultList.invalidateViews();
         searchResultList.setAdapter(userActivityAdapter);
+    }
+
+    public void setDeviceArrayList(ArrayList<HueLightDevice> hueLightArrayList) {
+        this.hueLightArrayList = hueLightArrayList;
     }
 }

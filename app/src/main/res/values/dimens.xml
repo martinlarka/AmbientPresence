@@ -4,4 +4,5 @@
     <dimen name="activity_vertical_margin">16dp</dimen>
 
     <dimen name="info_fragment_top_padding">16dp</dimen>
+    <dimen name="device_item_padding">8dp</dimen>
 </resources>

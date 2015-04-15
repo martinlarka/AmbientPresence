@@ -1,4 +1,4 @@
-package nu.larka.ambientpresence;
+package nu.larka.ambientpresence.activity;
 
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
@@ -30,7 +30,7 @@ import com.google.android.gms.plus.Plus;
 
 import java.io.IOException;
 
-import nu.larka.ambientpresence.fragment.HomeFragment;
+import nu.larka.ambientpresence.R;
 import nu.larka.ambientpresence.fragment.RemoteOfficesFragment;
 import nu.larka.ambientpresence.model.User;
 
@@ -49,6 +49,9 @@ public class MainActivity extends FragmentActivity implements
     public static final String STATE = "state";
     public static final String USERNAME ="username";
     public static final String NAME ="name";
+    public static final String DEVICES ="devices";
+    public static final String HUE ="hue";
+    public static final String ENVIRONMENTS = "environments";
 
     public static final int RC_GOOGLE_LOGIN = 1;
 
@@ -82,8 +85,6 @@ public class MainActivity extends FragmentActivity implements
     /* Fragments */
     private RemoteOfficesFragment mRemoteOfficesFragment;
 
-    private HomeFragment mHomeFragment;
-    private User homeUser;
     private boolean fragmentsStarted = false;
 
     @Override

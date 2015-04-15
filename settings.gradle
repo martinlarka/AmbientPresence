@@ -1,1 +1,2 @@
-include ':app'
+include ':app', ':NestAPI'
+project(':NestAPI').projectDir = new File('NestLib')

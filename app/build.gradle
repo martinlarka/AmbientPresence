@@ -38,4 +38,5 @@ dependencies {
     compile 'com.android.support:appcompat-v7:21.0.3'
     compile files('libs/huelocalsdk.jar')
     compile files('libs/huesdkresources.jar')
+    compile project(':NestAPI')
 }

@@ -393,8 +393,13 @@ public class RemoteOfficesFragment extends Fragment {
         public void onDataChange(DataSnapshot dataSnapshot) {
                 for (HueLightDevice light : hueLightArrayList) {
                     if (user.equals(light.getUser()) && light.getEnvironment().equals(dataSnapshot.getKey())) {
-                        double value = (double)dataSnapshot.getValue();
-                        light.updateLight(value);
+                        Object o = dataSnapshot.getValue();
+                        if (o instanceof Double) {
+                            light.updateLight((Double) o);
+                        }
+                        else if (o instanceof Long) {
+                            light.updateLight(((Long) o).doubleValue());
+                        }
                     }
                 }
 

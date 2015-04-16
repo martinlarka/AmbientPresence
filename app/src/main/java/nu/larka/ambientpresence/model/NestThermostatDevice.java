@@ -165,7 +165,7 @@ public class NestThermostatDevice extends Device implements NestAPI.Authenticati
             if (!env.isEnabled()) {
                 firebase.child(MainActivity.ENVIRONMENTS).child(env.getName()).removeValue();
             } else {
-                firebase.child(MainActivity.ENVIRONMENTS).child(env.getName()).setValue(0.0);
+                firebase.child(MainActivity.ENVIRONMENTS).child(env.getName()).setValue(0.5);
             }
         }
     }

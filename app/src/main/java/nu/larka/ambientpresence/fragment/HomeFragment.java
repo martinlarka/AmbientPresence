@@ -390,6 +390,13 @@ public class HomeFragment extends Fragment implements ValueEventListener, View.O
             if (device instanceof HueBridgeDevice) {
                 ((HueBridgeDevice) device).disconnect(phHueSDK);
                 mFirebaseRef.child(MainActivity.DEVICES).child(MainActivity.HUE).child(((HueBridgeDevice) device).getHueUsername()).removeValue();
+                ArrayList<HueLightDevice> removeLights = new ArrayList<>();
+                for (HueLightDevice l : hueLightArrayList) {
+                    if (l.getBridge().equals(((HueBridgeDevice) device).getBridge()))
+                        removeLights.add(l);
+                }
+                hueLightArrayList.removeAll(removeLights);
+
             } else if (device instanceof TestDevice) {
                 ((TestDevice) device).disconnect();
                 mFirebaseRef.child(MainActivity.ENVIRONMENTS).child(((TestDevice) device).getEnvironment()).removeValue();

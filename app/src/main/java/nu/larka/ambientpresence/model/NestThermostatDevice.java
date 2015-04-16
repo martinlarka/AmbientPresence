@@ -16,7 +16,7 @@ import com.nestapi.lib.ClientMetadata;
 
 import java.util.ArrayList;
 
-import nu.larka.ambientpresence.fragment.HomeFragment;
+import nu.larka.ambientpresence.activity.MainActivity;
 import nu.larka.ambientpresence.nest.Constants;
 import nu.larka.ambientpresence.nest.NestEnvironment;
 import nu.larka.ambientpresence.nest.Settings;
@@ -105,6 +105,11 @@ public class NestThermostatDevice extends Device implements NestAPI.Authenticati
         if (!registeredEnvironmentDevices.contains(structure.getStructureID())) {
             registerEnvironments(structure);
         }
+        for (NestEnvironment env : environments) {
+            if (env.getFromId().equals(structure.getStructureID())) {
+                firebase.child(MainActivity.ENVIRONMENTS).child(env.getName()).setValue(env.getValue(structure));
+            }
+        }
     }
 
 
@@ -113,16 +118,21 @@ public class NestThermostatDevice extends Device implements NestAPI.Authenticati
         if (!registeredEnvironmentDevices.contains(thermostat.getDeviceID())) {
             registerEnvironments(thermostat);
         }
+        for (NestEnvironment env : environments) {
+            if (env.getFromId().equals(thermostat.getDeviceID())) {
+                firebase.child(MainActivity.ENVIRONMENTS).child(env.getName()).setValue(env.getValue(thermostat));
+            }
+        }
     }
 
     private void registerEnvironments(Thermostat thermostat) {
-        environments.add(new NestEnvironment(thermostat.getName() + " - Temperature", true, thermostat.getDeviceID()));
+        environments.add(new NestEnvironment(thermostat.getName(), true, thermostat.getDeviceID(), NestEnvironment.EnvironmentType.TEMPERATURE, activity));
         registeredEnvironmentDevices.add(thermostat.getDeviceID());
     }
 
     private void registerEnvironments(Structure structure) {
-        environments.add(new NestEnvironment(structure.getName() + " - ETA", true, structure.getStructureID()));
-        environments.add(new NestEnvironment(structure.getName() + " - Away", true, structure.getStructureID()));
+        environments.add(new NestEnvironment(structure.getName(), true, structure.getStructureID(), NestEnvironment.EnvironmentType.ETA, activity));
+        environments.add(new NestEnvironment(structure.getName(), true, structure.getStructureID(), NestEnvironment.EnvironmentType.AWAY, activity));
         registeredEnvironmentDevices.add(structure.getStructureID());
     }
 
@@ -147,6 +157,14 @@ public class NestThermostatDevice extends Device implements NestAPI.Authenticati
             authenticate(mToken);
         } else {
             Log.e(TAG, "Unable to resolve access token from payload.");
+        }
+    }
+
+    public void unregisterUnusedEnvironments() {
+        for (NestEnvironment env : environments) {
+            if (!env.isEnabled()) {
+                firebase.child(MainActivity.ENVIRONMENTS).child(env.getName()).removeValue();
+            }
         }
     }
 }

@@ -353,6 +353,9 @@ public class HomeFragment extends Fragment implements ValueEventListener, View.O
         @Override
         public void onDestroyView() {
             super.onDestroyView();
+            if (device instanceof NestThermostatDevice) {
+                ((NestThermostatDevice)device).unregisterUnusedEnvironments();
+            }
         }
 
         @Override

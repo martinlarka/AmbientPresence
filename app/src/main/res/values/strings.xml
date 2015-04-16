@@ -35,6 +35,9 @@
     <string name="remove_device">Remove</string>
     <string name="no_environment">None</string>
     <string name="flash_light">Flash light</string>
+    <string name="temperature_environment">Temperature</string>
+    <string name="eta_environment">ETA</string>
+    <string name="away_environment">Away</string>
 
     <string-array name="supported_devices">
         <item>Philips Hue</item>

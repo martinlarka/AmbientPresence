@@ -140,7 +140,7 @@ public class User implements Comparable<User> {
 
 
     public void banUser(Firebase firebase, String selfUID) {
-        firebase.child(MainActivity.USERS).child(this.UID).child(MainActivity.FOLLOWING_USERS).child(this.UID).setValue(BANNED);
+        firebase.child(MainActivity.USERS).child(this.UID).child(MainActivity.FOLLOWING_USERS).child(selfUID).setValue(BANNED);
         firebase.child(MainActivity.USERS).child(selfUID).child(MainActivity.ACCEPTEDUSERS).child(this.UID).removeValue();
         firebase.child(MainActivity.USERS).child(selfUID).child(MainActivity.OTHERUSERS).child(this.UID).setValue(BANNED);
         this.state = BANNED;
@@ -166,8 +166,10 @@ public class User implements Comparable<User> {
         return username.toLowerCase().replace(" ", "").replace("å", "a").replace("ä", "a").replace("ö", "o");
     }
 
-    public void unBanUser(Firebase mFirebaseRef, String uid) {
-        // TODO implement mehtod
+    public void unBanUser(Firebase firebaseRef, String uid) {
+        firebaseRef.child(MainActivity.USERS).child(this.UID).child(MainActivity.FOLLOWING_USERS).child(uid).removeValue();
+        firebaseRef.child(MainActivity.USERS).child(uid).child(MainActivity.OTHERUSERS).child(this.UID).removeValue();
+        this.state = NOSTATE;
     }
 
     public void setEnvironmentNames(ArrayList<String> environments) {

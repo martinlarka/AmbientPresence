@@ -1,5 +1,6 @@
 package nu.larka.ambientpresence.fragment;
 
+import android.content.Intent;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -375,6 +376,10 @@ public class RemoteOfficesFragment extends Fragment {
     public void setFirebase(Firebase mFirebaseRef, String uid) {
         this.mFirebaseRef = mFirebaseRef;
         this.uid = uid;
+    }
+
+    public void nestTokenObtained(int requestCode, int resultCode, Intent data) {
+        mHomeFragment.nestTokenObtained(requestCode, resultCode, data);
     }
 
     class EnvironmentChangedListener implements ValueEventListener {

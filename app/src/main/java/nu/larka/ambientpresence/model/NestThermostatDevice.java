@@ -40,7 +40,7 @@ public class NestThermostatDevice extends Device implements NestAPI.Authenticati
     private Thermostat mThermostat;
     private Structure mStructure;
 
-    private static final int AUTH_TOKEN_REQUEST_CODE = 101;
+    public static final int AUTH_TOKEN_REQUEST_CODE = 101;
     private ArrayList<NestEnvironment> environments = new ArrayList<>();
     private ArrayList<String> registeredEnvironmentDevices = new ArrayList<>();
 

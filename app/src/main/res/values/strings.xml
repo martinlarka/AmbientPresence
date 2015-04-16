@@ -9,7 +9,7 @@
     <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="horizontal_line">Horizontal line</string>
     <string name="follow_new_office">Follow new office</string>
-    <string name="office_home">Home</string>
+    <string name="office_home">Home - </string>
     <string name="office_activity">Home - Activity</string>
 
     <string name="user_is_banned">is banned</string>
@@ -39,6 +39,8 @@
     <string name="eta_environment">ETA</string>
     <string name="away_environment">Away</string>
     <string name="no_environment_found">No environments found</string>
+    <string name="change_username">Change username</string>
+    <string name="enter_new_username">Enter new username</string>
 
     <string-array name="supported_devices">
         <item>Philips Hue</item>

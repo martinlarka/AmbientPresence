@@ -27,6 +27,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -70,12 +71,13 @@ import nu.larka.ambientpresence.model.User;
 /**
  * A simple {@link Fragment} subclass.
  */
-public class HomeFragment extends Fragment implements ValueEventListener, View.OnLongClickListener {
+public class HomeFragment extends Fragment implements ValueEventListener {
 
     private User homeUser = null;
     private Uri imageUri;
     private ImageView userImageView;
     private TextView titleView;
+    private TextView nameTextview;
     private ListView deviceListView;
     private DeviceAdapter deviceAdapter;
     private ArrayList<Device> deviceArrayList;
@@ -86,7 +88,6 @@ public class HomeFragment extends Fragment implements ValueEventListener, View.O
     private SearchHueFragment searchHueFragment;
     private String phUsername = null;
     private ArrayList<HueLightDevice> hueLightArrayList;
-    private HomeFragment homeFragment;
 
     private NestThermostatDevice thermostatDevice;
 
@@ -102,11 +103,13 @@ public class HomeFragment extends Fragment implements ValueEventListener, View.O
         View v = inflater.inflate(R.layout.fragment_home, container, false);
 
         userImageView = (ImageView) v.findViewById(R.id.home_image_view);
-        titleView = (TextView) v.findViewById(R.id.home_name);
+        titleView = (TextView) v.findViewById(R.id.home_titel);
+        nameTextview = (TextView) v.findViewById(R.id.home_user_name);
         deviceListView = (ListView) v.findViewById(R.id.device_list_view);
 
         if (homeUser != null) {
-            titleView.setText(getResources().getString(R.string.office_home) + " - " + homeUser.getName());
+            titleView.setText(getResources().getString(R.string.office_home) + homeUser.getUsername());
+            nameTextview.setText(homeUser.getName());
 
             if (!homeUser.hasImage()) {
                 userImageView.setImageResource(R.drawable.home500);
@@ -126,12 +129,11 @@ public class HomeFragment extends Fragment implements ValueEventListener, View.O
             // Register the PHSDKListener to receive callbacks from the bridge.
             phHueSDK.getNotificationManager().registerSDKListener(phsdkListener);
         }
-        userImageView.setOnLongClickListener(this);
+        userImageView.setOnLongClickListener(imageLongClickListener);
+        titleView.setOnLongClickListener(nameLongClickListener);
         deviceAdapter = new DeviceAdapter(v.getContext(), deviceArrayList);
         deviceListView.setAdapter(deviceAdapter);
         deviceListView.setOnItemClickListener(deviceClickListener);
-        
-        this.homeFragment = this;
 
         return v;
     }
@@ -162,8 +164,10 @@ public class HomeFragment extends Fragment implements ValueEventListener, View.O
     public void onDataChange(DataSnapshot dataSnapshot) {
         homeUser = new User(dataSnapshot.getKey());
         homeUser.setName((String)dataSnapshot.child(MainActivity.NAME).getValue());
+        homeUser.setUsername((String) dataSnapshot.child(MainActivity.USERNAME).getValue());
 
-        titleView.setText(getResources().getString(R.string.office_home) + " - " + homeUser.getName());
+        titleView.setText(getResources().getString(R.string.office_home) + homeUser.getUsername());
+        nameTextview.setText(homeUser.getName());
 
         String str = (String) dataSnapshot.child(MainActivity.USER_IMAGE).getValue();
         if (str != null) {
@@ -211,30 +215,60 @@ public class HomeFragment extends Fragment implements ValueEventListener, View.O
 
     }
 
-    @Override
-    public boolean onLongClick(View v) {
-        // Upload new image
-        Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-        // Create an image file name
-        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
-        String imageFileName = "AMBIENTPRESENCE_" + timeStamp + "_";
-        File storageDir = Environment.getExternalStoragePublicDirectory(
-                Environment.DIRECTORY_PICTURES);
-        File image = null;
-        try {
-            image = File.createTempFile(
-                    imageFileName,  /* prefix */
-                    ".jpg",         /* suffix */
-                    storageDir      /* directory */
-            );
-            imageUri = Uri.fromFile(image);
-            intent.putExtra(MediaStore.EXTRA_OUTPUT, imageUri);
-            startActivityForResult(intent, CAPTURE_IMAGE_ACTIVITY_REQUEST_CODE);
-        } catch (IOException e) {
-            e.printStackTrace();
+    private View.OnLongClickListener imageLongClickListener = new View.OnLongClickListener() {
+        @Override
+        public boolean onLongClick(View v) {
+            // Upload new image
+            Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+            // Create an image file name
+            String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+            String imageFileName = "AMBIENTPRESENCE_" + timeStamp + "_";
+            File storageDir = Environment.getExternalStoragePublicDirectory(
+                    Environment.DIRECTORY_PICTURES);
+            File image = null;
+            try {
+                image = File.createTempFile(
+                        imageFileName,  /* prefix */
+                        ".jpg",         /* suffix */
+                        storageDir      /* directory */
+                );
+                imageUri = Uri.fromFile(image);
+                intent.putExtra(MediaStore.EXTRA_OUTPUT, imageUri);
+                startActivityForResult(intent, CAPTURE_IMAGE_ACTIVITY_REQUEST_CODE);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            return true;
         }
-        return true;
-    }
+    };
+
+    private View.OnLongClickListener nameLongClickListener = new View.OnLongClickListener() {
+        @Override
+        public boolean onLongClick(View v) {
+            AlertDialog.Builder alert = new AlertDialog.Builder(getActivity());
+
+            alert.setTitle(getString(R.string.change_username));
+            alert.setMessage(getString(R.string.enter_new_username));
+
+            // Set an EditText view to get user input
+            final EditText input = new EditText(getActivity());
+            alert.setView(input);
+
+            alert.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int whichButton) {
+                    String value = input.getText().toString();
+                    mFirebaseRef.child(MainActivity.USERNAME).setValue(value);
+                    homeUser.setUsername(value);
+                    titleView.setText(getResources().getString(R.string.office_home) + homeUser.getUsername());
+                }
+            });
+
+            alert.setNegativeButton("Cancel", null);
+            alert.show();
+
+            return true;
+        }
+    };
 
     public void setFirebaseRef(Firebase firebaseRef) {
         this.mFirebaseRef = firebaseRef;

@@ -59,6 +59,7 @@ public class UserInfoFragment extends Fragment {
         selfStateButton = (Button) view.findViewById(R.id.user_ban_button);
 
         deviceListView = (ListView) view.findViewById(R.id.device_list_view);
+        // FIXME When adding more than 3 users, buttons at bottom disapears
 
         userName.setText(user.getUsername());
         userFullName.setText(user.getName());

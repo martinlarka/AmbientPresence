@@ -316,7 +316,7 @@ public class HomeFragment extends Fragment implements ValueEventListener {
                 e.printStackTrace();
                 return;
             }
-            bmp.compress(Bitmap.CompressFormat.PNG, 50, os);
+            bmp.compress(Bitmap.CompressFormat.PNG, 100, os);
 
             try {
                 exif.setAttribute(ExifInterface.TAG_ORIENTATION, String.valueOf(ExifInterface.ORIENTATION_NORMAL));

@@ -26,11 +26,9 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.ListView;
-import android.widget.Spinner;
 import android.widget.TextView;
 
 import com.firebase.client.DataSnapshot;
@@ -60,11 +58,12 @@ import nu.larka.ambientpresence.activity.MainActivity;
 import nu.larka.ambientpresence.R;
 import nu.larka.ambientpresence.adapter.DeviceAdapter;
 import nu.larka.ambientpresence.adapter.SetupHueLightAdapter;
-import nu.larka.ambientpresence.adapter.UserInfoDeviceAdapter;
+import nu.larka.ambientpresence.adapter.SetupNestThermostatAdapter;
 import nu.larka.ambientpresence.hue.PHPushlinkActivity;
 import nu.larka.ambientpresence.model.Device;
 import nu.larka.ambientpresence.model.HueBridgeDevice;
 import nu.larka.ambientpresence.model.HueLightDevice;
+import nu.larka.ambientpresence.model.NestThermostatDevice;
 import nu.larka.ambientpresence.model.TestDevice;
 import nu.larka.ambientpresence.model.User;
 
@@ -87,6 +86,9 @@ public class HomeFragment extends Fragment implements ValueEventListener, View.O
     private SearchHueFragment searchHueFragment;
     private String phUsername = null;
     private ArrayList<HueLightDevice> hueLightArrayList;
+    private HomeFragment homeFragment;
+
+    private NestThermostatDevice thermostatDevice;
 
     public HomeFragment() {
         // Required empty public constructor
@@ -128,6 +130,8 @@ public class HomeFragment extends Fragment implements ValueEventListener, View.O
         deviceAdapter = new DeviceAdapter(v.getContext(), deviceArrayList);
         deviceListView.setAdapter(deviceAdapter);
         deviceListView.setOnItemClickListener(deviceClickListener);
+        
+        this.homeFragment = this;
 
         return v;
     }
@@ -244,6 +248,10 @@ public class HomeFragment extends Fragment implements ValueEventListener, View.O
         this.hueLightArrayList = hueLightArrayList;
     }
 
+    public void nestTokenObtained(int requestCode, int resultCode, Intent data) {
+        thermostatDevice.nestTokenObtained(requestCode, resultCode, data);
+    }
+
     private class UploadImageToFirebase extends AsyncTask<Bitmap, Void, Void> {
 
         @Override
@@ -324,7 +332,7 @@ public class HomeFragment extends Fragment implements ValueEventListener, View.O
             } else {
                 // Setup device
                 // TODO Loop through lights array and only use the lights that are connected to selected bridge
-                SetupHueDeviceDialog setupDialog = new SetupHueDeviceDialog();
+                SetupDeviceDialog setupDialog = new SetupDeviceDialog();
                 setupDialog.setDevice(deviceArrayList.get(position));
                 setupDialog.show(getFragmentManager(), "setup_device");
 
@@ -333,13 +341,21 @@ public class HomeFragment extends Fragment implements ValueEventListener, View.O
     };
 
 
-    public class SetupHueDeviceDialog extends DialogFragment {
+    public class SetupDeviceDialog extends DialogFragment {
 
         private Device device;
         private ListView deviceSetupListView;
 
         public void setDevice(Device device) {
             this.device = device;
+        }
+
+        @Override
+        public void onDestroyView() {
+            super.onDestroyView();
+            if (device instanceof NestThermostatDevice) {
+                ((NestThermostatDevice)device).updateEnvironments();
+            }
         }
 
         @Override
@@ -362,18 +378,30 @@ public class HomeFragment extends Fragment implements ValueEventListener, View.O
             // TODO Build setup view, Read device type and custom view to device??
             if (device instanceof HueBridgeDevice) { // Setup for Hue Bridge
                 setupForHueBridge(view);
+            } else if (device instanceof NestThermostatDevice) {
+                setupForNestThermostat((NestThermostatDevice)device, view);
             }
 
             return view;
         }
 
+
         private void disconnectDevice(Device device) {
             if (device instanceof HueBridgeDevice) {
                 ((HueBridgeDevice) device).disconnect(phHueSDK);
                 mFirebaseRef.child(MainActivity.DEVICES).child(MainActivity.HUE).child(((HueBridgeDevice) device).getHueUsername()).removeValue();
+                ArrayList<HueLightDevice> removeLights = new ArrayList<>();
+                for (HueLightDevice l : hueLightArrayList) {
+                    if (l.getBridge().equals(((HueBridgeDevice) device).getBridge()))
+                        removeLights.add(l);
+                }
+                hueLightArrayList.removeAll(removeLights);
+
             } else if (device instanceof TestDevice) {
                 ((TestDevice) device).disconnect();
                 mFirebaseRef.child(MainActivity.ENVIRONMENTS).child(((TestDevice) device).getEnvironment()).removeValue();
+            } else if (device instanceof NestThermostatDevice) {
+                ((NestThermostatDevice) device).disconnect();
             }
             deviceArrayList.remove(device);
         }
@@ -388,6 +416,11 @@ public class HomeFragment extends Fragment implements ValueEventListener, View.O
             SetupHueLightAdapter deviceAdapter = new SetupHueLightAdapter(view.getContext(), lights);
             deviceSetupListView.setAdapter(deviceAdapter);
         }
+
+        private void setupForNestThermostat(NestThermostatDevice device, View view) {
+            SetupNestThermostatAdapter deviceAdapter = new SetupNestThermostatAdapter(view.getContext(), device.getEnvironments());
+            deviceSetupListView.setAdapter(deviceAdapter);
+        }
     }
 
     private DialogFragment addDeviceDialog = new DialogFragment() {
@@ -398,6 +431,7 @@ public class HomeFragment extends Fragment implements ValueEventListener, View.O
             builder.setTitle(R.string.add_new_device)
                     .setItems(R.array.supported_devices, new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int which) {
+                            String[] supportedDevices = getResources().getStringArray(R.array.supported_devices);
                             switch (which) {
                                 case 0:
                                     FragmentTransaction transaction = getActivity().getSupportFragmentManager().beginTransaction();
@@ -412,10 +446,12 @@ public class HomeFragment extends Fragment implements ValueEventListener, View.O
                                     transaction.commit();
                                     break;
                                 case 1:
-
+                                    thermostatDevice = new NestThermostatDevice(supportedDevices[which], getActivity() , mFirebaseRef);
+                                    deviceArrayList.add(thermostatDevice);
+                                    updateDeviceList();
                                     break;
                                 case 2:
-                                    TestDevice td = new TestDevice("Testdevice");
+                                    TestDevice td = new TestDevice(supportedDevices[which]);
                                     td.registerEnvironments(mFirebaseRef);
                                     deviceArrayList.add(td);
                                     updateDeviceList();

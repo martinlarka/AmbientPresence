@@ -6,7 +6,6 @@
 
     <string name="offices">Offices</string>
 
-<!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="horizontal_line">Horizontal line</string>
     <string name="follow_new_office">Follow new office</string>
@@ -36,10 +35,14 @@
     <string name="remove_device">Remove</string>
     <string name="no_environment">None</string>
     <string name="flash_light">Flash light</string>
+    <string name="temperature_environment">Temperature</string>
+    <string name="eta_environment">ETA</string>
+    <string name="away_environment">Away</string>
+    <string name="no_environment_found">No environments found</string>
 
     <string-array name="supported_devices">
         <item>Philips Hue</item>
-        <item>Nest Thermostat</item>
+        <item>Nest Home</item>
         <item>Test device</item>
     </string-array>
 </resources>

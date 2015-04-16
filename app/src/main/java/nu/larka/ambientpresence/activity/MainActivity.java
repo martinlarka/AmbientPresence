@@ -334,6 +334,12 @@ public class MainActivity extends FragmentActivity implements
         supportInvalidateOptionsMenu();
     }
 
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        mRemoteOfficesFragment.nestTokenObtained(requestCode, resultCode, data);
+    }
+
     private void startRemoteOfficeFragment(AuthData authData) {
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
 

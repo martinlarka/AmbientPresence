@@ -1,5 +1,6 @@
 package nu.larka.ambientpresence.fragment;
 
+import android.content.Intent;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -13,6 +14,7 @@ import android.view.animation.LinearInterpolator;
 import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.GridView;
+import android.widget.ImageButton;
 
 import com.firebase.client.ChildEventListener;
 import com.firebase.client.DataSnapshot;
@@ -43,7 +45,7 @@ public class RemoteOfficesFragment extends Fragment {
     private ArrayList<Device> deviceArrayList = new ArrayList<>();
     private ArrayList<HueLightDevice> hueLightArrayList = new ArrayList<>();
     private Button activityButton;
-    private Button homeButton;
+    private ImageButton homeButton;
     private Firebase mFirebaseRef;
     private String uid;
     private GridView followedUsersGridView;
@@ -66,7 +68,7 @@ public class RemoteOfficesFragment extends Fragment {
 
         activityButton = (Button) view.findViewById(R.id.activity_button);
         activityButton.setOnClickListener(activityButtonClickListener);
-        homeButton = (Button) view.findViewById(R.id.home_button);
+        homeButton = (ImageButton) view.findViewById(R.id.home_button);
         homeButton.setOnClickListener(homeButtonClickListener);
 
         startHomeFragment();
@@ -244,7 +246,6 @@ public class RemoteOfficesFragment extends Fragment {
                 user.setState(state);
 
                 ArrayList<String> userEnvList = new ArrayList<>();
-                userEnvList.add(getString(R.string.no_environment));
                 if (user.getSelfState().equals(User.FOLLOWING)) {
                     Iterable<DataSnapshot> userEnvironments = dataSnapshot.child(MainActivity.ENVIRONMENTS).getChildren();
                     for (DataSnapshot d : userEnvironments) {
@@ -255,6 +256,10 @@ public class RemoteOfficesFragment extends Fragment {
                                 .child(d.getKey()).addValueEventListener(new EnvironmentChangedListener(user));
                     }
                 }
+                if (userEnvList.size() > 1)
+                    userEnvList.add(getString(R.string.no_environment));
+                else
+                    userEnvList.add(getString(R.string.no_environment_found));
                 user.setEnvironmentNames(userEnvList);
 
                 followerList.add(user);
@@ -377,6 +382,10 @@ public class RemoteOfficesFragment extends Fragment {
         this.uid = uid;
     }
 
+    public void nestTokenObtained(int requestCode, int resultCode, Intent data) {
+        mHomeFragment.nestTokenObtained(requestCode, resultCode, data);
+    }
+
     class EnvironmentChangedListener implements ValueEventListener {
         private User user;
 
@@ -388,8 +397,13 @@ public class RemoteOfficesFragment extends Fragment {
         public void onDataChange(DataSnapshot dataSnapshot) {
                 for (HueLightDevice light : hueLightArrayList) {
                     if (user.equals(light.getUser()) && light.getEnvironment().equals(dataSnapshot.getKey())) {
-                        double value = (double)dataSnapshot.getValue();
-                        light.updateLight(value);
+                        Object o = dataSnapshot.getValue();
+                        if (o instanceof Double) {
+                            light.updateLight((Double) o);
+                        }
+                        else if (o instanceof Long) {
+                            light.updateLight(((Long) o).doubleValue());
+                        }
                     }
                 }
 

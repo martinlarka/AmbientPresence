@@ -119,7 +119,6 @@ public class RemoteOfficesFragment extends Fragment {
                         if (!dataSnapshot.getValue().equals(User.SELF)) {
                             setFollowingUserInfo(dataSnapshot.getKey(), (String) dataSnapshot.getValue());
                         }
-                        // FIXME ?? Change userState in otherslist??
                     }
 
                     @Override
@@ -127,7 +126,6 @@ public class RemoteOfficesFragment extends Fragment {
                         // On changed - Check new state and make action
                         for (User u : followerList) {
                             if (dataSnapshot.getKey().equals(u.getUID()) && !dataSnapshot.getValue().equals(User.SELF)) {
-                                // TODO Change more of user info - image, env, etc.
                                 u.setSelfState((String) dataSnapshot.getValue());
                                 notifyFollowedUsersAdapterDataChanged();
                             }
@@ -193,7 +191,6 @@ public class RemoteOfficesFragment extends Fragment {
                         otherUsersList.remove(u);
                     }
                 }
-                // TODO update adapter!!
             }
 
             @Override
@@ -229,8 +226,6 @@ public class RemoteOfficesFragment extends Fragment {
                 User user = new User(userUID, (String) dataSnapshot.child(MainActivity.NAME).getValue());
                 user.setUsername((String) dataSnapshot.child(MainActivity.USERNAME).getValue());
                 user.setSelfState(userState);
-
-                // TODO USE thumbnails for small images
 
                 if (dataSnapshot.hasChild(MainActivity.USER_IMAGE)) {
                     user.setImage((String)dataSnapshot.child(MainActivity.USER_IMAGE).getValue());
@@ -281,7 +276,6 @@ public class RemoteOfficesFragment extends Fragment {
                 user.setUsername((String) dataSnapshot.child(MainActivity.USERNAME).getValue());
                 user.setState(userState);
 
-                // TODO USE thumbnails for small images
                 String str = (String) dataSnapshot.child(MainActivity.USER_IMAGE).getValue();
                 if (str != null) {
                     byte[] imageAsBytes = Base64.decode(str.getBytes());
@@ -309,9 +303,8 @@ public class RemoteOfficesFragment extends Fragment {
     private AdapterView.OnItemClickListener itemClickListener = new AdapterView.OnItemClickListener() {
         @Override
         public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-// TODO MAX TREE NUMBERS OF FOLLOWING
             // Follow new clicked
-            if (position == followerList.size()) {
+            if (position == followerList.size() && followerList.size() <= 3) {
                 // Start follow new fragment
                 FragmentTransaction transaction = getActivity().getSupportFragmentManager().beginTransaction();
 

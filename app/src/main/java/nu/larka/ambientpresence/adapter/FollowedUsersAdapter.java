@@ -27,7 +27,9 @@ public class FollowedUsersAdapter extends BaseAdapter {
     @Override
     public int getCount() {
         // return users with state following + 1
-        return followers.size()+1;
+        if (followers.size() < 3)
+            return followers.size()+1;
+        return followers.size();
     }
 
     @Override
@@ -51,7 +53,7 @@ public class FollowedUsersAdapter extends BaseAdapter {
         } else {
             imageView = (ImageView) convertView;
         }
-        if (position == followers.size()) {
+        if (position == followers.size() && followers.size() < 3) {
             imageView.setImageResource(R.drawable.addhome);
         } else {
             User user = followers.get(position);

@@ -138,7 +138,9 @@ public class NestThermostatDevice extends Device implements NestAPI.Authenticati
 
     public void disconnect() {
         mNestApi.removeUpdateListener(mUpdateListener);
-        // TODO Remove environments from firebase
+        for (NestEnvironment env : environments) {
+            env.setEnabled(false);
+        }
     }
 
     public ArrayList<NestEnvironment> getEnvironments() {

@@ -336,7 +336,6 @@ public class HomeFragment extends Fragment implements ValueEventListener {
                 addDeviceDialog.show(getFragmentManager(), "add_devices");
             } else {
                 // Setup device
-                // TODO Loop through lights array and only use the lights that are connected to selected bridge
                 SetupDeviceDialog setupDialog = new SetupDeviceDialog();
                 setupDialog.setDevice(deviceArrayList.get(position));
                 setupDialog.show(getFragmentManager(), "setup_device");
@@ -380,7 +379,6 @@ public class HomeFragment extends Fragment implements ValueEventListener {
 
             deviceSetupListView = (ListView) view.findViewById(R.id.device_list_view);
 
-            // TODO Build setup view, Read device type and custom view to device??
             if (device instanceof HueBridgeDevice) { // Setup for Hue Bridge
                 setupForHueBridge(view);
             } else if (device instanceof NestThermostatDevice) {
@@ -567,7 +565,7 @@ public class HomeFragment extends Fragment implements ValueEventListener {
         }
 
         private void saveHueOnFirebase(HueBridgeDevice hue) {
-            // TODO Send to firebase
+            // TODO Send to firebase - remove this?? Save in preference instead?
             mFirebaseRef.child(MainActivity.DEVICES)
                     .child(MainActivity.HUE)
                     .child(hue.getHueUsername()).setValue(hue.getLastConnectedIPAddress());

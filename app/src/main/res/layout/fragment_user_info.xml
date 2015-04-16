@@ -5,12 +5,27 @@
     android:paddingTop="@dimen/info_fragment_top_padding"
     tools:context="nu.larka.ambientpresence.fragment.UserInfoFragment">
 
-    <ImageView
-        android:layout_width="match_parent"
-        android:layout_height="100dp"
-        android:id="@+id/user_image_view"
-        android:scaleType="centerCrop"
-        android:contentDescription="@string/user_image" />
+    <RelativeLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content">
+
+        <ImageView
+            android:layout_width="match_parent"
+            android:layout_height="100dp"
+            android:id="@+id/user_image_view"
+            android:scaleType="centerCrop"
+            android:contentDescription="@string/user_image" />
+
+        <TextView
+            android:id="@+id/user_username"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="16dp"
+            android:layout_marginLeft="10dp"
+            android:layout_marginTop="5dp"
+            style="@style/textOnImage" />
+
+    </RelativeLayout>
 
     <LinearLayout
         android:layout_width="wrap_content"
@@ -30,12 +45,6 @@
             style="@style/OfficeName"/>
 
     </LinearLayout>
-
-    <TextView
-        android:id="@+id/user_username"
-        android:layout_height="wrap_content"
-        android:layout_width="wrap_content"
-        style="@style/OfficeUserName"/>
 
     <ListView
         android:id="@+id/device_list_view"

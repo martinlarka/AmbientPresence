@@ -108,8 +108,8 @@ public class HomeFragment extends Fragment implements ValueEventListener {
         deviceListView = (ListView) v.findViewById(R.id.device_list_view);
 
         if (homeUser != null) {
-            titleView.setText(getResources().getString(R.string.office_home) + homeUser.getUsername());
-            nameTextview.setText(homeUser.getName());
+            titleView.setText(getResources().getString(R.string.office_home) + homeUser.getName());
+            nameTextview.setText(homeUser.getUsername());
 
             if (!homeUser.hasImage()) {
                 userImageView.setImageResource(R.drawable.home500);
@@ -130,7 +130,6 @@ public class HomeFragment extends Fragment implements ValueEventListener {
             phHueSDK.getNotificationManager().registerSDKListener(phsdkListener);
         }
         userImageView.setOnLongClickListener(imageLongClickListener);
-        titleView.setOnLongClickListener(nameLongClickListener);
         deviceAdapter = new DeviceAdapter(v.getContext(), deviceArrayList);
         deviceListView.setAdapter(deviceAdapter);
         deviceListView.setOnItemClickListener(deviceClickListener);
@@ -166,8 +165,8 @@ public class HomeFragment extends Fragment implements ValueEventListener {
         homeUser.setName((String)dataSnapshot.child(MainActivity.NAME).getValue());
         homeUser.setUsername((String) dataSnapshot.child(MainActivity.USERNAME).getValue());
 
-        titleView.setText(getResources().getString(R.string.office_home) + homeUser.getUsername());
-        nameTextview.setText(homeUser.getName());
+        titleView.setText(getResources().getString(R.string.office_home) + homeUser.getName());
+        nameTextview.setText(homeUser.getUsername());
 
         String str = (String) dataSnapshot.child(MainActivity.USER_IMAGE).getValue();
         if (str != null) {
@@ -238,34 +237,6 @@ public class HomeFragment extends Fragment implements ValueEventListener {
             } catch (IOException e) {
                 e.printStackTrace();
             }
-            return true;
-        }
-    };
-
-    private View.OnLongClickListener nameLongClickListener = new View.OnLongClickListener() {
-        @Override
-        public boolean onLongClick(View v) {
-            AlertDialog.Builder alert = new AlertDialog.Builder(getActivity());
-
-            alert.setTitle(getString(R.string.change_username));
-            alert.setMessage(getString(R.string.enter_new_username));
-
-            // Set an EditText view to get user input
-            final EditText input = new EditText(getActivity());
-            alert.setView(input);
-
-            alert.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
-                public void onClick(DialogInterface dialog, int whichButton) {
-                    String value = input.getText().toString();
-                    mFirebaseRef.child(MainActivity.USERNAME).setValue(value);
-                    homeUser.setUsername(value);
-                    titleView.setText(getResources().getString(R.string.office_home) + homeUser.getUsername());
-                }
-            });
-
-            alert.setNegativeButton("Cancel", null);
-            alert.show();
-
             return true;
         }
     };

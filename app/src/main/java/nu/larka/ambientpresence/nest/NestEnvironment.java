@@ -23,6 +23,8 @@ public class NestEnvironment {
     private String fromId;
     private EnvironmentType type;
 
+
+
     public enum EnvironmentType {
         TEMPERATURE, ETA, AWAY
     }
@@ -72,9 +74,11 @@ public class NestEnvironment {
         switch (type) {
             case ETA:
                 Structure.ETA eta = structure.getETA();
-                Timestamp begin = Timestamp.valueOf(eta.getEstimatedArrivalWindowBegin());
-                if (begin.getTime() - System.currentTimeMillis() < MAXETA)
-                    return 1.0 - (begin.getTime() - System.currentTimeMillis())/MAXETA;
+                if (eta != null) {
+                    Timestamp begin = Timestamp.valueOf(eta.getEstimatedArrivalWindowBegin());
+                    if (begin.getTime() - System.currentTimeMillis() < MAXETA)
+                        return 1.0 - (begin.getTime() - System.currentTimeMillis())/MAXETA;
+                }
             case AWAY:
                 Structure.AwayState away = structure.getAwayState();
                 if (away.getKey().equals(HOME)) {

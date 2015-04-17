@@ -65,7 +65,7 @@ public class UserInfoDeviceAdapter extends BaseAdapter {
                 } else {
                     convertView = LayoutInflater.from(context).inflate(R.layout.hue_list_item, parent, false);
                     TextView lightName = (TextView) convertView.findViewById(R.id.light_name);
-                    lightName.setText(user.getUsername() + " " + context.getString(R.string.no_hue_lights));
+                    lightName.setText(context.getString(R.string.no_hue_lights));
                     lightName.setTypeface(null, Typeface.ITALIC);
                     convertView.findViewById(R.id.hue_light_spinner).setVisibility(View.INVISIBLE);
                 }

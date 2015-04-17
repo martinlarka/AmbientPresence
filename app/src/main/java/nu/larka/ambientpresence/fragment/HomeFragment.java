@@ -68,6 +68,7 @@ import nu.larka.ambientpresence.model.HueLightDevice;
 import nu.larka.ambientpresence.model.NestThermostatDevice;
 import nu.larka.ambientpresence.model.TestDevice;
 import nu.larka.ambientpresence.model.User;
+import nu.larka.ambientpresence.nest.NestSettings;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -200,8 +201,14 @@ public class HomeFragment extends Fragment implements ValueEventListener {
 
             hueDevice.connect(phHueSDK);
             deviceArrayList.add(hueDevice);
-            updateDeviceList();
         }
+
+        if (NestSettings.hasAuthToken(getActivity().getApplicationContext())) {
+            thermostatDevice = new NestThermostatDevice(getResources().getStringArray(R.array.supported_devices)[1], getActivity(), mFirebaseRef);
+            deviceArrayList.add(thermostatDevice);
+        }
+
+        updateDeviceList();
     }
 
     private void updateDeviceList() {
@@ -364,7 +371,8 @@ public class HomeFragment extends Fragment implements ValueEventListener {
         public void onDestroyView() {
             super.onDestroyView();
             if (device instanceof NestThermostatDevice) {
-                ((NestThermostatDevice)device).updateEnvironments();
+                ((NestThermostatDevice)device).updateEnvironments(getActivity().getApplicationContext());
+
             } else if (device instanceof HueBridgeDevice) {
                 hueSharedPreferences.setThemes(lights);
             }
@@ -403,8 +411,10 @@ public class HomeFragment extends Fragment implements ValueEventListener {
                 hueSharedPreferences.setLastConnectedIPAddress(null);
                 ArrayList<HueLightDevice> removeLights = new ArrayList<>();
                 for (HueLightDevice l : hueLightArrayList) {
-                    if (l.getBridge().equals(((HueBridgeDevice) device).getBridge()))
+                    if (l.getBridge().equals(((HueBridgeDevice) device).getBridge())) {
                         removeLights.add(l);
+                        hueSharedPreferences.removeTheme(l.getName());
+                    }
                 }
                 hueLightArrayList.removeAll(removeLights);
 
@@ -413,6 +423,7 @@ public class HomeFragment extends Fragment implements ValueEventListener {
                 mFirebaseRef.child(MainActivity.ENVIRONMENTS).child(((TestDevice) device).getEnvironment()).removeValue();
             } else if (device instanceof NestThermostatDevice) {
                 ((NestThermostatDevice) device).disconnect();
+                NestSettings.removeAuthToken(getActivity().getApplicationContext());
             }
             deviceArrayList.remove(device);
         }

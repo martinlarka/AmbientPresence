@@ -70,4 +70,9 @@ public class HueSharedPreferences {
         mSharedPreferencesEditor.putString(LAST_CONNECTED_IP, ipAddress);
         return (mSharedPreferencesEditor.commit());
     }
+
+    public boolean removeTheme(String name) {
+        mSharedPreferencesEditor.remove(name);
+        return (mSharedPreferencesEditor.commit());
+    }
 }

@@ -42,6 +42,7 @@
     <string name="change_username">Change username</string>
     <string name="enter_new_username">Enter new username</string>
     <string name="user_has_no_environments_registered">has not registered any environments.</string>
+    <string name="followers">Followers</string>
 
     <string-array name="supported_devices">
         <item>Philips Hue</item>

@@ -8,4 +8,6 @@
     <dimen name="theme_list_item_padding">16dp</dimen>
     <dimen name="hue_theme_item_padding">8dp</dimen>
     <dimen name="theme_list_item_margin">4dp</dimen>
+    <dimen name="activity_imageview_margin">8dp</dimen>
+    <dimen name="followers_padding">5dp</dimen>
 </resources>

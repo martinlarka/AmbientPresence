@@ -1,7 +1,9 @@
 package nu.larka.ambientpresence.fragment;
 
 import android.content.Intent;
+import android.content.res.Resources;
 import android.graphics.BitmapFactory;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v4.app.Fragment;
@@ -45,7 +47,7 @@ public class RemoteOfficesFragment extends Fragment {
     private ArrayList<User> otherUsersList = new ArrayList<>();
     private ArrayList<Device> deviceArrayList = new ArrayList<>();
     private ArrayList<HueLightDevice> hueLightArrayList = new ArrayList<>();
-    private Button activityButton;
+    private ImageButton activityButton;
     private Firebase mFirebaseRef;
     private String uid;
     private GridView followedUsersGridView;
@@ -67,7 +69,7 @@ public class RemoteOfficesFragment extends Fragment {
         followedUsersAdapter.setFollowers(followerList);
         followedUsersGridView.setAdapter(followedUsersAdapter);
 
-        activityButton = (Button) view.findViewById(R.id.activity_button);
+        activityButton = (ImageButton) view.findViewById(R.id.activity_button);
         activityButton.setOnClickListener(activityButtonClickListener);
         view.findViewById(R.id.home_button).setOnClickListener(homeButtonClickListener);
 
@@ -101,12 +103,39 @@ public class RemoteOfficesFragment extends Fragment {
         transaction.commit();
     }
 
-    public void updateActivityButton(String str) {
-        activityButton.setText(str);
+    public void updateActivityButton(int num) {
+        activityButton.setImageResource(getActivityDrawable(num));
         final Animation animation = new AlphaAnimation(1, 0.5f);
         animation.setDuration(500);
         animation.setInterpolator(new LinearInterpolator());
         activityButton.setAnimation(animation);
+    }
+
+    private int getActivityDrawable(int num) {
+        switch (num) {
+            case 0:
+                return R.drawable.activity_0;
+            case 1:
+                return R.drawable.activity_1;
+            case 2:
+                return R.drawable.activity_2;
+            case 3:
+                return R.drawable.activity_3;
+            case 4:
+                return R.drawable.activity_4;
+            case 5:
+                return R.drawable.activity_5;
+            case 6:
+                return R.drawable.activity_6;
+            case 7:
+                return R.drawable.activity_7;
+            case 8:
+                return R.drawable.activity_8;
+            case 9:
+                return R.drawable.activity_9;
+            default:
+                return R.drawable.activity_9plus;
+        }
     }
 
     private void notifyFollowedUsersAdapterDataChanged() {
@@ -210,14 +239,14 @@ public class RemoteOfficesFragment extends Fragment {
 
             private void pingActivity() {
                 newActivities++;
-                updateActivityButton("" + newActivities);
+                updateActivityButton(newActivities);
                 if (mActivityFragment != null)
                     mActivityFragment.notifyUserActivityAdapter();
             }
 
             private void removeActivity() {
                 newActivities--;
-                updateActivityButton("" + newActivities);
+                updateActivityButton(newActivities);
                 if (mActivityFragment != null)
                     mActivityFragment.notifyUserActivityAdapter();
             }
@@ -347,7 +376,7 @@ public class RemoteOfficesFragment extends Fragment {
         public void onClick(View v) {
 
             newActivities = 0;
-            activityButton.setText("" + newActivities);
+            activityButton.setImageResource(getActivityDrawable(newActivities));
 
             // Start activity fragment!!
             FragmentTransaction transaction = getActivity().getSupportFragmentManager().beginTransaction();

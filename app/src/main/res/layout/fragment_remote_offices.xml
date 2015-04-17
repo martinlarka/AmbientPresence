@@ -14,29 +14,38 @@
             android:orientation="horizontal">
 
         <TextView
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:text="@string/offices"
+            android:text="@string/followers"
             android:layout_weight="1"
-            style="@style/InfoText" />
+            style="@style/InfoText"
+            android:paddingTop="@dimen/followers_padding"
+            android:paddingBottom="@dimen/followers_padding" />
 
-            <Button
-                android:id="@+id/activity_button"
+            <LinearLayout
+                android:orientation="horizontal"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                style="@style/Base.Widget.AppCompat.ActionButton" />
+                android:layout_height="match_parent">
 
             <ImageButton
-                android:id="@+id/home_button"
+                android:layout_height="wrap_content"
                 android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                style="@style/Base.Widget.AppCompat.ActionButton"
-                android:adjustViewBounds="true"
-                android:padding="6dp"
+                android:id="@+id/activity_button"
+                android:background="@null"
                 android:cropToPadding="false"
-                android:baselineAlignBottom="false"
+                android:src="@drawable/activity_0"
+                android:scaleType="fitCenter" />
+
+            <ImageButton
+                android:layout_height="match_parent"
+                android:layout_width="wrap_content"
+                android:id="@+id/home_button"
+                android:background="@null"
                 android:src="@drawable/home_icon"
-                android:scaleType="fitEnd" />
+                android:cropToPadding="false"
+                android:scaleType="fitCenter" />
+
+            </LinearLayout>
 
         </LinearLayout>
 

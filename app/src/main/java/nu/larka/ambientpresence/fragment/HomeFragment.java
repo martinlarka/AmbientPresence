@@ -277,7 +277,7 @@ public class HomeFragment extends Fragment implements ValueEventListener {
             bmp = bmps[0];
             ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
             bmp.compress(Bitmap.CompressFormat.PNG, 100, byteArrayOutputStream);
-            bmp.recycle();
+            //bmp.recycle();
             byte[] byteArray = byteArrayOutputStream.toByteArray();
             String imageFile = Base64.encodeToString(byteArray, Base64.DEFAULT);
 

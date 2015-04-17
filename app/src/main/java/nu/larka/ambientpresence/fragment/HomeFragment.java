@@ -16,7 +16,6 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
-import android.os.Message;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.v4.app.DialogFragment;
@@ -29,7 +28,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.Button;
-import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -62,6 +60,7 @@ import nu.larka.ambientpresence.R;
 import nu.larka.ambientpresence.adapter.DeviceAdapter;
 import nu.larka.ambientpresence.adapter.SetupHueLightAdapter;
 import nu.larka.ambientpresence.adapter.SetupNestThermostatAdapter;
+import nu.larka.ambientpresence.hue.HueSharedPreferences;
 import nu.larka.ambientpresence.hue.PHPushlinkActivity;
 import nu.larka.ambientpresence.model.Device;
 import nu.larka.ambientpresence.model.HueBridgeDevice;
@@ -87,6 +86,7 @@ public class HomeFragment extends Fragment implements ValueEventListener {
     public static final int CAPTURE_IMAGE_ACTIVITY_REQUEST_CODE = 100;
     private Firebase mFirebaseRef;
     private PHHueSDK phHueSDK;
+    private HueSharedPreferences hueSharedPreferences;
     private SearchHueFragment searchHueFragment;
     private String phUsername = null;
     private ArrayList<HueLightDevice> hueLightArrayList;
@@ -181,32 +181,27 @@ public class HomeFragment extends Fragment implements ValueEventListener {
             userImageView.setImageResource(R.drawable.home500);
         }
 
-        populateDeviceList(dataSnapshot.child(MainActivity.DEVICES));
+        populateDeviceList();
 
         // Remove splash screen
         splashScreenHandler.sendEmptyMessage(MainActivity.HOMEFRAGMENTLOADED);
     }
 
-    private void populateDeviceList(DataSnapshot child) {
-        Iterable<DataSnapshot> devices = child.getChildren();
-        for (DataSnapshot type : devices) {
-            switch (type.getKey()) {
-                case MainActivity.HUE:
-                    Iterable<DataSnapshot> hues = type.getChildren();
-                    for (DataSnapshot hue : hues) {
-                        String ipAddress = (String) hue.getValue();
-                        HueBridgeDevice hueDevice = new HueBridgeDevice(getString(R.string.hue_light) + ipAddress);
-                        hueDevice.setHueUsername(hue.getKey());
-                        hueDevice.setLastConnectedIPAddress(ipAddress);
-                        hueDevice.setEnabled(false);
+    private void populateDeviceList() {
+        // Try to automatically connect to the last known bridge.  For first time use this will be empty so a bridge search is automatically started.
+        hueSharedPreferences = HueSharedPreferences.getInstance(getActivity().getApplicationContext());
+        String lastIpAddress   = hueSharedPreferences.getLastConnectedIPAddress();
+        String lastUsername    = hueSharedPreferences.getUsername();
+        if (lastIpAddress !=null && !lastIpAddress.equals("")) {
+            HueBridgeDevice hueDevice = new HueBridgeDevice(getString(R.string.hue_light) + lastIpAddress);
+            hueDevice.setHueUsername(lastUsername);
+            hueDevice.setLastConnectedIPAddress(lastIpAddress);
+            hueDevice.setEnabled(false);
 
-                        hueDevice.connect(phHueSDK);
-                        deviceArrayList.add(hueDevice);
-                    }
-                    break;
-            }
+            hueDevice.connect(phHueSDK);
+            deviceArrayList.add(hueDevice);
+            updateDeviceList();
         }
-        updateDeviceList();
     }
 
     private void updateDeviceList() {
@@ -359,6 +354,7 @@ public class HomeFragment extends Fragment implements ValueEventListener {
 
         private Device device;
         private ListView deviceSetupListView;
+        private ArrayList<HueLightDevice> lights;
 
         public void setDevice(Device device) {
             this.device = device;
@@ -369,6 +365,8 @@ public class HomeFragment extends Fragment implements ValueEventListener {
             super.onDestroyView();
             if (device instanceof NestThermostatDevice) {
                 ((NestThermostatDevice)device).updateEnvironments();
+            } else if (device instanceof HueBridgeDevice) {
+                hueSharedPreferences.setThemes(lights);
             }
         }
 
@@ -402,7 +400,7 @@ public class HomeFragment extends Fragment implements ValueEventListener {
         private void disconnectDevice(Device device) {
             if (device instanceof HueBridgeDevice) {
                 ((HueBridgeDevice) device).disconnect(phHueSDK);
-                mFirebaseRef.child(MainActivity.DEVICES).child(MainActivity.HUE).child(((HueBridgeDevice) device).getHueUsername()).removeValue();
+                hueSharedPreferences.setLastConnectedIPAddress(null);
                 ArrayList<HueLightDevice> removeLights = new ArrayList<>();
                 for (HueLightDevice l : hueLightArrayList) {
                     if (l.getBridge().equals(((HueBridgeDevice) device).getBridge()))
@@ -420,7 +418,7 @@ public class HomeFragment extends Fragment implements ValueEventListener {
         }
 
         private void setupForHueBridge(View view) {
-            ArrayList<HueLightDevice> lights = new ArrayList<>();
+            lights = new ArrayList<>();
             for (HueLightDevice l : hueLightArrayList) {
                 if (l.getBridge().equals(((HueBridgeDevice)device).getBridge())) {
                     lights.add(l);
@@ -535,7 +533,7 @@ public class HomeFragment extends Fragment implements ValueEventListener {
                 hue.setEnabled(true);
                 deviceArrayList.add(hue);
                 addHueLightsToArray(b);
-                saveHueOnFirebase(hue);
+                saveHueInPreferences(hue);
             }
             getActivity().runOnUiThread(new Runnable() {
                 @Override
@@ -573,20 +571,17 @@ public class HomeFragment extends Fragment implements ValueEventListener {
         public void onParsingErrors(List parsingErrorsList) {
             // Any JSON parsing errors are returned here.  Typically your program should never return these.
         }
-
-        private void saveHueOnFirebase(HueBridgeDevice hue) {
-            // TODO Send to firebase - remove this?? Save in preference instead?
-            mFirebaseRef.child(MainActivity.DEVICES)
-                    .child(MainActivity.HUE)
-                    .child(hue.getHueUsername()).setValue(hue.getLastConnectedIPAddress());
-        }
-
     };
+
+    private void saveHueInPreferences(HueBridgeDevice hue) {
+        hueSharedPreferences.setLastConnectedIPAddress(hue.getLastConnectedIPAddress());
+        hueSharedPreferences.setUsername(hue.getHueUsername());
+    }
 
     private void addHueLightsToArray(PHBridge b) {
         List<PHLight> lights = b.getResourceCache().getAllLights();
             for (PHLight l : lights) {
-                hueLightArrayList.add(new HueLightDevice(l,b));
+                hueLightArrayList.add(new HueLightDevice(l,b, hueSharedPreferences.getTheme(l.getName())));
             }
     }
 

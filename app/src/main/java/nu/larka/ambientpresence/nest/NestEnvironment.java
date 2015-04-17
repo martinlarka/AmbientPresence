@@ -29,7 +29,7 @@ public class NestEnvironment {
         TEMPERATURE, ETA, AWAY
     }
 
-    public NestEnvironment(String name, boolean enabled, String fromId, EnvironmentType type, Activity activity) {
+    public NestEnvironment(String name, String fromId, EnvironmentType type, Activity activity) {
 
         this.name = name;
         this.enabled = enabled;

@@ -4,7 +4,7 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import com.nestapi.lib.API.AccessToken;
 
-public class Settings {
+public class NestSettings {
 
     private static final String TOKEN_KEY = "token";
     private static final String EXPIRATION_KEY = "expiration";
@@ -33,5 +33,28 @@ public class Settings {
                 .setToken(token)
                 .setExpiresIn(expirationDate)
                 .build();
+    }
+
+    public static boolean hasAuthToken(Context context) {
+        final SharedPreferences prefs = getPrefs(context);
+        final String token = prefs.getString(TOKEN_KEY, null);
+        final long expirationDate = prefs.getLong(EXPIRATION_KEY, -1);
+        return (token != null || expirationDate != -1);
+    }
+
+    public static void removeAuthToken(Context context) {
+        getPrefs(context).edit()
+                .putString(TOKEN_KEY, null)
+                .putLong(EXPIRATION_KEY, -1)
+                .commit();
+    }
+
+    public static void saveNestEnvironment(Context context, NestEnvironment env) {
+        getPrefs(context).edit().putBoolean(env.getName(), env.isEnabled()).commit();
+    }
+
+    public static boolean getNestEnvironment(Context context, String environment) {
+        final SharedPreferences prefs = getPrefs(context);
+        return prefs.getBoolean(environment, false);
     }
 }

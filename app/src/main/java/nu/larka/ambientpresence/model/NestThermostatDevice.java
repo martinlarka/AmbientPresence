@@ -1,6 +1,7 @@
 package nu.larka.ambientpresence.model;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.support.annotation.NonNull;
 import android.util.Log;
@@ -19,7 +20,7 @@ import java.util.ArrayList;
 import nu.larka.ambientpresence.activity.MainActivity;
 import nu.larka.ambientpresence.nest.Constants;
 import nu.larka.ambientpresence.nest.NestEnvironment;
-import nu.larka.ambientpresence.nest.Settings;
+import nu.larka.ambientpresence.nest.NestSettings;
 
 /**
  * Created by martin on 15-04-15.
@@ -29,16 +30,12 @@ public class NestThermostatDevice extends Device implements NestAPI.Authenticati
         Listener.ThermostatListener {
 
     private static final String TAG = NestThermostatDevice.class.getSimpleName();
-    private static final String THERMOSTAT_KEY = "thermostat_key";
-    private static final String STRUCTURE_KEY = "structure_key";
     private Activity activity;
     private Firebase firebase;
 
     private Listener mUpdateListener;
     private NestAPI mNestApi;
     private AccessToken mToken;
-    private Thermostat mThermostat;
-    private Structure mStructure;
 
     public static final int AUTH_TOKEN_REQUEST_CODE = 101;
     private ArrayList<NestEnvironment> environments = new ArrayList<>();
@@ -49,7 +46,7 @@ public class NestThermostatDevice extends Device implements NestAPI.Authenticati
         this.activity = activity;
         this.firebase = firebase;
         mNestApi = NestAPI.getInstance();
-        mToken = Settings.loadAuthToken(activity.getApplicationContext());
+        mToken = NestSettings.loadAuthToken(activity.getApplicationContext());
         if (mToken != null) {
             authenticate(mToken);
         } else {
@@ -126,13 +123,19 @@ public class NestThermostatDevice extends Device implements NestAPI.Authenticati
     }
 
     private void registerEnvironments(Thermostat thermostat) {
-        environments.add(new NestEnvironment(thermostat.getName(), false, thermostat.getDeviceID(), NestEnvironment.EnvironmentType.TEMPERATURE, activity));
+        NestEnvironment env = new NestEnvironment(thermostat.getName(), thermostat.getDeviceID(), NestEnvironment.EnvironmentType.TEMPERATURE, activity);
+        env.setEnabled(NestSettings.getNestEnvironment(activity.getApplicationContext(), env.getName()));
+        environments.add(env);
         registeredEnvironmentDevices.add(thermostat.getDeviceID());
     }
 
     private void registerEnvironments(Structure structure) {
-        environments.add(new NestEnvironment(structure.getName(), false, structure.getStructureID(), NestEnvironment.EnvironmentType.ETA, activity));
-        environments.add(new NestEnvironment(structure.getName(), false, structure.getStructureID(), NestEnvironment.EnvironmentType.AWAY, activity));
+        NestEnvironment env = new NestEnvironment(structure.getName(), structure.getStructureID(), NestEnvironment.EnvironmentType.ETA, activity);
+        env.setEnabled(NestSettings.getNestEnvironment(activity.getApplicationContext(), env.getName()));
+        environments.add(env);
+        env = new NestEnvironment(structure.getName(), structure.getStructureID(), NestEnvironment.EnvironmentType.AWAY, activity);
+        env.setEnabled(NestSettings.getNestEnvironment(activity.getApplicationContext(), env.getName()));
+        environments.add(env);
         registeredEnvironmentDevices.add(structure.getStructureID());
     }
 
@@ -154,7 +157,7 @@ public class NestThermostatDevice extends Device implements NestAPI.Authenticati
 
         if (AuthManager.hasAccessToken(data)) {
             mToken = AuthManager.getAccessToken(data);
-            Settings.saveAuthToken(activity, mToken);
+            NestSettings.saveAuthToken(activity, mToken);
             Log.v(TAG, "Main Activity parsed auth token: " + mToken.getToken() + " expires: " + mToken.getExpiresIn());
             authenticate(mToken);
         } else {
@@ -162,13 +165,14 @@ public class NestThermostatDevice extends Device implements NestAPI.Authenticati
         }
     }
 
-    public void updateEnvironments() {
+    public void updateEnvironments(Context applicationContext) {
         for (NestEnvironment env : environments) {
             if (!env.isEnabled()) {
                 firebase.child(MainActivity.ENVIRONMENTS).child(env.getName()).removeValue();
             } else {
                 firebase.child(MainActivity.ENVIRONMENTS).child(env.getName()).setValue(0.5);
             }
+            NestSettings.saveNestEnvironment(applicationContext, env);
         }
     }
 }

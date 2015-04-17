@@ -22,11 +22,11 @@ public class HueLightDevice extends PHLight {
     private int environmentPos;
     private int theme;
 
-    public HueLightDevice(PHLight light, PHBridge bridge) {
+    public HueLightDevice(PHLight light, PHBridge bridge, int theme) {
         super(light);
         this.light = light;
         this.bridge = bridge;
-        this.theme = 0;
+        this.theme = theme;
     }
 
     public PHBridge getBridge() {

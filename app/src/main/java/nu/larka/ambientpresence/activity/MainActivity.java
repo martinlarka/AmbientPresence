@@ -5,6 +5,8 @@ import android.app.ProgressDialog;
 import android.content.Intent;
 import android.content.IntentSender;
 import android.os.AsyncTask;
+import android.os.Handler;
+import android.os.Message;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
@@ -29,8 +31,10 @@ import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.plus.Plus;
 
 import java.io.IOException;
+import java.lang.ref.WeakReference;
 
 import nu.larka.ambientpresence.R;
+import nu.larka.ambientpresence.fragment.HomeFragment;
 import nu.larka.ambientpresence.fragment.RemoteOfficesFragment;
 import nu.larka.ambientpresence.model.NestThermostatDevice;
 import nu.larka.ambientpresence.model.User;
@@ -46,8 +50,6 @@ public class MainActivity extends FragmentActivity implements
     public static final String FOLLOWING_USERS = "/following_users/";
     public static final String ACCEPTEDUSERS = "/accepted_users/";
     public static final String USER_IMAGE = "/user_image/";
-    public static final String CREATEDAT = "created_at";
-    public static final String STATE = "state";
     public static final String USERNAME ="username";
     public static final String NAME ="name";
     public static final String DEVICES ="devices";
@@ -55,6 +57,7 @@ public class MainActivity extends FragmentActivity implements
     public static final String ENVIRONMENTS = "environments";
 
     public static final int RC_GOOGLE_LOGIN = 1;
+    public static final int HOMEFRAGMENTLOADED = 666;
 
     /* A reference to the Firebase */
     private Firebase mFirebaseRef;
@@ -187,6 +190,7 @@ public class MainActivity extends FragmentActivity implements
             Log.i(TAG, provider + " auth successful");
             setAuthenticatedUser(authData);
             // Check if user is in firebase else create
+
         }
 
         @Override
@@ -217,6 +221,7 @@ public class MainActivity extends FragmentActivity implements
             });
             fragmentsStarted = true;
     }
+
 
     /* A helper method to resolve the current ConnectionResult error. */
     private void resolveSignInError() {
@@ -335,6 +340,7 @@ public class MainActivity extends FragmentActivity implements
         }
         this.mAuthData = authData;
         if (mAuthData != null && !fragmentsStarted) {
+            splashScreen(View.VISIBLE);
             registerUser();
         }
         /* invalidate options menu to hide/show the logout button */
@@ -353,15 +359,18 @@ public class MainActivity extends FragmentActivity implements
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
 
         mRemoteOfficesFragment.setFirebase(mFirebaseRef, authData.getUid());
+        mRemoteOfficesFragment.setSplashScreenHandler(new SplashScreenHandler(this));
         // Replace whatever is in the fragment_container view with this fragment,
         // and add the transaction to the back stack so the user can navigate back
         transaction.replace(R.id.office_fragment, mRemoteOfficesFragment);
-        //transaction.addToBackStack(null);
 
         // Commit the transaction
         transaction.commit();
     }
 
+    public void splashScreen(int visibility) {
+        findViewById(R.id.splash_screen).setVisibility(visibility);
+    }
 
     /**
      * Unauthenticate from Firebase and from providers where necessary.
@@ -389,6 +398,19 @@ public class MainActivity extends FragmentActivity implements
             /* Update authenticated user and show login buttons */
             setAuthenticatedUser(null);
             fragmentsStarted = false;
+        }
+    }
+
+    static class SplashScreenHandler extends Handler {
+
+        MainActivity activity;
+
+        public SplashScreenHandler(MainActivity activity) {
+            this.activity = activity;
+        }
+        @Override
+        public void handleMessage(Message msg) {
+            activity.splashScreen(View.INVISIBLE);
         }
     }
 }

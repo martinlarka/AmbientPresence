@@ -3,6 +3,7 @@ package nu.larka.ambientpresence.fragment;
 import android.content.Intent;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
 import android.view.LayoutInflater;
@@ -45,12 +46,12 @@ public class RemoteOfficesFragment extends Fragment {
     private ArrayList<Device> deviceArrayList = new ArrayList<>();
     private ArrayList<HueLightDevice> hueLightArrayList = new ArrayList<>();
     private Button activityButton;
-    private ImageButton homeButton;
     private Firebase mFirebaseRef;
     private String uid;
     private GridView followedUsersGridView;
     private int newActivities = 0;
     private HomeFragment mHomeFragment;
+    private Handler splashScreenHandler;
 
     public RemoteOfficesFragment() {
     }
@@ -68,15 +69,14 @@ public class RemoteOfficesFragment extends Fragment {
 
         activityButton = (Button) view.findViewById(R.id.activity_button);
         activityButton.setOnClickListener(activityButtonClickListener);
-        homeButton = (ImageButton) view.findViewById(R.id.home_button);
-        homeButton.setOnClickListener(homeButtonClickListener);
-
-        startHomeFragment();
+        view.findViewById(R.id.home_button).setOnClickListener(homeButtonClickListener);
 
         registerUserActivityCallback();
 
         followedUsersGridView.setOnItemClickListener(itemClickListener);
         registerFollowingUsersCallback();
+
+        startHomeFragment();
 
         return view;
     }
@@ -88,10 +88,11 @@ public class RemoteOfficesFragment extends Fragment {
             transaction.addToBackStack(null);
         } else {
             mHomeFragment = new HomeFragment();
+            mHomeFragment.setFirebaseRef(mFirebaseRef.child(MainActivity.USERS).child(uid));
+            mHomeFragment.setSplashScreenHandler(splashScreenHandler);
+            mHomeFragment.setDeviceArrayList(deviceArrayList);
+            mHomeFragment.setHueDeviceArrayList(hueLightArrayList);
         }
-        mHomeFragment.setFirebaseRef(mFirebaseRef.child(MainActivity.USERS).child(uid));
-        mHomeFragment.setDeviceArrayList(deviceArrayList);
-        mHomeFragment.setHueDeviceArrayList(hueLightArrayList);
         // Replace whatever is in the fragment_container view with this fragment,
         // and add the transaction to the back stack so the user can navigate back
         transaction.replace(R.id.info_fragment, mHomeFragment);
@@ -381,6 +382,10 @@ public class RemoteOfficesFragment extends Fragment {
 
     public void nestTokenObtained(int requestCode, int resultCode, Intent data) {
         mHomeFragment.nestTokenObtained(requestCode, resultCode, data);
+    }
+
+    public void setSplashScreenHandler(Handler splashScreenHandler) {
+        this.splashScreenHandler = splashScreenHandler;
     }
 
     class EnvironmentChangedListener implements ValueEventListener {

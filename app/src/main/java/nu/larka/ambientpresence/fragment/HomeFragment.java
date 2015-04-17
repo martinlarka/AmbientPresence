@@ -15,6 +15,8 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.Handler;
+import android.os.Message;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.v4.app.DialogFragment;
@@ -90,6 +92,7 @@ public class HomeFragment extends Fragment implements ValueEventListener {
     private ArrayList<HueLightDevice> hueLightArrayList;
 
     private NestThermostatDevice thermostatDevice;
+    private Handler splashScreenHandler;
 
     public HomeFragment() {
         // Required empty public constructor
@@ -179,6 +182,9 @@ public class HomeFragment extends Fragment implements ValueEventListener {
         }
 
         populateDeviceList(dataSnapshot.child(MainActivity.DEVICES));
+
+        // Remove splash screen
+        splashScreenHandler.sendEmptyMessage(MainActivity.HOMEFRAGMENTLOADED);
     }
 
     private void populateDeviceList(DataSnapshot child) {
@@ -255,6 +261,10 @@ public class HomeFragment extends Fragment implements ValueEventListener {
 
     public void nestTokenObtained(int requestCode, int resultCode, Intent data) {
         thermostatDevice.nestTokenObtained(requestCode, resultCode, data);
+    }
+
+    public void setSplashScreenHandler(Handler splashScreenHandler) {
+        this.splashScreenHandler = splashScreenHandler;
     }
 
     private class UploadImageToFirebase extends AsyncTask<Bitmap, Void, Void> {

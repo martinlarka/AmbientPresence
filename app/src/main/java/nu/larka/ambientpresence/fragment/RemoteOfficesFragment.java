@@ -50,7 +50,7 @@ public class RemoteOfficesFragment extends Fragment {
     private String uid;
     private GridView followedUsersGridView;
     private int newActivities = 0;
-    private HomeFragment mHomeFragment = new HomeFragment();
+    private HomeFragment mHomeFragment;
 
     public RemoteOfficesFragment() {
     }
@@ -84,13 +84,17 @@ public class RemoteOfficesFragment extends Fragment {
     private void startHomeFragment() {
         FragmentTransaction transaction = getActivity().getSupportFragmentManager().beginTransaction();
 
+        if (mHomeFragment != null) {
+            transaction.addToBackStack(null);
+        } else {
+            mHomeFragment = new HomeFragment();
+        }
         mHomeFragment.setFirebaseRef(mFirebaseRef.child(MainActivity.USERS).child(uid));
         mHomeFragment.setDeviceArrayList(deviceArrayList);
         mHomeFragment.setHueDeviceArrayList(hueLightArrayList);
         // Replace whatever is in the fragment_container view with this fragment,
         // and add the transaction to the back stack so the user can navigate back
         transaction.replace(R.id.info_fragment, mHomeFragment);
-        transaction.addToBackStack(null);
 
         // Commit the transaction
         transaction.commit();

@@ -1,6 +1,5 @@
 package nu.larka.ambientpresence.activity;
 
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.Intent;
@@ -163,6 +162,12 @@ public class MainActivity extends FragmentActivity implements
             return true;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        mAuthProgressDialog.cancel();
     }
 
     /**
@@ -351,7 +356,7 @@ public class MainActivity extends FragmentActivity implements
         // Replace whatever is in the fragment_container view with this fragment,
         // and add the transaction to the back stack so the user can navigate back
         transaction.replace(R.id.office_fragment, mRemoteOfficesFragment);
-        transaction.addToBackStack(null);
+        //transaction.addToBackStack(null);
 
         // Commit the transaction
         transaction.commit();

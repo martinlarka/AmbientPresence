@@ -8,7 +8,9 @@
     <TextView
         android:id="@+id/light_name"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content" />
+        android:layout_height="wrap_content"
+        android:paddingRight="@dimen/hue_theme_item_padding"
+        android:paddingTop="@dimen/theme_list_item_padding"/>
 
     <Spinner
         android:id="@+id/hue_light_spinner"

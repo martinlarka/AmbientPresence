@@ -54,10 +54,9 @@ public class SetupHueLightAdapter extends BaseAdapter {
                 convertView = LayoutInflater.from(context).inflate(R.layout.hue_list_item, parent, false);
                 TextView lightName = (TextView) convertView.findViewById(R.id.light_name);
                 lightName.setText(lights.get(position).getName());
-
                 Spinner themeSpinner = (Spinner) convertView.findViewById(R.id.hue_light_spinner);
-                ArrayAdapter<String> adapter = new ArrayAdapter<>(context, android.R.layout.simple_spinner_dropdown_item, HueLightDevice.getHueThemes());
-                themeSpinner.setAdapter(adapter);
+                HueThemeAdapter themeAdapter = new HueThemeAdapter(context);
+                themeSpinner.setAdapter(themeAdapter);
                 themeSpinner.setOnItemSelectedListener(new SelectedThemeListener(lights.get(position)));
                 themeSpinner.setSelection(lights.get(position).getTheme());
             }

@@ -5,4 +5,7 @@
 
     <dimen name="info_fragment_top_padding">16dp</dimen>
     <dimen name="device_item_padding">8dp</dimen>
+    <dimen name="theme_list_item_padding">16dp</dimen>
+    <dimen name="hue_theme_item_padding">8dp</dimen>
+    <dimen name="theme_list_item_margin">4dp</dimen>
 </resources>

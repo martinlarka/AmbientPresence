@@ -1,10 +1,14 @@
 package nu.larka.ambientpresence.model;
 
+import android.graphics.drawable.Drawable;
+
 import com.philips.lighting.model.PHBridge;
 import com.philips.lighting.model.PHLight;
 import com.philips.lighting.model.PHLightState;
 
 import java.util.ArrayList;
+
+import nu.larka.ambientpresence.R;
 
 /**
  * Created by martin on 15-04-13.
@@ -104,5 +108,21 @@ public class HueLightDevice extends PHLight {
         themes.add("White brightness");
         themes.add("Red green blue");
         return themes;
+    }
+
+    public static int numberOfThemes() {
+        return 3;
+    }
+
+    public static int getThemeImage(int position) {
+        switch (position) {
+            case 0:
+                return R.drawable.blue_to_red;
+            case 1:
+                return R.drawable.white_brightness;
+            case 2:
+                return R.drawable.red_green_blue;
+        }
+        return 0;
     }
 }

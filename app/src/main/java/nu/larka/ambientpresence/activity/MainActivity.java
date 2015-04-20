@@ -332,9 +332,11 @@ public class MainActivity extends FragmentActivity implements
         if (authData != null) {
             /* Hide all the login buttons */
             mGoogleLoginButton.setVisibility(View.GONE);
+            splashScreen(View.VISIBLE);
         } else {
             /* No authenticated user show all the login buttons */
             mGoogleLoginButton.setVisibility(View.VISIBLE);
+            splashScreen(View.INVISIBLE);
         }
         this.mAuthData = authData;
         if (mAuthData != null && !fragmentsStarted) {

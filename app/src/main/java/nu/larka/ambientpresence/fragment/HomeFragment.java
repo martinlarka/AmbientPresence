@@ -26,6 +26,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.TranslateAnimation;
 import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.ImageView;
@@ -305,37 +306,44 @@ public class HomeFragment extends Fragment implements ValueEventListener {
             angle = 270;
         }
 
+        InputStream is;
+        try {
+            is = context.getContentResolver().openInputStream(imgUri);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+            return;
+        }
+        Bitmap bmp;
+
         if (angle != 0) {
-            InputStream is;
-            try {
-                is = context.getContentResolver().openInputStream(imgUri);
-            } catch (FileNotFoundException e) {
-                e.printStackTrace();
-                return;
-            }
 
             Matrix mat = new Matrix();
             mat.postRotate(angle);
 
-            Bitmap bmp = BitmapFactory.decodeStream(is);
+            bmp = BitmapFactory.decodeStream(is);
             bmp = Bitmap.createScaledBitmap(bmp,400, 400*bmp.getHeight()/bmp.getWidth(), false);
             bmp = Bitmap.createBitmap(bmp, 0, 0, bmp.getWidth(), bmp.getHeight(), mat, true);
 
-            OutputStream os;
-            try {
-                os = context.getContentResolver().openOutputStream(imgUri);
-            } catch (FileNotFoundException e) {
-                e.printStackTrace();
-                return;
-            }
-            bmp.compress(Bitmap.CompressFormat.PNG, 100, os);
+        } else {
+            bmp = BitmapFactory.decodeStream(is);
+            bmp = Bitmap.createScaledBitmap(bmp,400, 400*bmp.getHeight()/bmp.getWidth(), false);
+            bmp = Bitmap.createBitmap(bmp, 0, 0, bmp.getWidth(), bmp.getHeight());
+        }
 
-            try {
-                exif.setAttribute(ExifInterface.TAG_ORIENTATION, String.valueOf(ExifInterface.ORIENTATION_NORMAL));
-                exif.saveAttributes();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+        OutputStream os;
+        try {
+            os = context.getContentResolver().openOutputStream(imgUri);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+            return;
+        }
+        bmp.compress(Bitmap.CompressFormat.PNG, 100, os);
+
+        try {
+            exif.setAttribute(ExifInterface.TAG_ORIENTATION, String.valueOf(ExifInterface.ORIENTATION_NORMAL));
+            exif.saveAttributes();
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 

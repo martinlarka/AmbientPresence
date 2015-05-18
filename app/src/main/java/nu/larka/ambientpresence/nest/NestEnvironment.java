@@ -32,7 +32,6 @@ public class NestEnvironment {
     public NestEnvironment(String name, String fromId, EnvironmentType type, Activity activity) {
 
         this.name = name;
-        this.enabled = enabled;
         this.fromId = fromId;
         this.type = type;
         this.activity = activity;

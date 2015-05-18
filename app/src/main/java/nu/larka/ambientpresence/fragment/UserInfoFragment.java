@@ -58,8 +58,6 @@ public class UserInfoFragment extends Fragment {
         userStateButton = (Button) view.findViewById(R.id.user_info_button);
         selfStateButton = (Button) view.findViewById(R.id.user_ban_button);
 
-        deviceListView = (ListView) view.findViewById(R.id.device_list_view);
-        // FIXME When adding more than 3 users, buttons at bottom disapears
 
         userName.setText(user.getUsername());
         userFullName.setText(user.getName());
@@ -71,8 +69,14 @@ public class UserInfoFragment extends Fragment {
             userImage.setImageResource(R.drawable.home500);
         }
 
-        deviceAdapter = new UserInfoDeviceAdapter(view.getContext(), hueLightDeviceArrayList, user);
-        deviceListView.setAdapter(deviceAdapter);
+        deviceListView = (ListView) view.findViewById(R.id.device_list_view);
+        if (user.getState().equals(User.FOLLOWING)) {
+            // FIXME When adding more than 3 users, buttons at bottom disapears
+            deviceAdapter = new UserInfoDeviceAdapter(view.getContext(), hueLightDeviceArrayList, user);
+            deviceListView.setAdapter(deviceAdapter);
+        } else {
+            deviceListView.setVisibility(View.INVISIBLE);
+        }
 
         setStateOfButtons();
 

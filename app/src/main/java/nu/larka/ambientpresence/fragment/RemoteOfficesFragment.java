@@ -387,6 +387,7 @@ public class RemoteOfficesFragment extends Fragment {
 
             Collections.sort(otherUsersList);
             mActivityFragment.setOtherUsersList(otherUsersList);
+            mActivityFragment.setFollowerList(followerList);
             mActivityFragment.setDeviceArrayList(hueLightArrayList);
             mActivityFragment.setFirebaseRef(mFirebaseRef, uid);
             transaction.replace(R.id.info_fragment, mActivityFragment);

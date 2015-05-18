@@ -34,6 +34,7 @@ public class ActivityFragment extends Fragment implements AdapterView.OnItemClic
     private String uid;
     private ListView searchResultList;
     private ArrayList<HueLightDevice> hueLightArrayList;
+    private ArrayList<User> followerList;
 
     public ActivityFragment() {
         // Required empty public constructor
@@ -66,7 +67,14 @@ public class ActivityFragment extends Fragment implements AdapterView.OnItemClic
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
         // Start user info fragment
-        final User user = otherUserList.get(position);
+        User user = otherUserList.get(position);
+
+        for (User u : followerList) {
+            if (user.getUID().equals(u.getUID())) {
+                user = u;
+            }
+        }
+        final User finalUser = user;
 
         mFirebaseRef.child(MainActivity.USERS)
                     .child(uid)
@@ -76,11 +84,11 @@ public class ActivityFragment extends Fragment implements AdapterView.OnItemClic
             public void onDataChange(DataSnapshot dataSnapshot) {
                 UserInfoFragment userInfoFragment = new UserInfoFragment();
                 if (dataSnapshot.getValue() != null) {
-                    user.setSelfState((String)dataSnapshot.getValue());
+                    finalUser.setSelfState((String) dataSnapshot.getValue());
                 } else {
-                    user.setSelfState(User.NOSTATE);
+                    finalUser.setSelfState(User.NOSTATE);
                 }
-                userInfoFragment.setUser(user);
+                userInfoFragment.setUser(finalUser);
                 userInfoFragment.setFirebaseRef(mFirebaseRef, uid);
                 userInfoFragment.setHueDeviceArrayList(hueLightArrayList);
 
@@ -112,5 +120,9 @@ public class ActivityFragment extends Fragment implements AdapterView.OnItemClic
 
     public void setDeviceArrayList(ArrayList<HueLightDevice> hueLightArrayList) {
         this.hueLightArrayList = hueLightArrayList;
+    }
+
+    public void setFollowerList(ArrayList<User> followerList) {
+        this.followerList = followerList;
     }
 }

@@ -70,7 +70,7 @@ public class UserInfoFragment extends Fragment {
         }
 
         deviceListView = (ListView) view.findViewById(R.id.device_list_view);
-        if (user.getState().equals(User.FOLLOWING)) {
+        if (user.getSelfState().equals(User.FOLLOWING) && user.getEnvironmentNames() != null) {
             // FIXME When adding more than 3 users, buttons at bottom disapears
             deviceAdapter = new UserInfoDeviceAdapter(view.getContext(), hueLightDeviceArrayList, user);
             deviceListView.setAdapter(deviceAdapter);

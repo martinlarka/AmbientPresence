@@ -275,7 +275,7 @@ public class RemoteOfficesFragment extends Fragment {
                 user.setState(state);
 
                 ArrayList<String> userEnvList = new ArrayList<>();
-                if (user.getSelfState().equals(User.FOLLOWING)) {
+                if (user.getSelfState().equals(User.FOLLOWING) || user.getSelfState().equals(User.PENDING)) {
                     Iterable<DataSnapshot> userEnvironments = dataSnapshot.child(MainActivity.ENVIRONMENTS).getChildren();
                     for (DataSnapshot d : userEnvironments) {
                         userEnvList.add(d.getKey());
